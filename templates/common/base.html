@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>grab-it{% if title %} - {{ title }}{% endif %}</title>
+        <link type="text/css" rel="stylesheet" href="/static-files/styles/vlourenco/main.css" />
+        {% if rss_url %}
+            <link type="application/rss+xml" rel="alternate" href="{{ rss_url }}" />
+        {% endif %}
+
+        {% comment %}
+          | For performance reasons, it's a good idea to load JavaScript at the
+          | bottom of the HTML, just before closing the body tag.  That way, the
+          | browser can parse and render the CSS and HTML while downloading the
+          | JavaScript.
+          |
+          | However, SWFObject is special.  This JavaScript actually modifies
+          | how the CSS and HTML is rendered (in the case of a YouTube video
+          | embedded in the HTML).  Therefore, we must load SWFObject here in
+          | the head (before we have the chance to embed a YouTube video in the
+          | HTML).
+          |
+          | For more information on this JavaScript performance hack, see:
+          |     http://developer.yahoo.com/performance/rules.html#js_bottom
+        {% endcomment %}
+        <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+        <script type="text/javascript">
+            google.load("swfobject", "2.2");
+        </script>
+
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+        <meta name="keywords" content="grab-it, social bookmarking, tagging, search" />
+        <meta name="description" content="grab-it is a social bookmarking service.  It allows you to save, share, and find other cool web page bookmarks (or gropes) all in one place.  It has nice features like auto-tagging and relevance search." />
+        <meta name="author" content="Code A La Mode" />
+        <meta name="verify-v1" content="VhpQTTVJeFIQncwGYmER/OqzZaI57kWiXYGqUiH67U4=" />
+    </head>
+    <body>
+        <![if !IE]>
+            {% include "../common/navigation.html" %}
+            {% block content %}{% endblock %}
+            {% include "../common/footer.html" %}
+
+            <script type="text/javascript">
+                google.load("jquery", "1.3.2");
+            </script>
+            <script type="text/javascript" src="/static-files/javascripts/search.js"></script>
+            <script type="text/javascript" src="/static-files/javascripts/bookmarks.js"></script>
+            <script type="text/javascript" src="/static-files/javascripts/init.js"></script>
+            {% if not debug %}
+                <script type="text/javascript">
+                    var google_analytics_javascript_host = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+                    document.write(unescape("%3Cscript src='" + google_analytics_javascript_host + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+                    try {
+                        var page_tracker = _gat._getTracker("UA-2153971-2");
+                        page_tracker._trackPageview();
+                    }
+                    catch(err) {
+                    }
+                </script>
+            {% endif %}
+
+            {% comment %}
+              | This iframe prevents many browsers' back/forward cache, which is
+              | what we need, because we dynamically update our pages with AJAX.
+              |
+              | For more information, see:
+              |     http://developer.apple.com/internet/safari/faq.html#anchor5
+            {% endcomment %}
+            <iframe style="height: 0px; width: 0px; visibility: hidden;"
+                    src="about:blank">
+            </iframe>
+        <![endif]>
+
+        {% comment %}
+          | Serve some extra-special content for our extra-special Internet
+          | Exploder users.
+        {% endcomment %}
+        <!--[if IE]>
+            {% include "../common/internet_explorer.html" %}
+        <![endif]-->
+    </body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "../common/base.html" %}
+
+{% block content %}
+
+    <div id="heading" class="main lowercase">
+        <h1>{{ title }}</h1>
+    </div>
+
+    <div id="content" class="main text lowercase">
+        <div id="left">
+            {% ifequal error_code 404 %}
+                <p>
+                    Once upon a midnight dreary, while I websurfed weak and weary,<br />
+                    Over many a strange and spurious website of &lsquo;hot chicks galore,&rsquo;<br />
+                    While I clicked my fav&rsquo;rite bookmark, suddenly there came a warning,<br />
+                    And my heart was filled with mourning, mourning for my dear amour.<br />
+                    &ldquo;&lsquo;Tis not possible,&rdquo; I muttered, &ldquo;give me back my cheap hardcore!&rdquo;
+                </p>
+                <p>Quoth the server, &ldquo;<b>404</b>.&rdquo;
+            {% endifequal %}
+
+            {% ifequal error_code 500 %}
+                <h3>Oops &hellip;</h3>
+                <p>
+                    We&rsquo;re sorry, but the page <b>{{ error_url }}</b>
+                    caused grab-it to vomit on itself.
+                    <span class="no_break">:-(</span>
+                    <a href="javascript:location.reload(true);">Try again?</a>
+                </p>
+                <h3>If you&rsquo;ve discovered a bug,</h3>
+                <p>
+                    <a href="http://code.google.com/p/grab-it/issues/list">report it</a>.
+                    Please make your issue report as detailed as possible.  Your
+                    details help us resolve the problem more quickly.
+                </p>
+            {% endifequal %}
+        </div>
+
+        <div id="right" class="lowercase">
+        </div>
+    </div>
+
+{% endblock %}

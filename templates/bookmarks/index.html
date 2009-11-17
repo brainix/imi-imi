@@ -1,0 +1,23 @@
+{% extends "../common/base.html" %}
+
+{% block content %}
+
+    <div id="heading" class="main lowercase">
+        {% include "header.html" %}
+    </div>
+
+    <div id="content" class="main text">
+        <div id="left">
+            {% include "create.html" %}
+            <div id="bookmarks" class="lowercase">
+                <ul id="bookmark_list">
+                    {% include "bookmarks.html" %}
+                </ul>
+            </div>
+        </div>
+
+        <div id="right" class="lowercase">
+        </div>
+    </div>
+
+{% endblock %}

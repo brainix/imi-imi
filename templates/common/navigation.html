@@ -1,0 +1,30 @@
+<div id="navigation" class="main lowercase">
+    <ul>
+        <li>
+            <a href="/"
+                {% ifequal 'grab-it' active_tab %}
+                    class="active_tab"
+                {% endifequal %}
+            >grab-it</a>
+        </li>
+
+        <li class="sign_in">
+            {% if not current_user %}
+                <a href="{{ login_url }}">Sign In</a>
+            {% else %}
+                <a href="{{ logout_url }}">Sign Out</a>
+            {% endif %}
+        </li>
+
+        <li class="search">
+            <form id="search" action="/search" method="get">
+                <div class="form_element">
+                    <input id="query" name="query" type="text"
+                           value="{% if target_words_string %}{{ target_words_string }}{% else %}search bookmarks{% endif %}"
+                    />
+                    <div id="live_search"></div>
+                </div>
+            </form>
+        </li>
+    </ul>
+</div>

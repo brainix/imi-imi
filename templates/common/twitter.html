@@ -1,0 +1,31 @@
+<script src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+    new TWTR.Widget({
+        version: 2,
+        type: 'profile',
+        rpp: 4,
+        interval: 6000,
+        width: 240,
+        height: 320,
+        theme: {
+            shell: {
+                background: '#D1D9DC',
+                color: '#516064',
+            },
+            tweets: {
+                background: '#FFFFFF',
+                color: '#516064',
+                links: '#B62F2F',
+            }
+        },
+        features: {
+            scrollbar: false,
+            loop: false,
+            live: false,
+            hashtags: true,
+            timestamp: true,
+            avatars: false,
+            behavior: 'all'
+        }
+    }).render().setUser('code_a_la_mode').start();
+</script>

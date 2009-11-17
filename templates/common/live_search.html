@@ -1,0 +1,26 @@
+{% if suggestions %}
+    <ul>
+        {% for suggestion in suggestions %}
+            <li>
+
+                {% if suggestion.has_results %}
+                    <b>
+                {% endif %}
+                {% if not suggestion.has_results %}
+                    <small>
+                {% endif %}
+
+                    <a id="live_search_result_{{ forloop.counter0 }}"
+                       href="{{ suggestion.url }}">{{ suggestion.text }}</a>
+
+                {% if suggestion.has_results %}
+                    </b>
+                {% endif %}
+                {% if not suggestion.has_results %}
+                    </small>
+                {% endif %}
+
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

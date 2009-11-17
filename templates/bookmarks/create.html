@@ -1,0 +1,18 @@
+{% if current_user and target_user %}
+    {% ifequal current_user target_user %}
+        {% if not friends_view %}
+            <div class="create_bookmark">
+                <form id="create_bookmark" action="/users"
+                      method="post">
+                    <div class="form_element">
+                        <input id="url_to_create" name="url_to_create"
+                               type="text" value="enter a url to bookmark"
+                        />
+                        <input class="submit" type="submit"
+                               value="save bookmark" />
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+    {% endifequal %}
+{% endif %}
