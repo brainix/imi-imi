@@ -5,23 +5,23 @@
 #                                                                              #
 #   Copyright (c) 2009, Code A La Mode, original authors.                      #
 #                                                                              #
-#       This file is part of grab-it.                                          #
+#       This file is part of imi-imi.                                          #
 #                                                                              #
-#       grab-it is free software; you can redistribute it and/or modify        #
+#       imi-imi is free software; you can redistribute it and/or modify        #
 #       it under the terms of the GNU General Public License as published by   #
 #       the Free Software Foundation, either version 3 of the License, or      #
 #       (at your option) any later version.                                    #
 #                                                                              #
-#       grab-it is distributed in the hope that it will be useful,             #
+#       imi-imi is distributed in the hope that it will be useful,             #
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
 #       GNU General Public License for more details.                           #
 #                                                                              #
 #       You should have received a copy of the GNU General Public License      #
-#       along with grab-it.  If not, see <http://www.gnu.org/licenses/>.       #
+#       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
 
-"""Launch an interactive Python console with access to grab-it's datastore.
+"""Launch an interactive Python console with access to imi-imi's datastore.
 
 This code was written by Nick Johnson and swiftly yoinked by Raj Shah.  See:
     http://code.google.com/appengine/articles/remote_api.html
@@ -76,7 +76,7 @@ def parse_args():
 
 
 def main():
-    """Launch a Python console able to interact with grab-it's datastore."""
+    """Launch a Python console able to interact with imi-imi's datastore."""
     app_id, host = parse_args()
     remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', auth, host)
     code.interact('%s shell' % app_id, None, locals())

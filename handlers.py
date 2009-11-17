@@ -3,20 +3,20 @@
 #                                                                              #
 #   Copyright (c) 2009, Code A La Mode, original authors.                      #
 #                                                                              #
-#       This file is part of grab-it.                                          #
+#       This file is part of imi-imi.                                          #
 #                                                                              #
-#       grab-it is free software; you can redistribute it and/or modify        #
+#       imi-imi is free software; you can redistribute it and/or modify        #
 #       it under the terms of the GNU General Public License as published by   #
 #       the Free Software Foundation, either version 3 of the License, or      #
 #       (at your option) any later version.                                    #
 #                                                                              #
-#       grab-it is distributed in the hope that it will be useful,             #
+#       imi-imi is distributed in the hope that it will be useful,             #
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
 #       GNU General Public License for more details.                           #
 #                                                                              #
 #       You should have received a copy of the GNU General Public License      #
-#       along with grab-it.  If not, see <http://www.gnu.org/licenses/>.       #
+#       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
 
 """Request handlers."""
@@ -102,7 +102,7 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
         path = os.path.join(TEMPLATES, 'home', 'index.html')
         login_url, current_user, logout_url = self._get_user()
         if page in ('', 'home',) and current_user is None:
-            active_tab = 'grab-it'
+            active_tab = 'imi-imi'
         else:
             active_tab = ''
         if page not in ('home', 'rss',) and current_user is not None:
@@ -134,7 +134,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
             return self._serve_error(404)
         target_email = target_email.replace('%40', '@')
         if current_user is not None and current_user.email() == target_email:
-            active_tab = 'grab-it'
+            active_tab = 'imi-imi'
         else:
             active_tab = ''
         target_user = users.User(target_email)
@@ -300,9 +300,9 @@ class Search(search.RequestHandler, _RequestHandler):
 
 
 class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
-    """Request handler to expose grab-it's functionality through an API.
+    """Request handler to expose imi-imi's functionality through an API.
     
-    grab-it exposes RESTful API calls which return JSON data.  This is similar
+    imi-imi exposes RESTful API calls which return JSON data.  This is similar
     to Twitter's API, and following Twitter's API design decisions is probably a
     safe bet.  ;-)
     """

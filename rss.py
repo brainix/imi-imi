@@ -3,20 +3,20 @@
 #                                                                              #
 #   Copyright (c) 2009, Code A La Mode, original authors.                      #
 #                                                                              #
-#       This file is part of grab-it.                                          #
+#       This file is part of imi-imi.                                          #
 #                                                                              #
-#       grab-it is free software; you can redistribute it and/or modify        #
+#       imi-imi is free software; you can redistribute it and/or modify        #
 #       it under the terms of the GNU General Public License as published by   #
 #       the Free Software Foundation, either version 3 of the License, or      #
 #       (at your option) any later version.                                    #
 #                                                                              #
-#       grab-it is distributed in the hope that it will be useful,             #
+#       imi-imi is distributed in the hope that it will be useful,             #
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
 #       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
 #       GNU General Public License for more details.                           #
 #                                                                              #
 #       You should have received a copy of the GNU General Public License      #
-#       along with grab-it.  If not, see <http://www.gnu.org/licenses/>.       #
+#       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
 
 """RSS functionality."""
@@ -43,8 +43,8 @@ _log = logging.getLogger(__name__)
 def _cache_rss(method):
     """Decorate an RSS request - cache and serve its resulting XML.
     
-    While trolling through grab-it's Google App Engine dashboard
-    (http://appengine.google.com/dashboard?&app_id=grab-it), I discovered
+    While trolling through imi-imi's Google App Engine dashboard
+    (http://appengine.google.com/dashboard?&app_id=imi-imi), I discovered
     that computing RSS feeds is pretty expensive.  It's probably worth caching
     computed RSS feeds.
     """
@@ -100,7 +100,7 @@ class RequestHandler(webapp.RequestHandler):
                    query_users=tuple(), num_rss_items=RSS_NUM_ITEMS,
                    num_rss_tags=RSS_NUM_TAGS):
         """Return the XML for an RSS feed for the specified users' bookmarks."""
-        title = 'grab-it - bookmarks saved by %s' % saved_by
+        title = 'imi-imi - bookmarks saved by %s' % saved_by
         link = self.request.uri.rsplit('/rss', 1)[0]
         if not bookmarks:
             bookmarks, more = self._get_bookmarks(query_users=query_users,
