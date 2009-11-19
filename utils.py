@@ -21,7 +21,7 @@
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
 
-"""Bookmark index logic - utility functions for auto-tagging HTML."""
+"""Utility functions for auto-tagging HTML."""
 
 
 # Originally, I'd used urllib2 and BeautifulSoup 3.1.0, but those packages were
@@ -36,6 +36,7 @@ import hashlib
 import logging
 import operator
 import re
+import urlparse
 
 try:
     from google.appengine.api.urlfetch import fetch
@@ -53,7 +54,7 @@ from beautifulsoup.BeautifulSoup import Comment
 from beautifulsoup.BeautifulSoup import SGMLParseError
 from nltk.stem.porter import PorterStemmer
 
-from config import STOP_WORDS, FETCH_DEFAULT_URL, FETCH_GOOD_STATUSES
+from config import STOP_WORDS, FETCH_GOOD_STATUSES, FETCH_DOCUMENT_INDEXES
 from config import FETCH_BAD_TAGS, FETCH_GOOD_TAGS, FETCH_MIN_COUNT
 
 
@@ -61,16 +62,79 @@ _log = logging.getLogger(__name__)
 stemmer = PorterStemmer()
 
 
-def tokenize_url(url=FETCH_DEFAULT_URL):
+def normalize_url(url):
+    """Normalize a URL.
+    
+    We normalize URLs in order to determine whether two syntactically different
+    URLs are equivalent.
+
+    Example usage:
+        >>> normalize_url('google.com')
+        'http://google.com/'
+        >>> normalize_url('http://google.com')
+        'http://google.com/'
+        >>> normalize_url('google.com/')
+        'http://google.com/'
+        >>> normalize_url('http://google.com/')
+        'http://google.com/'
+        >>> normalize_url('HTTP://google.com/')
+        'http://google.com/'
+        >>> normalize_url('http://GOOGLE.COM/')
+        'http://google.com/'
+        >>> normalize_url('HTTP://GOOGLE.COM/')
+        'http://google.com/'
+        >>> normalize_url('google.com:80')
+        'http://google.com/'
+        >>> normalize_url('google.com:8080')
+        'http://google.com:8080/'
+        >>> normalize_url('https://google.com:443')
+        'https://google.com/'
+        >>> normalize_url('https://google.com:8443')
+        'https://google.com:8443/'
+        >>> normalize_url('google.com/index.html')
+        'http://google.com/'
+        >>> normalize_url('google.com/index.html#location')
+        'http://google.com/'
+        >>> normalize_url('google.com/document.html#location')
+        'http://google.com/document.html'
+    """
+
+    # Make sure that there's a scheme (http or https).
+    url = url.split('://', 1)
+    if not url or len(url) == 2 and not url[0].lower() in ('http', 'https',):
+        return None
+    if len(url) == 1:
+        url = 'http://' + url[0]
+    else:
+        url = url[0] + '://' + url[1]
+
+    scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
+    netloc = netloc.lower()
+    if scheme == 'http' and netloc.endswith(':80'):
+        netloc = netloc[:-3]
+    elif scheme == 'https' and netloc.endswith(':443'):
+        netloc = netloc[:-4]
+    if path.endswith(FETCH_DOCUMENT_INDEXES):
+        path = path.rsplit('/', 1)[0]
+    if not path:
+        path = '/'
+    fragment = ''
+    url = urlparse.urlunparse((scheme, netloc, path, params, query, fragment,))
+
+    return url
+
+
+def tokenize_url(url):
     """Fetch web content and parse it into a title, word list, and hash.
 
     Example usage:
         >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
         >>> mime_type, title, words, hash = tokenize_url(url)
-        u"Alice's Adventures in Wonderland,\\r\\n by Lewis Carroll"
+        >>> title
+        u"\\r\\n    Alice's Adventures in Wonderland,\\r\\n    by Lewis Carroll\\r\\n"
     """
     _log.debug('tokenizing %s' % url)
-    status_code, mime_type, content = fetch_content(url=url)
+    status_code, mime_type, content = fetch_content(url)
     if content is None:
         _log.warning("couldn't tokenize %s (couldn't fetch content)" % url)
         title, words, hash = url, [], None
@@ -86,7 +150,7 @@ def tokenize_url(url=FETCH_DEFAULT_URL):
     return mime_type, title, words, hash
 
 
-def fetch_content(url=FETCH_DEFAULT_URL, status_codes=FETCH_GOOD_STATUSES):
+def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
     """Retrieve content from the web.  Make sure the status code is OK.
 
     That's "make sure the status code is OK" as in "okay," *not* "0K" as in
@@ -225,7 +289,7 @@ def read_stop_words(filename=STOP_WORDS):
     return stop_words, hash
 
 
-def auto_tag(words=tuple(), stop_words=tuple(), min_count=FETCH_MIN_COUNT):
+def auto_tag(words, stop_words, min_count=FETCH_MIN_COUNT):
     """Given lists of words and stop words, return a list of tags."""
     _log.debug('auto tagging')
 

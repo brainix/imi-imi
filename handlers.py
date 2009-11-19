@@ -196,10 +196,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
     def _get_url(self, url_input_name):
         """Parse and return the URL specified as an input in the request obj."""
         url = self.request.get(url_input_name)
-        if url:
-            url = cgi.escape(url)
-            if not url.startswith(('http://', 'https://',)):
-                url = 'http://' + url
+        url = utils.normalize_url(url)
         return url
 
 
@@ -245,7 +242,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         query = self.request.get('query').replace(' ', '%20').lower()
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
-        status_code, mime_type, suggestions = utils.fetch_content(url=url)
+        status_code, mime_type, suggestions = utils.fetch_content(url)
         success = status_code in FETCH_GOOD_STATUSES
         if suggestions is not None:
             suggestions = suggestions[1:]
@@ -330,7 +327,7 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
         elif html:
             title, words, hash = utils.tokenize_html(html)
             stop_words, stop_words_hash = utils.read_stop_words()
-            tags = utils.auto_tag(words=words, stop_words=stop_words)
+            tags = utils.auto_tag(words, stop_words)
         return tags
 
     def _serve_error(self, error_code, error_message):

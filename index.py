@@ -42,12 +42,12 @@ class RequestHandler(webapp.RequestHandler):
 
     def _process_url(self, url):
         """Process a URL - compute its MIME type, title, and tags."""
-        mime_type, title, words, html_hash = utils.tokenize_url(url=url)
+        mime_type, title, words, html_hash = utils.tokenize_url(url)
         if not words:
             tags = []
         else:
             stop_words, stop_words_hash = utils.read_stop_words()
-            tags = utils.auto_tag(words=words, stop_words=stop_words)
+            tags = utils.auto_tag(words, stop_words)
         return mime_type, title, tags
 
     def _create_bookmark(self, url):
