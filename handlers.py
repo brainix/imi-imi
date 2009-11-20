@@ -196,7 +196,6 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
     def _get_url(self, url_input_name):
         """Parse and return the URL specified as an input in the request obj."""
         url = self.request.get(url_input_name)
-        url = utils.normalize_url(url)
         return url
 
 
@@ -242,7 +241,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         query = self.request.get('query').replace(' ', '%20').lower()
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
-        status_code, mime_type, suggestions = utils.fetch_content(url)
+        url, status_code, mime_type, suggestions = utils.fetch_content(url)
         success = status_code in FETCH_GOOD_STATUSES
         if suggestions is not None:
             suggestions = suggestions[1:]
@@ -323,7 +322,7 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
         if url and html:
             return self._serve_error(406, 'Neither "url" nor "html" parameter specified.')
         if url:
-            mime_type, title, tags = self._process_url(url)
+            url, mime_type, title, tags = self._process_url(url)
         elif html:
             title, words, hash = utils.tokenize_html(html)
             stop_words, stop_words_hash = utils.read_stop_words()

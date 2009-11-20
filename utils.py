@@ -62,40 +62,111 @@ _log = logging.getLogger(__name__)
 stemmer = PorterStemmer()
 
 
-def normalize_url(url):
+def tokenize_url(url):
+    """Fetch web content and parse it into a title, word list, and hash.
+
+    Example usage:
+        >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
+        >>> url, mime_type, title, words, hash = tokenize_url(url)
+        >>> title
+        u"\\r\\n    Alice's Adventures in Wonderland,\\r\\n    by Lewis Carroll\\r\\n"
+    """
+    _log.debug('tokenizing %s' % url)
+    url, status_code, mime_type, content = fetch_content(url)
+    if content is None:
+        _log.warning("couldn't tokenize %s (couldn't fetch content)" % url)
+        title, words, hash = url, [], None
+    else:
+        title, words, hash = tokenize_html(content)
+        if (title, words, hash) == (None, None, None):
+            title, words, hash = url, [], None
+            _log.warning("couldn't tokenize %s (couldn't soupify HTML)" % url)
+        else:
+            if title is None:
+                title = url
+            _log.debug('tokenized %s' % url)
+    return url, mime_type, title, words, hash
+
+
+def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
+    """Retrieve content from the web.  Make sure the status code is OK.
+
+    That's "make sure the status code is OK" as in "okay," *not* "0K" as in
+    "zero kilobytes."  Just in case there was any confusion.
+    """
+    url, status_code, mime_type, content = _normalize_url(url), None, '', None
+    if not url:
+        _log.warning("couldn't fetch %s (couldn't normalize URL)" % url)
+    else:
+        _log.debug('fetching %s' % url)
+        try:
+            try:
+                response = fetch(url, allow_truncated=True,
+                                 follow_redirects=True)
+            except NameError:
+                response = urllib2.urlopen(url)
+        except _exceptions, e:
+            # Oops.  Either the URL wasn't valid (probably wasn't fully
+            # qualified - didn't begin with http:// or https://), or there was
+            # a problem retrieving the data.
+            _log.warning("couldn't fetch %s (%s)" % (url, type(e)))
+        else:
+            try:
+                url = _normalize_url(response.headers.get('location', url))
+                status_code = response.status_code
+                mime_type = response.headers.get('content-type')
+                content = response.content
+            except AttributeError:
+                url = _normalize_url(response.geturl())
+                status_code = response.code
+                mime_type = response.headers.get('Content-Type')
+                content = response.read()
+            if status_code not in status_codes:
+                # Oops.  We retrieved some data, but the server returned an
+                # unacceptable status code.
+                _log.warning('fetched %s, but status code %s' % (url,
+                                                                 status_code))
+                status_code, mime_type, content = None, '', None
+            _log.debug('fetched %s' % url)
+        if ';' in mime_type:
+            mime_type = mime_type.split(';', 1)[0]
+    return url, status_code, mime_type, content
+
+
+def _normalize_url(url):
     """Normalize a URL.
     
     We normalize URLs in order to determine whether two syntactically different
     URLs are equivalent.
 
     Example usage:
-        >>> normalize_url('google.com')
+        >>> _normalize_url('google.com')
         'http://google.com/'
-        >>> normalize_url('http://google.com')
+        >>> _normalize_url('http://google.com')
         'http://google.com/'
-        >>> normalize_url('google.com/')
+        >>> _normalize_url('google.com/')
         'http://google.com/'
-        >>> normalize_url('http://google.com/')
+        >>> _normalize_url('http://google.com/')
         'http://google.com/'
-        >>> normalize_url('HTTP://google.com/')
+        >>> _normalize_url('HTTP://google.com/')
         'http://google.com/'
-        >>> normalize_url('http://GOOGLE.COM/')
+        >>> _normalize_url('http://GOOGLE.COM/')
         'http://google.com/'
-        >>> normalize_url('HTTP://GOOGLE.COM/')
+        >>> _normalize_url('HTTP://GOOGLE.COM/')
         'http://google.com/'
-        >>> normalize_url('google.com:80')
+        >>> _normalize_url('google.com:80')
         'http://google.com/'
-        >>> normalize_url('google.com:8080')
+        >>> _normalize_url('google.com:8080')
         'http://google.com:8080/'
-        >>> normalize_url('https://google.com:443')
+        >>> _normalize_url('https://google.com:443')
         'https://google.com/'
-        >>> normalize_url('https://google.com:8443')
+        >>> _normalize_url('https://google.com:8443')
         'https://google.com:8443/'
-        >>> normalize_url('google.com/index.html')
+        >>> _normalize_url('google.com/index.html')
         'http://google.com/'
-        >>> normalize_url('google.com/index.html#location')
+        >>> _normalize_url('google.com/index.html#location')
         'http://google.com/'
-        >>> normalize_url('google.com/document.html#location')
+        >>> _normalize_url('google.com/document.html#location')
         'http://google.com/document.html'
     """
 
@@ -114,6 +185,12 @@ def normalize_url(url):
         netloc = netloc[:-3]
     elif scheme == 'https' and netloc.endswith(':443'):
         netloc = netloc[:-4]
+
+    # TODO:  Remove all of the dot segments from the path.  For more
+    # information, see:
+    #
+    #   http://tools.ietf.org/html/rfc3986#section-5.2.4
+
     if path.endswith(FETCH_DOCUMENT_INDEXES):
         path = path.rsplit('/', 1)[0]
     if not path:
@@ -122,70 +199,6 @@ def normalize_url(url):
     url = urlparse.urlunparse((scheme, netloc, path, params, query, fragment,))
 
     return url
-
-
-def tokenize_url(url):
-    """Fetch web content and parse it into a title, word list, and hash.
-
-    Example usage:
-        >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
-        >>> mime_type, title, words, hash = tokenize_url(url)
-        >>> title
-        u"\\r\\n    Alice's Adventures in Wonderland,\\r\\n    by Lewis Carroll\\r\\n"
-    """
-    _log.debug('tokenizing %s' % url)
-    status_code, mime_type, content = fetch_content(url)
-    if content is None:
-        _log.warning("couldn't tokenize %s (couldn't fetch content)" % url)
-        title, words, hash = url, [], None
-    else:
-        title, words, hash = tokenize_html(content)
-        if (title, words, hash) == (None, None, None):
-            title, words, hash = url, [], None
-            _log.warning("couldn't tokenize %s (couldn't soupify HTML)" % url)
-        else:
-            if title is None:
-                title = url
-            _log.debug('tokenized %s' % url)
-    return mime_type, title, words, hash
-
-
-def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
-    """Retrieve content from the web.  Make sure the status code is OK.
-
-    That's "make sure the status code is OK" as in "okay," *not* "0K" as in
-    "zero kilobytes."  Just in case there was any confusion.
-    """
-    _log.debug('fetching %s' % url)
-    try:
-        try:
-            response = fetch(url, allow_truncated=True)
-        except NameError:
-            response = urllib2.urlopen(url)
-    except _exceptions, e:
-        # Oops.  Either the URL wasn't valid (probably wasn't fully qualified -
-        # didn't begin with http:// or https://), or there was a problem
-        # retrieving the data.
-        _log.warning("couldn't fetch %s (%s)" % (url, type(e)))
-        status_code, mime_type, content = None, '', None
-    else:
-        try:
-            status_code = response.status_code
-            mime_type = response.headers.get('content-type')
-            content = response.content
-        except AttributeError:
-            status_code = response.code
-            mime_type = response.headers.get('Content-Type')
-            content = response.read()
-        if status_code not in status_codes:
-            # Oops.  We retrieved some data, but the server returned an
-            # unacceptable status code.
-            _log.warning('fetched %s, but status code %s' % (url, status_code))
-            status_code, mime_type, content = None, '', None
-    if ';' in mime_type:
-        mime_type = mime_type.split(';', 1)[0]
-    _log.debug('fetched %s' % url)
-    return status_code, mime_type, content
 
 
 def tokenize_html(html):

@@ -42,13 +42,13 @@ class RequestHandler(webapp.RequestHandler):
 
     def _process_url(self, url):
         """Process a URL - compute its MIME type, title, and tags."""
-        mime_type, title, words, html_hash = utils.tokenize_url(url)
+        url, mime_type, title, words, html_hash = utils.tokenize_url(url)
         if not words:
             tags = []
         else:
             stop_words, stop_words_hash = utils.read_stop_words()
             tags = utils.auto_tag(words, stop_words)
-        return mime_type, title, tags
+        return url, mime_type, title, tags
 
     def _create_bookmark(self, url):
         """Create a bookmark corresponding to the specified URL."""
@@ -84,8 +84,8 @@ class RequestHandler(webapp.RequestHandler):
             bookmark = models.Bookmark()
         else:
             self._unindex_bookmark(bookmark)
-        bookmark.url = url
-        bookmark.mime_type, bookmark.title, tags = self._process_url(url)
+        bookmark.url, bookmark.mime_type, bookmark.title, tags = \
+            self._process_url(url)
         bookmark.stems, bookmark.words, bookmark.counts = [], [], []
         for tag in tags:
             bookmark.stems.append(tag['stem'])
