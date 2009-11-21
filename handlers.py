@@ -307,11 +307,20 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
     def get(self, method=None):
         """ """
         self.response.headers['Content-Type'] = 'application/json'
+        if method == 'normalize-url':
+            obj = self._normalize_url()
         if method == 'auto-tag':
             obj = self._auto_tag()
         else:
             obj = self._serve_error(404, 'Unrecognized method "%s".' % method)
         self.response.out.write(simplejson.dumps(obj))
+
+    def _normalize_url(self):
+        """ """
+        url = self.request.get('url')
+        if not url:
+            return self._serve_error(406, '"url" parameter not specified.')
+        return utils.normalize_url(url)
 
     def _auto_tag(self):
         """ """

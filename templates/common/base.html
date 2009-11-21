@@ -10,7 +10,7 @@
         {% endif %}
 
         {% comment %}
-          | For performance reasons, it's a good idea to load JavaScript at the
+          | For performance reasons,* it's a good idea to load JavaScript at the
           | bottom of the HTML, just before closing the body tag.  That way, the
           | browser can parse and render the CSS and HTML while downloading the
           | JavaScript.
@@ -21,7 +21,7 @@
           | the head (before we have the chance to embed a YouTube video in the
           | HTML).
           |
-          | For more information on this JavaScript performance hack, see:
+          | * For more information on this JavaScript performance hack, see:
           |     http://developer.yahoo.com/performance/rules.html#js_bottom
         {% endcomment %}
         <script type="text/javascript" src="http://www.google.com/jsapi"></script>

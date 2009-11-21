@@ -36,6 +36,7 @@ import hashlib
 import logging
 import operator
 import re
+import urllib
 import urlparse
 
 try:
@@ -94,7 +95,7 @@ def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
     That's "make sure the status code is OK" as in "okay," *not* "0K" as in
     "zero kilobytes."  Just in case there was any confusion.
     """
-    url, status_code, mime_type, content = _normalize_url(url), None, '', None
+    url, status_code, mime_type, content = normalize_url(url), None, '', None
     if not url:
         _log.warning("couldn't fetch %s (couldn't normalize URL)" % url)
     else:
@@ -112,12 +113,12 @@ def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
             _log.warning("couldn't fetch %s (%s)" % (url, type(e)))
         else:
             try:
-                url = _normalize_url(response.headers.get('location', url))
+                url = normalize_url(response.headers.get('location', url))
                 status_code = response.status_code
                 mime_type = response.headers.get('content-type')
                 content = response.content
             except AttributeError:
-                url = _normalize_url(response.geturl())
+                url = normalize_url(response.geturl())
                 status_code = response.code
                 mime_type = response.headers.get('Content-Type')
                 content = response.read()
@@ -133,41 +134,59 @@ def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
     return url, status_code, mime_type, content
 
 
-def _normalize_url(url):
+def normalize_url(url):
     """Normalize a URL.
     
     We normalize URLs in order to determine whether two syntactically different
     URLs are equivalent.
 
     Example usage:
-        >>> _normalize_url('google.com')
+        >>> normalize_url('google.com')
         'http://google.com/'
-        >>> _normalize_url('http://google.com')
+        >>> normalize_url('http://google.com')
         'http://google.com/'
-        >>> _normalize_url('google.com/')
+        >>> normalize_url('google.com/')
         'http://google.com/'
-        >>> _normalize_url('http://google.com/')
+        >>> normalize_url('http://google.com/')
         'http://google.com/'
-        >>> _normalize_url('HTTP://google.com/')
+        >>> normalize_url('HTTP://google.com/')
         'http://google.com/'
-        >>> _normalize_url('http://GOOGLE.COM/')
+        >>> normalize_url('http://GOOGLE.COM/')
         'http://google.com/'
-        >>> _normalize_url('HTTP://GOOGLE.COM/')
+        >>> normalize_url('HTTP://GOOGLE.COM/')
         'http://google.com/'
-        >>> _normalize_url('google.com:80')
+        >>> normalize_url('google.com:80')
         'http://google.com/'
-        >>> _normalize_url('google.com:8080')
+        >>> normalize_url('google.com:8080')
         'http://google.com:8080/'
-        >>> _normalize_url('https://google.com:443')
+        >>> normalize_url('https://google.com:443')
         'https://google.com/'
-        >>> _normalize_url('https://google.com:8443')
+        >>> normalize_url('https://google.com:8443')
         'https://google.com:8443/'
-        >>> _normalize_url('google.com/index.html')
+        >>> normalize_url('google.com/../a/b/../c/./d.html')
+        'http://google.com/a/c/d.html'
+        >>> normalize_url('google.com/index.html')
         'http://google.com/'
-        >>> _normalize_url('google.com/index.html#location')
+        >>> normalize_url('google.com/search?sex=male&first=raj&middle=&last=shah')
+        'http://google.com/search?first=raj&last=shah&sex=male'
+        >>> normalize_url('google.com/search?sex=male&first=rajiv&middle=bakulesh&last=shah')
+        'http://google.com/search?first=rajiv&last=shah&middle=bakulesh&sex=male'
+        >>> normalize_url('google.com/search?first=rajiv&last=shah&middle=bakulesh&sex=male')
+        'http://google.com/search?first=rajiv&last=shah&middle=bakulesh&sex=male'
+        >>> normalize_url('google.com/index.html#location')
         'http://google.com/'
-        >>> _normalize_url('google.com/document.html#location')
+        >>> normalize_url('google.com/document.html#location')
         'http://google.com/document.html'
+        >>> normalize_url('google.com/a%c2%b1b')
+        'http://google.com/a%C2%B1b'
+        >>> normalize_url('google.com/a%c2%b1%b')
+        'http://google.com/a%C2%B1%b'
+        >>> normalize_url('google.com/a%c2%b1%b.html')
+        'http://google.com/a%C2%B1%b.html'
+        >>> normalize_url('google.com/a%c2%b1%b2.html')
+        'http://google.com/a%C2%B1%B2.html'
+        >>> normalize_url('HTTPS://GOOGLE.COM:8443/../a/%c2/../%b1/./%b.html?sex=male&first=raj&middle=&last=shah')
+        'https://google.com:8443/a/%B1/%b.html?first=raj&last=shah&sex=male'
     """
 
     # Make sure that there's a scheme (http or https).
@@ -179,24 +198,53 @@ def _normalize_url(url):
     else:
         url = url[0] + '://' + url[1]
 
-    scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
-    netloc = netloc.lower()
-    if scheme == 'http' and netloc.endswith(':80'):
-        netloc = netloc[:-3]
-    elif scheme == 'https' and netloc.endswith(':443'):
-        netloc = netloc[:-4]
+    # Parse the URL into a scheme, host, path, parameters, query, and fragment.
+    # This automatically lowercases the scheme.
+    scheme, host, path, params, query, fragment = urlparse.urlparse(url)
 
-    # TODO:  Remove all of the dot segments from the path.  For more
-    # information, see:
-    #
+    # Lowercase the host.
+    host = host.lower()
+
+    # Remove the default port (if specified).
+    if scheme == 'http' and host.endswith(':80'):
+        host = host[:-3]
+    elif scheme == 'https' and host.endswith(':443'):
+        host = host[:-4]
+
+    # Remove all of the dot segments from the path.  For more information, see:
     #   http://tools.ietf.org/html/rfc3986#section-5.2.4
+    input, output = [c for c in path.split('/') if c], []
+    for component in input:
+        if component == '..':
+            output = output[:-1]
+        elif component == '.':
+            pass
+        else:
+            output.append(component)
+    output = [c for c in output if c]
+    path = '/' + '/'.join(output)
 
+    # Remove the default directory index (if specified).
     if path.endswith(FETCH_DOCUMENT_INDEXES):
         path = path.rsplit('/', 1)[0]
+
+    # Add a trailing slash to the URL (if there's no path).
     if not path:
         path = '/'
+
+    # Remove the query variables with no values, and alphabetize the query
+    # variables with values.
+    query = urllib.urlencode(sorted(urlparse.parse_qsl(query)))
+
+    # Remove the fragment (or intra-document location).
     fragment = ''
-    url = urlparse.urlunparse((scheme, netloc, path, params, query, fragment,))
+
+    # Assemble the munged scheme, host, path, parameters, query, and fragment
+    # back into a URL.
+    url = urlparse.urlunparse((scheme, host, path, params, query, fragment,))
+
+    # Capitalize letters in percent-encoded character escape sequences.
+    url = re.sub(r'%[0-9A-Fa-f][0-9A-Fa-f]', lambda m: m.group().upper(), url)
 
     return url
 
@@ -338,4 +386,4 @@ def auto_tag(words, stop_words, min_count=FETCH_MIN_COUNT):
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    doctest.testmod(verbose=True)
