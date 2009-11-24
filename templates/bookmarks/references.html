@@ -1,0 +1,113 @@
+{% for reference in references %}
+    <li class="bookmark" {% if snippet %}style="display: none;"{% endif %}>
+        <h3>
+            <a href="{{ reference.bookmark.url }}"
+               rel="nofollow">{{ reference.bookmark|beautify_title }}</a>
+        </h3>
+
+        <span class="saved_by">
+            Saved by
+            <a href="/users/{{ reference.user.email }}">{{ reference.user.nickname }}</a>
+            {{ reference.updated|beautify_datetime }}
+        </span>
+
+        {% if current_user and target_user %}
+            {% ifequal current_user target_user %}
+                <div class="delete_bookmark">
+                    <form action="/users" method="post">
+                        <div class="form_element">
+                            <input name="key_to_delete" type="hidden"
+                                   value="{{ reference.key.id }}" />
+                            <input class="submit" type="submit"
+                                   value="delete me" />
+                        </div>
+                    </form>
+                </div>
+
+                <div class="update_bookmark">
+                    <form action="/users" method="post">
+                        <div class="form_element">
+                            <input name="key_to_update" type="hidden"
+                                   value="{{ reference.key.id }}" />
+                            <input class="submit" type="submit"
+                                   value="update me" />
+                        </div>
+                    </form>
+                </div>
+            {% endifequal %}
+        {% endif %}
+
+        {% if not reference.bookmark.words and reference.bookmark|is_image %}
+            <a href="{{ reference.bookmark.url }}">
+                <img src="{{ reference.bookmark.url }}"
+                     alt="{{ reference.bookmark|beautify_title }}" />
+            </a>
+        {% endif %}
+
+        {% if reference.bookmark|is_audio %}
+            <embed type="application/x-shockwave-flash"
+                   src="http://www.google.com/reader/ui/3247397568-audio-player.swf?audioUrl={{ reference.bookmark.url }}"
+                   height="27" width="100%" allowscriptaccess="never"
+                   quality="best" bgcolor="#FFFFFF" wmode="window"
+                   flashvars="playerMode=embedded" />
+        {% endif %}
+
+        {% if reference.bookmark|is_youtube_video %}
+            <script type="text/javascript" src="swfobject.js"></script>
+            <div id="{{ reference.bookmark.key.id }}">
+                <p>
+                    You need Flash player 8+ and JavaScript enabled to view this
+                    video.
+                </p>
+            </div>
+            <script type="text/javascript">
+                var params = {allowScriptAccess: "always"};
+                var atts = {id: "myytplayer"};
+                swfobject.embedSWF("{{ reference.bookmark|make_youtube_url }}",
+                                   "{{ reference.bookmark.key.id }}",
+                                   "480", "402", "8", null, null, params, atts);
+            </script>
+        {% endif %}
+
+        {% if reference.bookmark.words and not reference.bookmark|is_audio and not reference.bookmark|is_youtube_video %}
+            <ul class="tag_cloud">
+                {% for word in reference.bookmark.words %}
+                    <li class="tag">
+                        <a href="/search/{{ word }}"
+                           class="{{ reference.bookmark|style_tag:word }}"
+                           rel="nofollow">{{ word }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if current_user and target_user %}
+            {% ifequal current_user target_user %}
+                {% if not reference.bookmark.words and not reference.bookmark|is_image and not reference.bookmark|is_audio %}
+                    <p>
+                        We couldn&rsquo;t auto-tag
+                        <a href="{{ reference.bookmark.url }}">{{ reference.bookmark.url }}</a>.
+                        The server may be down, the URL may be incorrect, or the
+                        URL may not point to text, HTML, an image, an MP3, or a
+                        YouTube video.
+                    </p>
+                {% endif %}
+            {% endifequal %}
+        {% endif %}
+    </li>
+{% endfor %}
+
+{% if more_url %}
+    <li id="more_bookmarks">
+        <div class="more_bookmarks">
+            <form action="{{ more_url }}" method="get">
+                <div class="form_element">
+                    <input id="more_url" name="more_url" type="hidden"
+                           value="{{ more_url }}" />
+                    <input class="submit" type="submit"
+                           value="more bookmarks" />
+                </div>
+            </form>
+        </div>
+    </li>
+{% endif %}

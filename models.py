@@ -22,6 +22,9 @@
 """Google App Engine datastore models."""
 
 
+import functools
+import hashlib
+
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
@@ -42,6 +45,12 @@ class Bookmark(_BaseModel):
     stems = db.ListProperty(str, default=[])
     words = db.ListProperty(str, default=[])
     counts = db.ListProperty(float, default=[])
+    popularity = db.IntegerProperty(default=1)
+
+
+class Reference(_BaseModel):
+    """Model describing a reference to a bookmark."""
+    bookmark = db.ReferenceProperty(Bookmark)
 
 
 class Keychain(_BaseModel):
@@ -51,7 +60,7 @@ class Keychain(_BaseModel):
     keys = db.ListProperty(db.Key, default=[])
 
     @staticmethod
-    def stem_to_key_name(stem):
+    def key_name(stem):
         """Convert a word stem to a keychain key.
 
         We have to resolve a stem to a keychain for every tag whenever we index

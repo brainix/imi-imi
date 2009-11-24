@@ -48,7 +48,7 @@ def _cache_search(method):
         method_name = method.func_name
         query_users = kwds.get('query_users', [])
         query_words = kwds.get('query_words', [])
-        key = self._compute_key(method_name, query_users, query_words)
+        key = self._compute_cache_key(method_name, query_users, query_words)
         user_query = method_name == '_search_bookmarks_generic' and query_users
         blow_away = user_query and not kwds.get('before')
 
@@ -85,7 +85,7 @@ class RequestHandler(webapp.RequestHandler):
 
     @decorators.memcache_results
     def _num_relevant_results(self, query_string):
-        """Return the number of bookmarks that are relevant to a query string.
+        """Return the number of bookmarks that are relevant to the query string.
 
         We can call this method up to 10 times for every letter that anyone
         types into the query search bar (for the live search results), so
@@ -101,24 +101,27 @@ class RequestHandler(webapp.RequestHandler):
                 break
         return len(bookmark_keys)
 
-    def _get_bookmarks(self, query_users=tuple(), before=None, page=0,
-                       per_page=SEARCH_PER_PAGE):
-        """Return a list of bookmarks that match some given criteria."""
-        _log.debug('computing bookmarks for user(s): %s' % str(query_users))
-        bookmarks = models.Bookmark.all()
+    def _get_bookmarks(self, references=False, query_users=tuple(), before=None,
+                       page=0, per_page=SEARCH_PER_PAGE):
+        """Return a list of bookmarks or references that match the criteria."""
+        entity_type = 'references' if references else 'bookmarks'
+        _log.debug('computing %s for user(s): %s' % (entity_type,
+                                                     str(query_users)))
+        entities = (models.Reference if references else models.Bookmark).all()
         if query_users:
-            bookmarks.filter('user IN', query_users)
+            entities.filter('user IN', query_users)
         if len(query_users) != 1 or query_users[0] != users.get_current_user():
-            bookmarks = bookmarks.filter('public =', True)
+            entities = entities.filter('public =', True)
         if before is not None:
-            bookmarks = bookmarks.filter('updated <', before)
-        bookmarks = bookmarks.order('-updated')
-        bookmarks = bookmarks.fetch(per_page+1, offset=page*per_page)
-        more = len(bookmarks) == per_page + 1
+            entities = entities.filter('updated <', before)
+        entities.order('-updated')
+        entities = entities.fetch(per_page+1, offset=page*per_page)
+        more = len(entities) == per_page + 1
         if more:
-            bookmarks = bookmarks[:per_page]
-        _log.debug('computed bookmarks for user(s): %s' % str(query_users))
-        return bookmarks, more
+            entities = entities[:per_page]
+        _log.debug('computed %s for user(s): %s' % (entity_type,
+                                                    str(query_users)))
+        return entities, more
 
     def _search_bookmarks(self, *args, **kwds):
         """Return a list of bookmarks that match some given criteria."""
@@ -150,8 +153,8 @@ class RequestHandler(webapp.RequestHandler):
         If there's some problem with the search criteria, raise a SearchError
         exception.
         """
-        query_key = self._compute_key('_search_bookmarks_generic', query_users,
-                                      query_words)
+        query_key = self._compute_cache_key('_search_bookmarks_generic',
+                                            query_users, query_words)
         _log.debug("computing bookmarks for query '%s'" % query_key)
         if not query_users and not query_words:
             _log.warning("couldn't compute bookmarks - no query")
@@ -191,8 +194,8 @@ class RequestHandler(webapp.RequestHandler):
         This method's results can't be cached, so please keep this method as
         efficient as reasonable.
         """
-        query_key = self._compute_key('_search_bookmarks_specific', query_users,
-                                      query_words)
+        query_key = self._compute_cache_key('_search_bookmarks_specific',
+                                            query_users, query_words)
         _log.debug("computing bookmarks for query '%s'" % query_key)
         bookmarks = self._apply_fig_leaf(bookmarks)
         if before is not None:
@@ -207,14 +210,14 @@ class RequestHandler(webapp.RequestHandler):
         _log.debug("computed bookmarks for query '%s'" % query_key)
         return bookmarks, more
 
-    def _compute_key(self, prefix, query_users, query_words):
+    def _compute_cache_key(self, prefix, query_users, query_words):
         """Compute a string for a computation for use as a cache key."""
-        key = prefix
+        cache_key = prefix
         if query_users:
-            key += ' users: ' + ' '.join([user.email() for user in query_users])
+            cache_key += ' users: ' + ' '.join([u.email() for u in query_users])
         if query_words:
-            key += ' words: ' + ' '.join(query_words)
-        return key
+            cache_key += ' words: ' + ' '.join(query_words)
+        return cache_key
 
     def _query_words_to_stems(self, query_words):
         """ """
@@ -229,7 +232,7 @@ class RequestHandler(webapp.RequestHandler):
         """ """
         bookmark_keys = []
         for stem in query_stems:
-            keychain_key_name = models.Keychain.stem_to_key_name(stem)
+            keychain_key_name = models.Keychain.key_name(stem)
             keychain = models.Keychain.get_by_key_name(keychain_key_name)
             if keychain is not None:
                 bookmark_keys.extend(keychain.keys)

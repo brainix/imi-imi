@@ -64,7 +64,7 @@ stemmer = PorterStemmer()
 
 
 def tokenize_url(url):
-    """Fetch web content and parse it into a title, word list, and hash.
+    """Parse web content into a URL, MIME type, title, word list, and hash.
 
     Example usage:
         >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
@@ -308,7 +308,7 @@ def extract_words_from_string(words):
     """Given a string, return a list of all of its words."""
 
     def remove_html_entities(s):
-        """Remove a string's HTML entitites."""
+        """Remove a string's HTML entities."""
         return re.sub(r'&#?[A-Za-z0-9]+?;', '', s)
 
     def nonbreaking_char(c):

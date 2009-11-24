@@ -109,8 +109,9 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
             self.redirect('/users/' + current_user.email())
         rss_url = self._get_rss_url()
         if page == 'rss':
-            bookmarks, more = self._get_bookmarks(per_page=RSS_NUM_ITEMS)
-            return self._serve_rss(rss_url=rss_url, bookmarks=bookmarks,
+            references, more = self._get_bookmarks(references=True,
+                                                   per_page=RSS_NUM_ITEMS)
+            return self._serve_rss(rss_url=rss_url, references=references,
                                    saved_by='everyone')
         values = {'title': 'social bookmarking', 'rss_url': rss_url,
             'login_url': login_url, 'current_user': current_user,
@@ -126,17 +127,15 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
     def get(self, target_email=None, before=None):
         """Show the specified user's bookmarks."""
         snippet = bool(before)
-        file_name = 'index.html' if not snippet else 'bookmarks.html'
+        file_name = 'index.html' if not snippet else 'references.html'
         path = os.path.join(TEMPLATES, 'bookmarks', file_name)
         login_url, current_user, logout_url = self._get_user()
         rss_url = self._get_rss_url()
         if not target_email:
             return self._serve_error(404)
         target_email = target_email.replace('%40', '@')
-        if current_user is not None and current_user.email() == target_email:
-            active_tab = 'imi-imi'
-        else:
-            active_tab = ''
+        active_tab = current_user and current_user.email() == target_email
+        active_tab = 'imi-imi' if active_tab else ''
         target_user = users.User(target_email)
         title = 'bookmarks saved by %s' % target_user.nickname()
         if before == 'rss':
@@ -149,17 +148,18 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
             if before is not None:
                 return self._serve_error(404)
             before = None
-        bookmarks, more = self._get_bookmarks(query_users=[target_user],
-                                              before=before)
+        references, more = self._get_bookmarks(references=True,
+                                               query_users=[target_user],
+                                               before=before)
         if more:
-            earliest_so_far = bookmarks[-1].updated.strftime(DATETIME_FORMAT)
+            earliest_so_far = references[-1].updated.strftime(DATETIME_FORMAT)
             more_url = '/users/' + target_email + '/' + earliest_so_far
         else:
             more_url = None
         values = {'snippet': snippet, 'title': title, 'rss_url': rss_url,
             'login_url': login_url, 'current_user': current_user,
             'logout_url': logout_url, 'active_tab': active_tab,
-            'target_user': target_user, 'bookmarks': bookmarks,
+            'target_user': target_user, 'references': references,
             'more_url': more_url, 'debug': DEBUG,}
         self.response.out.write(template.render(path, values, debug=DEBUG))
 
@@ -169,34 +169,29 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
     def post(self):
         """Create, update, or delete a bookmark."""
         current_user = target_user = users.get_current_user()
-        url_to_create = self._get_url('url_to_create')
-        key_to_update = self.request.get('key_to_update')
-        if key_to_update:
-            key_to_update = int(cgi.escape(key_to_update))
-        key_to_delete = self.request.get('key_to_delete')
-        if key_to_delete:
-            key_to_delete = int(cgi.escape(key_to_delete))
+        url_to_create = self.request.get('url_to_create')
+        reference_key_to_update = self.request.get('key_to_update')
+        if reference_key_to_update:
+            reference_key_to_update = int(cgi.escape(reference_key_to_update))
+        reference_key_to_delete = self.request.get('key_to_delete')
+        if reference_key_to_delete:
+            reference_key_to_delete = int(cgi.escape(reference_key_to_delete))
 
-        if url_to_create or key_to_update:
-            path = os.path.join(TEMPLATES, 'bookmarks', 'bookmarks.html')
+        if url_to_create or reference_key_to_update:
+            path = os.path.join(TEMPLATES, 'bookmarks', 'references.html')
             if url_to_create:
-                bookmark = self._create_bookmark(url_to_create)
-            elif key_to_update:
-                bookmark = self._update_bookmark(key_to_update)
-            bookmarks = [bookmark] if bookmark is not None else []
+                reference = self._create_bookmark(url_to_create, True)
+            elif reference_key_to_update:
+                reference = self._update_bookmark(reference_key_to_update, True)
+            references = [reference] if reference is not None else []
             values = {'snippet': True, 'current_user': current_user,
-                'target_user': target_user, 'bookmarks': bookmarks,}
+                'target_user': target_user, 'references': references,}
             self.response.out.write(template.render(path, values, debug=DEBUG))
-        elif key_to_delete:
-            self._delete_bookmark(key_to_delete)
+        elif reference_key_to_delete:
+            self._delete_bookmark(reference_key_to_delete)
         else:
-            _log.error('/users got POST request but no bookmark to create, ' +
+            _log.error('/users got POST request but no bookmark to create, '
                        'update, or delete')
-
-    def _get_url(self, url_input_name):
-        """Parse and return the URL specified as an input in the request obj."""
-        url = self.request.get(url_input_name)
-        return url
 
 
 def _cache_live_search(method):
@@ -204,25 +199,29 @@ def _cache_live_search(method):
     @functools.wraps(method)
     def wrap(self, *args, **kwds):
         query = self.request.get('query').replace(' ', '%20').lower()
-        key = '_live_search query: ' + query
-        _log.debug("trying to retrieve cached suggestions for query '%s'" % key)
-        html = memcache.get(key)
+        cache_key = '_live_search query: ' + query
+        _log.debug("trying to retrieve cached suggestions for query '%s'" %
+                   cache_key)
+        html = memcache.get(cache_key)
         if html is not None:
-            _log.debug("retrieved cached suggestions for query '%s'" % key)
+            _log.debug("retrieved cached suggestions for query '%s'" %
+                       cache_key)
         else:
             _log.debug("couldn't retrieve cached suggestions for query '%s'" %
-                       key)
-            _log.debug("caching suggestions for query '%s'" % key)
+                       cache_key)
+            _log.debug("caching suggestions for query '%s'" % cache_key)
             success, html = method(self, *args, **kwds)
             if success:
                 try:
-                    success = memcache.set(key, html, time=SEARCH_CACHE_SECS)
+                    success = memcache.set(cache_key, html,
+                                           time=SEARCH_CACHE_SECS)
                 except MemoryError:
                     success = False
             if success:
-                _log.debug("cached suggestions for query '%s'" % key)
+                _log.debug("cached suggestions for query '%s'" % cache_key)
             else:
-                _log.error("couldn't cache suggestions for query '%s'" % key)
+                _log.error("couldn't cache suggestions for query '%s'" %
+                           cache_key)
         self.response.out.write(html)
     return wrap
 

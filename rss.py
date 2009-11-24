@@ -96,18 +96,19 @@ class RequestHandler(webapp.RequestHandler):
         return rss_url
 
     @_cache_rss
-    def _serve_rss(self, rss_url=None, saved_by='everyone', bookmarks=tuple(),
+    def _serve_rss(self, rss_url=None, saved_by='everyone', references=tuple(),
                    query_users=tuple(), num_rss_items=RSS_NUM_ITEMS,
                    num_rss_tags=RSS_NUM_TAGS):
         """Return the XML for an RSS feed for the specified users' bookmarks."""
         title = 'imi-imi - bookmarks saved by %s' % saved_by
         link = self.request.uri.rsplit('/rss', 1)[0]
-        if not bookmarks:
-            bookmarks, more = self._get_bookmarks(query_users=query_users,
-                                                  per_page=num_rss_items)
+        if not references:
+            references, more = self._get_bookmarks(references=True,
+                                                   query_users=query_users,
+                                                   per_page=num_rss_items)
         items = []
-        for bookmark in bookmarks:
-            tags = []
+        for reference in references:
+            bookmark, tags = reference.bookmark, []
             for word, count in zip(bookmark.words, bookmark.counts):
                 tags.append({'word': word, 'count': count,})
             tags = sorted(tags, key=operator.itemgetter('count'), reverse=True)
@@ -115,9 +116,9 @@ class RequestHandler(webapp.RequestHandler):
             description = ' '.join([tag['word'] for tag in tags])
             item = PyRSS2Gen.RSSItem(title=bookmark.title,
                                      link=bookmark.url,
-                                     author=bookmark.user.nickname(),
+                                     author=reference.user.nickname(),
                                      description=description,
-                                     pubDate=bookmark.updated)
+                                     pubDate=reference.updated)
             items.append(item)
         rss = PyRSS2Gen.RSS2(title=title, link=link, description=title,
                              lastBuildDate=datetime.datetime.now(), items=items)
