@@ -165,30 +165,27 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
 
     @decorators.no_browser_cache
     @decorators.require_login
-    @decorators.run_in_transaction
     def post(self):
         """Create, update, or delete a bookmark."""
         current_user = target_user = users.get_current_user()
         url_to_create = self.request.get('url_to_create')
-        reference_key_to_update = self.request.get('key_to_update')
-        if reference_key_to_update:
-            reference_key_to_update = int(cgi.escape(reference_key_to_update))
-        reference_key_to_delete = self.request.get('key_to_delete')
-        if reference_key_to_delete:
-            reference_key_to_delete = int(cgi.escape(reference_key_to_delete))
+        bookmark_key = self.request.get('bookmark_key')
+        reference_key_to_update = self.request.get('reference_key_to_update')
+        reference_key_to_delete = self.request.get('reference_key_to_delete')
 
-        if url_to_create or reference_key_to_update:
+        if url_to_create or bookmark_key and reference_key_to_update:
             path = os.path.join(TEMPLATES, 'bookmarks', 'references.html')
             if url_to_create:
                 reference = self._create_bookmark(url_to_create, True)
-            elif reference_key_to_update:
-                reference = self._update_bookmark(reference_key_to_update, True)
+            else:
+                reference = self._update_bookmark(bookmark_key,
+                                                  reference_key_to_update, True)
             references = [reference] if reference is not None else []
             values = {'snippet': True, 'current_user': current_user,
                 'target_user': target_user, 'references': references,}
             self.response.out.write(template.render(path, values, debug=DEBUG))
-        elif reference_key_to_delete:
-            self._delete_bookmark(reference_key_to_delete)
+        elif bookmark_key and reference_key_to_delete:
+            self._delete_bookmark(bookmark_key, reference_key_to_delete)
         else:
             _log.error('/users got POST request but no bookmark to create, '
                        'update, or delete')

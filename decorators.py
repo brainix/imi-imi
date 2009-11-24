@@ -132,8 +132,10 @@ def run_in_transaction(method):
         except (db.BadRequestError, db.TransactionFailedError,):
             # Oops.  We couldn't execute the method transactionally.  Just run
             # it non-transactionally.
-            _log.warning('could not transactionally execute %s' % method_name)
+            _log.warning("couldn't transactionally execute %s" % method_name)
+            _log.debug('non-transactionally executing %s' % method_name)
             return_value = method(*args, **kwds)
+            _log.debug('non-transactionally executed %s' % method_name)
         else:
             _log.debug('transactionally executed %s' % method_name)
         return return_value

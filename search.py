@@ -279,7 +279,8 @@ class RequestHandler(webapp.RequestHandler):
     def _apply_fig_leaf(self, bookmarks):
         """Return only the public or current user's bookmarks."""
         current_user = users.get_current_user()
-        bookmarks = [b for b in bookmarks if b.public or b.user == current_user]
+        bookmarks = [b for b in bookmarks
+                     if b is not None and (b.public or b.user == current_user)]
         return bookmarks
 
     def _filter_before(self, bookmarks, before):

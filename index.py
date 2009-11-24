@@ -52,86 +52,89 @@ class RequestHandler(webapp.RequestHandler):
 
     def _create_bookmark(self, url, public):
         """Create a bookmark corresponding to the specified URL."""
-        return self._save_bookmark(url, public)
-
-    def _update_bookmark(self, reference_id, public):
-        """Update the bookmark corresponding to the specified reference key."""
-        reference = models.Reference.get_by_id(reference_id)
-        if reference:
-            url = reference.bookmark.url
-            return self._save_bookmark(url, public, reference=reference)
-
-    def _save_bookmark(self, url, public, reference=None):
-        """Save a bookmark and reference corresponding to the specified URL."""
-        current_user = users.get_current_user()
-        _log.info('%s saving reference %s' % (current_user.email(), url))
+        email = users.get_current_user().email()
         url, mime_type, title, tags = self._process_url(url)
-        bookmark = models.Bookmark.all().filter('url =', url).get()
-        creating_bookmark = bookmark is None
-        if reference is None:
-            reference = models.Reference.all().filter('user =', current_user)
-            reference = reference.filter('bookmark =', bookmark).get()
-            if reference is not None:
-                return
-        verb = 'creating' if creating_bookmark else 'updating'
-        _log.debug('%s %s bookmark %s' % (current_user.email(), verb, url))
-        if creating_bookmark:
-            bookmark = models.Bookmark()
+        reference_key = models.Reference.key_name(email, url)
+        _log.info('creating %s' % reference_key)
+        reference = models.Reference.get_by_key_name(reference_key)
+        if reference is not None:
+            _log.info("couldn't create %s (already exists)" % reference_key)
         else:
+            bookmark_key = models.Bookmark.key_name(url)
+            bookmark = models.Bookmark.get_or_insert(bookmark_key)
+            reference = models.Reference(parent=bookmark,
+                                         key_name=reference_key)
+            reference.bookmark = bookmark
             self._unindex_bookmark(bookmark)
-        if not bookmark.public and public:
+            reference = self._save_bookmark(url, mime_type, title, tags, public,
+                                            reference)
+            self._index_bookmark(bookmark)
+            _log.info('created %s' % reference_key)
+        return reference
+
+    def _update_bookmark(self, bookmark_key, reference_key, public):
+        """Update the bookmark corresponding to the specified reference key."""
+        _log.info('updating %s' % reference_key)
+        bookmark = models.Bookmark.get_by_key_name(bookmark_key)
+        reference = models.Reference.get_by_key_name(reference_key,
+                                                     parent=bookmark)
+        if reference is None:
+            _log.info("couldn't update %s (doesn't exist)" % reference_key)
+        else:
+            url = reference.bookmark.url
+            url, mime_type, title, tags = self._process_url(url)
+            self._unindex_bookmark(reference.bookmark)
+            reference = self._save_bookmark(url, mime_type, title, tags, public,
+                                            reference)
+            self._index_bookmark(reference.bookmark)
+            _log.info('updated %s' % reference_key)
+        return reference
+
+    def _delete_bookmark(self, bookmark_key, reference_key):
+        """Delete the bookmark corresponding to the specified reference key."""
+        _log.info('deleting %s' % reference_key)
+        bookmark = models.Bookmark.get_by_key_name(bookmark_key)
+        reference = models.Reference.get_by_key_name(reference_key,
+                                                     parent=bookmark)
+        if reference is None:
+            _log.info("couldn't delete %s (doesn't exist)" % reference_key)
+        else:
+            unindex = self._unsave_bookmark(reference)
+            if unindex:
+                self._unindex_bookmark(reference.bookmark)
+            _log.info('deleted %s' % reference_key)
+
+    @decorators.run_in_transaction
+    def _save_bookmark(self, url, mime_type, title, tags, public, reference):
+        """Save a bookmark and reference corresponding to the specified URL."""
+        current_user, bookmark = users.get_current_user(), reference.bookmark
+        if not bookmark.is_saved():
+            bookmark.public = public
+        elif not bookmark.public and public:
             bookmark.user = current_user
-            bookmark.created = bookmark.updated = datetime.datetime.now()
-            bookmark.public = True
+            bookmark.created, bookmark.public = datetime.datetime.now(), True
         bookmark.url, bookmark.mime_type, bookmark.title = url, mime_type, title
         bookmark.stems, bookmark.words, bookmark.counts = [], [], []
         for tag in tags:
             bookmark.stems.append(tag['stem'])
             bookmark.words.append(tag['word'])
             bookmark.counts.append(tag['count'])
-        if not creating_bookmark:
-            bookmark.popularity += 1
+        bookmark.popularity += 1
         bookmark.put()
-        verb = 'created' if creating_bookmark else 'updated'
-        _log.debug('%s %s bookmark %s' % (current_user.email(), verb, url))
-        if reference is None:
-            reference = models.Reference()
         reference.public, reference.bookmark = public, bookmark
         reference.put()
-        self._index_bookmark(bookmark)
-        _log.info('%s saved reference %s' % (current_user.email(), url))
         return reference
 
-    def _delete_bookmark(self, reference_id):
+    @decorators.run_in_transaction
+    @decorators.batch_put_and_delete
+    def _unsave_bookmark(self, reference):
         """Delete the bookmark corresponding to the specified URL."""
-        email = users.get_current_user().email()
-        _log.info('%s deleting reference %s' % (email, reference_id))
-        reference = models.Reference.get_by_id(reference_id)
-        if reference is None:
-            _log.warning("%s couldn't delete reference %s (doesn't exist)" %
-                         (email, reference_id))
-        else:
-            bookmark = reference.bookmark
-            db.delete(reference)
-            if bookmark is None:
-                _log.critical("%s couldn't resolve reference %s to bookmark" %
-                              (email, reference_id))
-            else:
-                url = bookmark.url
-                _log.debug('%s resolved reference %s to bookmark %s' %
-                           (email, reference_id, url))
-                bookmark.popularity -= 1
-                if bookmark.popularity:
-                    bookmark.put()
-                    msg = '%s not deleting bookmark %s (still other references)'
-                    msg = msg % (email, url)
-                    _log.debug(msg)
-                else:
-                    self._unindex_bookmark(bookmark)
-                    db.delete(bookmark)
-                    _log.debug('%s deleted bookmark %s (no other references)' %
-                               (email, url))
-                _log.info('%s deleted reference %s' % (email, reference_id))
+        bookmark, to_put, to_delete = reference.bookmark, [], []
+        to_delete.append(reference)
+        if bookmark is not None:
+            bookmark.popularity -= 1
+            (to_put if bookmark.popularity else to_delete).append(bookmark)
+        return to_put, to_delete, not bookmark.popularity
 
     @decorators.batch_put_and_delete
     def _index_bookmark(self, bookmark):

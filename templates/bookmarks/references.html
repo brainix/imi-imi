@@ -16,8 +16,10 @@
                 <div class="delete_bookmark">
                     <form action="/users" method="post">
                         <div class="form_element">
-                            <input name="key_to_delete" type="hidden"
-                                   value="{{ reference.key.id }}" />
+                            <input name="bookmark_key" type="hidden"
+                                   value="{{ reference.parent_key.name }}" />
+                            <input name="reference_key_to_delete" type="hidden"
+                                   value="{{ reference.key.name }}" />
                             <input class="submit" type="submit"
                                    value="delete me" />
                         </div>
@@ -27,8 +29,10 @@
                 <div class="update_bookmark">
                     <form action="/users" method="post">
                         <div class="form_element">
-                            <input name="key_to_update" type="hidden"
-                                   value="{{ reference.key.id }}" />
+                            <input name="bookmark_key" type="hidden"
+                                   value="{{ reference.parent_key.name }}" />
+                            <input name="reference_key_to_update" type="hidden"
+                                   value="{{ reference.key.name }}" />
                             <input class="submit" type="submit"
                                    value="update me" />
                         </div>
@@ -54,7 +58,7 @@
 
         {% if reference.bookmark|is_youtube_video %}
             <script type="text/javascript" src="swfobject.js"></script>
-            <div id="{{ reference.bookmark.key.id }}">
+            <div id="{{ reference.bookmark.key.name }}">
                 <p>
                     You need Flash player 8+ and JavaScript enabled to view this
                     video.
@@ -64,7 +68,7 @@
                 var params = {allowScriptAccess: "always"};
                 var atts = {id: "myytplayer"};
                 swfobject.embedSWF("{{ reference.bookmark|make_youtube_url }}",
-                                   "{{ reference.bookmark.key.id }}",
+                                   "{{ reference.bookmark.key.name }}",
                                    "480", "402", "8", null, null, params, atts);
             </script>
         {% endif %}

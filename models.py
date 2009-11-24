@@ -45,12 +45,22 @@ class Bookmark(_BaseModel):
     stems = db.ListProperty(str, default=[])
     words = db.ListProperty(str, default=[])
     counts = db.ListProperty(float, default=[])
-    popularity = db.IntegerProperty(default=1)
+    popularity = db.IntegerProperty(default=0)
+
+    @staticmethod
+    def key_name(url):
+        """ """
+        return 'bookmark_' + url
 
 
 class Reference(_BaseModel):
     """Model describing a reference to a bookmark."""
     bookmark = db.ReferenceProperty(Bookmark)
+
+    @staticmethod
+    def key_name(email, url):
+        """ """
+        return 'reference_' + email + '_' + url
 
 
 class Keychain(_BaseModel):

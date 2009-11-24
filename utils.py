@@ -189,6 +189,8 @@ def normalize_url(url):
         'https://google.com:8443/a/%B1/%b.html?first=raj&last=shah&sex=male'
     """
 
+    _log.debug('normalizing %s' % url)
+
     # Make sure that there's a scheme (http or https).
     url = url.split('://', 1)
     if not url or len(url) == 2 and not url[0].lower() in ('http', 'https',):
@@ -246,6 +248,7 @@ def normalize_url(url):
     # Capitalize letters in percent-encoded character escape sequences.
     url = re.sub(r'%[0-9A-Fa-f][0-9A-Fa-f]', lambda m: m.group().upper(), url)
 
+    _log.debug('normalized to %s' % url)
     return url
 
 

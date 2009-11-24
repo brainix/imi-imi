@@ -84,11 +84,17 @@ function create_bookmark() {
 function update_bookmark() {
     // Modify the behavior of the update bookmark buttons.
 
-    var bookmark = $(this).closest("li")
+    var bookmark = $(this).closest("li");
+    var bookmark_key = $(this).find("input[name='bookmark_key']").val();
+    var reference_key = $(this).find("input[name='reference_key_to_update']").val();
+
     $.ajax({
         type: "POST",
         url: "/users",
-        data: "key_to_update=" + $(this).find("input").val(),
+        data: {
+            "bookmark_key": bookmark_key,
+            "reference_key_to_update": reference_key,
+        },
         success: function(data, text_status) {
             bookmark.slideUp("slow", function() {
                 bookmark.remove();
@@ -112,11 +118,17 @@ function update_bookmark() {
 function delete_bookmark() {
     // Modify the behavior of the delete bookmark buttons.
 
-    var bookmark = $(this).closest("li")
+    var bookmark = $(this).closest("li");
+    var bookmark_key = $(this).find("input[name='bookmark_key']").val();
+    var reference_key = $(this).find("input[name='reference_key_to_delete']").val();
+
     $.ajax({
         type: "POST",
         url: "/users",
-        data: "key_to_delete=" + $(this).find("input").val(),
+        data: {
+            "bookmark_key": bookmark_key,
+            "reference_key_to_delete": reference_key,
+        },
         complete: function(xml_http_request, text_status) {
             bookmark.slideUp("slow", function() {
                 bookmark.remove();
