@@ -37,7 +37,6 @@ $(function() {
     $("#query").blur(blur_search);
     $("#query").keyup(fetch_live_results);
     $("#query").keydown(scroll_live_results);
-    $("#search").submit(search);
 
     $("#url_to_create").click(click_bookmark);
     $("#url_to_create").blur(blur_bookmark);

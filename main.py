@@ -59,12 +59,9 @@ def main():
     # "/", we serve up the homepage.  However, if the URL is anything other than
     # "/", we serve up the 404 page.
     url_mapping = (
-        ('/api/(.*)',           handlers.API),        # /api/method
         ('/api',                handlers.API),        # /api
-        ('/search/(.*)/(.*)',   handlers.Search),     # /search/query/page_num
-        ('/search/(.*)',        handlers.Search),     # /search/query
         ('/search',             handlers.Search),     # /search
-        ('/live_search',        handlers.LiveSearch), # /search
+        ('/live_search',        handlers.LiveSearch), # /live_search
         ('/users/(.*)/(.*)',    handlers.Users),      # /users/email@addr.com/page_num
         ('/users/(.*)',         handlers.Users),      # /users/email@addr.com
         ('/users',              handlers.Users),      # /users

@@ -17,7 +17,7 @@
         </li>
 
         <li class="search">
-            <form id="search" action="/search" method="get">
+            <form id="search" action="/search" method="get" autocomplete="off">
                 <div class="form_element">
                     <input id="query" name="query" type="text"
                            value="{% if target_words_string %}{{ target_words_string }}{% else %}search bookmarks{% endif %}"

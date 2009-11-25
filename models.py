@@ -50,7 +50,7 @@ class Bookmark(_BaseModel):
 
     @staticmethod
     def key_name(url):
-        """ """
+        """Convert a URL to a bookmark key."""
         return 'bookmark_' + url
 
 
@@ -60,7 +60,7 @@ class Reference(_BaseModel):
 
     @staticmethod
     def key_name(email, url):
-        """ """
+        """Convert an email address and a URL to a reference key."""
         return 'reference_' + email + '_' + url
 
 

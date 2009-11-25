@@ -22,12 +22,13 @@
 """Request handlers."""
 
 
-import cgi
 import datetime
 import functools
 import logging
 import os
 import traceback
+import urllib
+import urlparse
 
 from google.appengine.api import memcache
 from google.appengine.api import users
@@ -136,7 +137,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         target_email = target_email.replace('%40', '@')
         active_tab = current_user and current_user.email() == target_email
         active_tab = 'imi-imi' if active_tab else ''
-        target_user = users.User(target_email)
+        target_user = users.User(email=target_email)
         title = 'bookmarks saved by %s' % target_user.nickname()
         if before == 'rss':
             saved_by = target_user.nickname()
@@ -259,17 +260,17 @@ class Search(search.RequestHandler, _RequestHandler):
     """Request handler to serve /search pages."""
 
     @decorators.no_browser_cache
-    def get(self, query_url_component='', page='0'):
+    def get(self):
         """Given a search query, show related bookmarks, sorted by relevance."""
-        snippet = page != '0'
+        try:
+            query_user, query_users, query_words, page = self._parse_query()
+        except ValueError:
+            return self._serve_error(404)
+        snippet = page != 0
         file_name = 'index.html' if not snippet else 'bookmarks.html'
         path = os.path.join(TEMPLATES, 'bookmarks', file_name)
         login_url, current_user, logout_url = self._get_user()
-        query_words = utils.extract_words_from_string(query_url_component)
-        try:
-            page = int(page)
-        except ValueError:
-            return self._serve_error(404)
+
         if not query_words:
             # This is an Easter egg, but an intentional and a useful one.  If we
             # got a blank search query, show all of the bookmarks sorted reverse
@@ -277,18 +278,49 @@ class Search(search.RequestHandler, _RequestHandler):
             title = 'all bookmarks'
             bookmarks, more = self._get_bookmarks(page=page)
         else:
-            title = 'bookmarks related to %s' % ' '.join(query_words)
-            bookmarks, more = self._search_bookmarks(query_words=query_words,
+            title = 'bookmarks'
+            if query_user:
+                title += ' saved by' + query_user.nickname()
+            if query_words:
+                title += ' related to' + ' '.join(query_words)
+            bookmarks, more = self._search_bookmarks(query_users=query_users,
+                                                     query_words=query_words,
                                                      page=page)
-        if more:
-            more_url = '/search/' + query_url_component + '/' + str(page + 1)
-        else:
-            more_url = None
+        more_url = self._compute_more_url() if more else None
+
         values = {'snippet': snippet, 'title': title, 'login_url': login_url,
             'current_user': current_user, 'logout_url': logout_url,
             'target_words': query_words, 'bookmarks': bookmarks,
             'more_url': more_url, 'debug': DEBUG,}
         self.response.out.write(template.render(path, values, debug=DEBUG))
+
+    def _parse_query(self):
+        """ """
+        query_user = self.request.get('user')
+        query_user = users.User(email=query_user) if query_user else query_user
+        query_users = [query_user] if query_user else []
+        query_words = self.request.get('query')
+        query_words = query_words.replace('+', ' ')
+        query_words = query_words.replace('%20', ' ')
+        query_words = utils.extract_words_from_string(query_words)
+        page = self.request.get('page', default_value='0')
+        page = int(page)
+        return query_user, query_users, query_words, page
+
+    def _compute_more_url(self):
+        """ """
+        path, query = self.request.path, self.request.query
+        query, index = urlparse.parse_qsl(query), 0
+        for index in range(len(query)):
+            if query[index][0] == 'page':
+                break
+        page = int(query[index][1]) if index < len(query) else 0
+        if index < len(query):
+            query.remove(index)
+        query.insert(index, ('page', str(page + 1)))
+        query = urllib.urlencode(query)
+        more_url = path + '?' + query
+        return more_url
 
 
 class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
@@ -300,8 +332,9 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
     """
 
     @decorators.no_browser_cache
-    def get(self, method=None):
+    def get(self):
         """ """
+        method = self.request.get('method')
         self.response.headers['Content-Type'] = 'application/json'
         if method == 'normalize-url':
             obj = self._normalize_url()

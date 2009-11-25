@@ -243,35 +243,3 @@ function scroll_live_results(event) {
         }
     }
 }
-
-
-/*----------------------------------------------------------------------------*\
- |                                  search()                                  |
-\*----------------------------------------------------------------------------*/
-
-function search() {
-    // Modify the behavior of the search bar - compute and point the browser to
-    // the URL corresponding to the entered search query.
-
-    function spaces_to_underscores(s1) {
-        // Recursively convert a string's spaces into underscores.
-        s2 = s1.replace(" ", "_");
-        return s2 == s1 ? s2 : spaces_to_underscores(s2);
-    }
-
-    // Compute the URL corresponding to the entered search query.
-    //     - Get the entered search query,
-    //     - strip out all non-alpha-numeric and non-space characters,
-    //     - replace all spaces with underscores, and
-    //     - lower case all alphabetic characters.
-    var query = $("#query").val();
-    query = query.replace("-", " ");
-    query = query.replace(/[^ A-Za-z0-9]+/g, "");
-    query = spaces_to_underscores(query);
-    query = query.toLowerCase();
-
-    // Point the browser to the computed URL and cancel out the default behvaior
-    // of the search form.
-    window.location = "/search/" + query;
-    return false;
-}
