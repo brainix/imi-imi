@@ -1,0 +1,14 @@
+{% if more_url %}
+    <li id="more_bookmarks">
+        <div class="more_bookmarks">
+            <form action="{{ more_url }}" method="get">
+                <div class="form_element">
+                    <input id="more_url" name="more_url" type="hidden"
+                           value="{{ more_url }}" />
+                    <input class="submit" type="submit"
+                           value="more bookmarks" />
+                </div>
+            </form>
+        </div>
+    </li>
+{% endif %}
