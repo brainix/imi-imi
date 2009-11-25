@@ -40,95 +40,127 @@ _log = logging.getLogger(__name__)
 class RequestHandler(webapp.RequestHandler):
     """Base request handler, from which other request handlers inherit."""
 
-    def _process_url(self, url):
-        """Normalize a URL, and compute its MIME type, title, and tags."""
-        url, mime_type, title, words, html_hash = utils.tokenize_url(url)
-        if not words:
-            tags = []
-        else:
-            stop_words, stop_words_hash = utils.read_stop_words()
-            tags = utils.auto_tag(words, stop_words)
-        return url, mime_type, title, tags
-
     def _create_bookmark(self, url, public):
-        """Create a bookmark corresponding to the specified URL."""
+        """Create a reference for the current user and the specified URL."""
         email = users.get_current_user().email()
-        url, mime_type, title, tags = self._process_url(url)
+        url, mime_type, title, words, html_hash = utils.tokenize_url(url)
+        _log.info('%s creating reference %s' % (email, url))
         reference_key = models.Reference.key_name(email, url)
-        _log.info('creating %s' % reference_key)
         reference = models.Reference.get_by_key_name(reference_key)
         if reference is not None:
-            _log.info("couldn't create %s (already exists)" % reference_key)
+            _log.warning("%s couldn't create reference %s (already exists)" %
+                         (email, url))
         else:
             bookmark_key = models.Bookmark.key_name(url)
             bookmark = models.Bookmark.get_or_insert(bookmark_key)
             reference = models.Reference(parent=bookmark,
                                          key_name=reference_key)
             reference.bookmark = bookmark
-            self._unindex_bookmark(bookmark)
-            reference = self._save_bookmark(url, mime_type, title, tags, public,
-                                            reference)
-            self._index_bookmark(bookmark)
-            _log.info('created %s' % reference_key)
+            reference = self._common(url, mime_type, title, words, html_hash,
+                                     public, bookmark, reference)
+            _log.info('%s created reference %s' % (email, url))
         return reference
 
     def _update_bookmark(self, bookmark_key, reference_key, public):
-        """Update the bookmark corresponding to the specified reference key."""
-        _log.info('updating %s' % reference_key)
+        """Update the reference corresponding to the specified reference key."""
+        email = users.get_current_user().email()
         bookmark = models.Bookmark.get_by_key_name(bookmark_key)
+        url = bookmark.url
+        _log.info('%s updating reference %s' % (email, url))
         reference = models.Reference.get_by_key_name(reference_key,
                                                      parent=bookmark)
         if reference is None:
-            _log.info("couldn't update %s (doesn't exist)" % reference_key)
+            _log.warning("%s couldn't update reference %s (doesn't exist)" %
+                         (email, url))
         else:
             url = reference.bookmark.url
-            url, mime_type, title, tags = self._process_url(url)
-            self._unindex_bookmark(reference.bookmark)
-            reference = self._save_bookmark(url, mime_type, title, tags, public,
-                                            reference)
-            self._index_bookmark(reference.bookmark)
-            _log.info('updated %s' % reference_key)
+            url, mime_type, title, words, html_hash = utils.tokenize_url(url)
+            reference = self._common(url, mime_type, title, words, html_hash,
+                                     public, bookmark, reference)
+            _log.info('%s updated reference %s' % (email, url))
+        return reference
+
+    def _common(self, url, mime_type, title, words, html_hash, public, bookmark,
+                reference):
+        """Perform the operations common to creating / updating references."""
+        reindex = bookmark.html_hash != html_hash
+        if reindex:
+            _log.debug('re-tagging and re-indexing bookmark %s '
+                       '(HTML has changed since last)' % url)
+            self._unindex_bookmark(bookmark)
+            stop_words, stop_words_hash = utils.read_stop_words()
+            tags = utils.auto_tag(words, stop_words)
+        else:
+            _log.debug("not re-tagging and re-indexing bookmark %s "
+                       "(HTML hasn't changed since last)" % url)
+            tags = []
+        reference = self._save_bookmark(url, mime_type, title, tags,
+                                        html_hash, public, reference)
+        if reindex:
+            self._index_bookmark(bookmark)
+            _log.debug('re-tagged and re-indexed bookmark %s' % url)
         return reference
 
     def _delete_bookmark(self, bookmark_key, reference_key):
-        """Delete the bookmark corresponding to the specified reference key."""
-        _log.info('deleting %s' % reference_key)
+        """Delete the reference corresponding to the specified reference key."""
+        email = users.get_current_user().email()
         bookmark = models.Bookmark.get_by_key_name(bookmark_key)
+        url = bookmark.url
+        _log.info('%s deleting reference %s' % (email, url))
         reference = models.Reference.get_by_key_name(reference_key,
                                                      parent=bookmark)
         if reference is None:
-            _log.info("couldn't delete %s (doesn't exist)" % reference_key)
+            _log.warning("%s couldn't delete reference %s (doesn't exist)" %
+                         (email, url))
         else:
             unindex = self._unsave_bookmark(reference)
             if unindex:
                 self._unindex_bookmark(reference.bookmark)
-            _log.info('deleted %s' % reference_key)
+            _log.info('%s deleted reference %s' % (email, url))
 
-    @decorators.run_in_transaction
-    def _save_bookmark(self, url, mime_type, title, tags, public, reference):
-        """Save a bookmark and reference corresponding to the specified URL."""
+    def _save_bookmark(self, url, mime_type, title, tags, html_hash, public,
+                       reference):
+        """Save the reference for the current user and the specified URL."""
         current_user, bookmark = users.get_current_user(), reference.bookmark
+        verb = 'creating' if not bookmark.is_saved() else 'updating'
+        _log.info('%s %s bookmark %s' % (current_user.email(), verb, url))
         if not bookmark.is_saved():
             bookmark.public = public
         elif not bookmark.public and public:
             bookmark.user = current_user
             bookmark.created, bookmark.public = datetime.datetime.now(), True
-        bookmark.url, bookmark.mime_type, bookmark.title = url, mime_type, title
-        bookmark.stems, bookmark.words, bookmark.counts = [], [], []
-        for tag in tags:
-            bookmark.stems.append(tag['stem'])
-            bookmark.words.append(tag['word'])
-            bookmark.counts.append(tag['count'])
+        if bookmark.html_hash != html_hash:
+            bookmark.url, bookmark.mime_type = url, mime_type
+            bookmark.title = title
+            bookmark.stems, bookmark.words, bookmark.counts = [], [], []
+            for tag in tags:
+                bookmark.stems.append(tag['stem'])
+                bookmark.words.append(tag['word'])
+                bookmark.counts.append(tag['count'])
+            bookmark.html_hash = html_hash
         bookmark.popularity += 1
-        bookmark.put()
         reference.public, reference.bookmark = public, bookmark
-        reference.put()
+
+        # Subtle:  We want to update references and bookmarks transactionally,
+        # so ordinarily, we'd wrap this method in our run_in_transaction
+        # decorator.  However, in this case, we know that we're saving exactly
+        # two objects - a bookmark and a reference - and we know that the
+        # bookmark object is the parent of the reference object.  Therefore, we
+        # know that both objects belong in the same entity group.  And whenever
+        # we batch save multiple objects in the same entity group, Google App
+        # Engine treats the batch save as a single transaction.
+        #
+        # For more information, see:
+        #   http://code.google.com/appengine/docs/python/datastore/functions.html#put
+        db.put([bookmark, reference])
+        verb = 'created' if verb == 'creating' else 'updated'
+        _log.info('%s %s bookmark %s' % (current_user.email(), verb, url))
         return reference
 
     @decorators.run_in_transaction
     @decorators.batch_put_and_delete
     def _unsave_bookmark(self, reference):
-        """Delete the bookmark corresponding to the specified URL."""
+        """Delete the reference for the current user and the specified URL."""
         bookmark, to_put, to_delete = reference.bookmark, [], []
         to_delete.append(reference)
         if bookmark is not None:

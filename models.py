@@ -45,6 +45,7 @@ class Bookmark(_BaseModel):
     stems = db.ListProperty(str, default=[])
     words = db.ListProperty(str, default=[])
     counts = db.ListProperty(float, default=[])
+    html_hash = db.StringProperty(default='')
     popularity = db.IntegerProperty(default=0)
 
     @staticmethod

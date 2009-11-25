@@ -327,11 +327,11 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
         if url and html:
             return self._serve_error(406, 'Neither "url" nor "html" parameter specified.')
         if url:
-            url, mime_type, title, tags = self._process_url(url)
+            url, mime_type, title, words, html_hash = utils.tokenize_url(url)
         elif html:
             title, words, hash = utils.tokenize_html(html)
-            stop_words, stop_words_hash = utils.read_stop_words()
-            tags = utils.auto_tag(words, stop_words)
+        stop_words, stop_words_hash = utils.read_stop_words()
+        tags = utils.auto_tag(words, stop_words)
         return tags
 
     def _serve_error(self, error_code, error_message):
