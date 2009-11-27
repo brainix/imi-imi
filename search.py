@@ -51,13 +51,14 @@ class RequestHandler(webapp.RequestHandler):
         """
         query_words = query_string.split()
         query_stems = self._query_words_to_stems(query_words)
-        bookmark_keys = None if query_stems else set()
+        bookmarks = None if query_stems else set()
         for s in query_stems:
             k = set(self._query_stems_to_bookmark_keys([s]))
-            bookmark_keys = k if bookmark_keys is None else bookmark_keys & k
-            if not bookmark_keys:
+            b = set([b for b in db.get(k) if b is not None and b.public])
+            bookmarks = b if bookmarks is None else bookmarks & b
+            if not bookmarks:
                 break
-        return len(bookmark_keys)
+        return len(bookmarks)
 
     def _get_bookmarks(self, references=False, query_users=tuple(), before=None,
                        page=0, per_page=SEARCH_PER_PAGE):

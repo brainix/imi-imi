@@ -80,6 +80,23 @@ class RequestHandler(webapp.RequestHandler):
             _log.info('%s updated reference %s' % (email, url))
         return reference
 
+    def _delete_bookmark(self, bookmark_key, reference_key):
+        """Delete the reference corresponding to the specified reference key."""
+        email = users.get_current_user().email()
+        bookmark = models.Bookmark.get_by_key_name(bookmark_key)
+        url = bookmark.url
+        _log.info('%s deleting reference %s' % (email, url))
+        reference = models.Reference.get_by_key_name(reference_key,
+                                                     parent=bookmark)
+        if reference is None:
+            _log.warning("%s couldn't delete reference %s (doesn't exist)" %
+                         (email, url))
+        else:
+            unindex = self._unsave_bookmark(reference)
+            if unindex:
+                self._unindex_bookmark(reference.bookmark)
+            _log.info('%s deleted reference %s' % (email, url))
+
     def _common(self, url, mime_type, title, words, html_hash, public, bookmark,
                 reference):
         """Perform the operations common to creating / updating references."""
@@ -100,23 +117,6 @@ class RequestHandler(webapp.RequestHandler):
             self._index_bookmark(bookmark)
             _log.debug('re-tagged and re-indexed bookmark %s' % url)
         return reference
-
-    def _delete_bookmark(self, bookmark_key, reference_key):
-        """Delete the reference corresponding to the specified reference key."""
-        email = users.get_current_user().email()
-        bookmark = models.Bookmark.get_by_key_name(bookmark_key)
-        url = bookmark.url
-        _log.info('%s deleting reference %s' % (email, url))
-        reference = models.Reference.get_by_key_name(reference_key,
-                                                     parent=bookmark)
-        if reference is None:
-            _log.warning("%s couldn't delete reference %s (doesn't exist)" %
-                         (email, url))
-        else:
-            unindex = self._unsave_bookmark(reference)
-            if unindex:
-                self._unindex_bookmark(reference.bookmark)
-            _log.info('%s deleted reference %s' % (email, url))
 
     def _save_bookmark(self, url, mime_type, title, tags, html_hash, public,
                        reference):
