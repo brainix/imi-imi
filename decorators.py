@@ -56,7 +56,7 @@ def require_login(method):
     return wrap
 
 
-def memcache_results(method):
+def memcache_results(cache_secs):
     """Decorate a method with the memcache pattern.
 
     This is a convenient decorator to use on an expensive method that doesn't
@@ -71,27 +71,29 @@ def memcache_results(method):
     memcache key for the method call.  This eliminates the possibility of a
     false positive memcache hit.
     """
-    @functools.wraps(method)
-    def wrap(self, *args, **kwds):
-        key = _compute_memcache_key(self, method, *args, **kwds)
-        _log.debug('trying to retrieve cached results for %s' % key)
-        results = memcache.get(key)
-        if results is not None:
-            _log.debug('retrieved cached results for %s' % key)
-        else:
-            _log.debug("couldn't retrieve cached results for %s" % key)
-            _log.debug('caching results for %s' % key)
-            results = method(self, *args, **kwds)
-            try:
-                success = memcache.set(key, results, time=DEFAULT_CACHE_SECS)
-            except MemoryError:
-                success = False
-            if success:
-                _log.debug('cached results for %s' % key)
+    def wrap1(method):
+        @functools.wraps(method)
+        def wrap2(self, *args, **kwds):
+            key = _compute_memcache_key(self, method, *args, **kwds)
+            _log.debug('trying to retrieve cached results for %s' % key)
+            results = memcache.get(key)
+            if results is not None:
+                _log.debug('retrieved cached results for %s' % key)
             else:
-                _log.error("couldn't cache results for %s" % key)
-        return results
-    return wrap
+                _log.debug("couldn't retrieve cached results for %s" % key)
+                _log.debug('caching results for %s' % key)
+                results = method(self, *args, **kwds)
+                try:
+                    success = memcache.set(key, results, time=cache_secs)
+                except MemoryError:
+                    success = False
+                if success:
+                    _log.debug('cached results for %s' % key)
+                else:
+                    _log.error("couldn't cache results for %s" % key)
+            return results
+        return wrap2
+    return wrap1
 
 
 def _compute_memcache_key(self, method, *args, **kwds):

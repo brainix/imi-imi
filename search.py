@@ -22,10 +22,8 @@
 """Bookmark search logic."""
 
 
-import functools
 import logging
 
-from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -40,50 +38,10 @@ import utils
 _log = logging.getLogger(__name__)
 
 
-def _cache_search(method):
-    """Decorate a search method - cache its results."""
-
-    @functools.wraps(method)
-    def wrap(self, *args, **kwds):
-        method_name = method.func_name
-        query_users = kwds.get('query_users', [])
-        query_words = kwds.get('query_words', [])
-        key = self._compute_cache_key(method_name, query_users, query_words)
-        user_query = method_name == '_search_bookmarks_generic' and query_users
-        blow_away = user_query and not kwds.get('before')
-
-        # Check if we've already computed and cached results for this query.
-        _log.debug("trying to retrieve cached results for query '%s'" % key)
-        results = memcache.get(key) if not blow_away else None
-        if results is not None:
-            # Yes we have - use the previously computed and cached results.
-            _log.debug("retrieved cached results for query '%s'" % key)
-        else:
-            # No we haven't - compute and cache the results for this query.
-            _log.debug("couldn't retrieve cached results for query '%s'" % key)
-            _log.debug("caching results for query '%s'" % key)
-            results = method(self, *args, **kwds)
-
-            # XXX: Combine the two most robust technologies invented by man,
-            # Google App Engine and memcache, and you end up with random 500s,
-            # most of the time without tracebacks.  Yay!  :-(
-            cache_secs = 0 if user_query else SEARCH_CACHE_SECS
-            try:
-                success = memcache.set(key, results, time=cache_secs)
-            except MemoryError:
-                success = False
-            if success:
-                _log.debug("cached results for query '%s'" % key)
-            else:
-                _log.error("couldn't cache results for query '%s'" % key)
-        return results
-    return wrap
-
-
 class RequestHandler(webapp.RequestHandler):
     """Base request handler, from which other request handlers inherit."""
 
-    @decorators.memcache_results
+    @decorators.memcache_results(SEARCH_CACHE_SECS)
     def _num_relevant_results(self, query_string):
         """Return the number of bookmarks that are relevant to the query string.
 
@@ -140,7 +98,7 @@ class RequestHandler(webapp.RequestHandler):
             bookmarks, more = self._search_bookmarks_specific(bookmarks, **kwds)
         return bookmarks, more
 
-    @_cache_search
+    @decorators.memcache_results(SEARCH_CACHE_SECS)
     def _search_bookmarks_generic(self, query_users=tuple(),
                                   query_words=tuple(), before=None, page=0,
                                   per_page=SEARCH_PER_PAGE):

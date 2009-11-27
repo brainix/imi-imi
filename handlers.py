@@ -22,15 +22,13 @@
 """Request handlers."""
 
 
+import cgi
 import datetime
-import functools
 import logging
 import os
 import traceback
 import urllib
-import urlparse
 
-from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
@@ -38,9 +36,8 @@ from google.appengine.ext.webapp import template
 import packages
 import simplejson
 
-from config import DATETIME_FORMAT, DEBUG, FETCH_GOOD_STATUSES
-from config import HTTP_CODE_TO_TITLE, LIVE_SEARCH_URL, RSS_NUM_ITEMS
-from config import SEARCH_CACHE_SECS, TEMPLATES
+from config import DATETIME_FORMAT, DEBUG, HTTP_CODE_TO_TITLE, LIVE_SEARCH_URL
+from config import RSS_NUM_ITEMS, SEARCH_CACHE_SECS, TEMPLATES
 import decorators
 import index
 import rss
@@ -192,42 +189,9 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
                        'update, or delete')
 
 
-def _cache_live_search(method):
-    """Decorate the live search get method - cache its results."""
-    @functools.wraps(method)
-    def wrap(self, *args, **kwds):
-        query = self.request.get('query').replace(' ', '%20').lower()
-        cache_key = '_live_search query: ' + query
-        _log.debug("trying to retrieve cached suggestions for query '%s'" %
-                   cache_key)
-        html = memcache.get(cache_key)
-        if html is not None:
-            _log.debug("retrieved cached suggestions for query '%s'" %
-                       cache_key)
-        else:
-            _log.debug("couldn't retrieve cached suggestions for query '%s'" %
-                       cache_key)
-            _log.debug("caching suggestions for query '%s'" % cache_key)
-            success, html = method(self, *args, **kwds)
-            if success:
-                try:
-                    success = memcache.set(cache_key, html,
-                                           time=SEARCH_CACHE_SECS)
-                except MemoryError:
-                    success = False
-            if success:
-                _log.debug("cached suggestions for query '%s'" % cache_key)
-            else:
-                _log.error("couldn't cache suggestions for query '%s'" %
-                           cache_key)
-        self.response.out.write(html)
-    return wrap
-
-
 class LiveSearch(search.RequestHandler, _RequestHandler):
     """Request handler to serve /live_search pages."""
 
-    @_cache_live_search
     def get(self):
         """Someone is typing a search query.  Provide some live search results.
 
@@ -236,10 +200,14 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         cache its results.
         """
         query = self.request.get('query').replace(' ', '%20').lower()
+        html = self._live_search(query)
+        self.response.out.write(html)
+
+    @decorators.memcache_results(SEARCH_CACHE_SECS)
+    def _live_search(self, query):
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
         url, status_code, mime_type, suggestions = utils.fetch_content(url)
-        success = status_code in FETCH_GOOD_STATUSES
         if suggestions is not None:
             suggestions = suggestions[1:]
             suggestions = suggestions[suggestions.index('[')+2:]
@@ -253,7 +221,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
                            for s in suggestions]
         values = {'suggestions': suggestions,}
         html = template.render(path, values, debug=DEBUG)
-        return success, html
+        return html
 
 
 class Search(search.RequestHandler, _RequestHandler):
@@ -310,7 +278,7 @@ class Search(search.RequestHandler, _RequestHandler):
     def _compute_more_url(self):
         """ """
         path, query = self.request.path, self.request.query
-        query, index = urlparse.parse_qsl(query), 0
+        query, index = cgi.parse_qsl(query), 0
         for index in range(len(query)):
             if query[index][0] == 'page':
                 break

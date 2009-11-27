@@ -32,6 +32,7 @@
 
 
 from __future__ import with_statement
+import cgi
 import hashlib
 import logging
 import operator
@@ -236,7 +237,7 @@ def normalize_url(url):
 
     # Remove the query variables with no values, and alphabetize the query
     # variables with values.
-    query = urllib.urlencode(sorted(urlparse.parse_qsl(query)))
+    query = urllib.urlencode(sorted(cgi.parse_qsl(query)))
 
     # Remove the fragment (or intra-document location).
     fragment = ''
