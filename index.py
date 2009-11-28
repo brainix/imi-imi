@@ -129,6 +129,8 @@ class RequestHandler(webapp.RequestHandler):
         elif not bookmark.public and public:
             bookmark.user = current_user
             bookmark.created, bookmark.public = datetime.datetime.now(), True
+        if public:
+            bookmark.popularity += 1
         if bookmark.html_hash != html_hash:
             bookmark.url, bookmark.mime_type = url, mime_type
             bookmark.title = title
@@ -138,7 +140,6 @@ class RequestHandler(webapp.RequestHandler):
                 bookmark.words.append(tag['word'])
                 bookmark.counts.append(tag['count'])
             bookmark.html_hash = html_hash
-        bookmark.popularity += 1
         reference.public, reference.bookmark = public, bookmark
 
         # Subtle:  We want to update references and bookmarks transactionally,
@@ -164,7 +165,8 @@ class RequestHandler(webapp.RequestHandler):
         bookmark, to_put, to_delete = reference.bookmark, [], []
         to_delete.append(reference)
         if bookmark is not None:
-            bookmark.popularity -= 1
+            if reference.public:
+                bookmark.popularity -= 1
             (to_put if bookmark.popularity else to_delete).append(bookmark)
         return to_put, to_delete, not bookmark.popularity
 
@@ -185,8 +187,8 @@ class RequestHandler(webapp.RequestHandler):
             keychain.stem, keychain.word = stem, word
             if not bookmark_key in keychain.keys:
                 keychain.keys.append(bookmark_key)
-                keychain.popularity = len(keychain.keys)
-                to_put.append(keychain)
+            keychain = self._update_public_and_popularity(keychain)
+            to_put.append(keychain)
         _log.debug('%s indexed bookmark %s' % (email, url))
         return to_put, [], None
 
@@ -212,7 +214,14 @@ class RequestHandler(webapp.RequestHandler):
                     msg += "but keychain %s doesn't have bookmark %s"
                     msg = msg % (bookmark_key, stem, keychain_key, bookmark_key)
                     _log.critical(msg)
-                keychain.popularity = len(keychain.keys)
+                keychain = self._update_public_and_popularity(keychain)
                 (to_put if keychain.keys else to_delete).append(keychain)
         _log.debug('%s unindexed bookmark %s' % (email, url))
         return to_put, to_delete, None
+
+    def _update_public_and_popularity(self, keychain):
+        """ """
+        keychain.public = bool([b for b in db.get(keychain.keys)
+                                if b is not None and b.public])
+        keychain.popularity = len(keychain.keys)
+        return keychain

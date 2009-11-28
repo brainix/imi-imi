@@ -54,7 +54,7 @@ class RequestHandler(webapp.RequestHandler):
         bookmarks = None if query_stems else set()
         for s in query_stems:
             k = set(self._query_stems_to_bookmark_keys([s]))
-            b = set([b for b in db.get(k) if b is not None and b.public])
+            b = set([b.url for b in db.get(k) if b is not None and b.public])
             bookmarks = b if bookmarks is None else bookmarks & b
             if not bookmarks:
                 break

@@ -124,14 +124,16 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
     @decorators.memcache_results(POPULAR_CACHE_SECS)
     def _popular_bookmarks(self):
         """ """
-        bookmarks = models.Bookmark.all().order('-popularity').order('-updated')
+        bookmarks = models.Bookmark.all().filter('public =', True)
+        bookmarks = bookmarks.order('-popularity').order('-updated')
         bookmarks = bookmarks.fetch(NUM_POPULAR_BOOKMARKS)
         return bookmarks
 
     @decorators.memcache_results(POPULAR_CACHE_SECS)
     def _popular_tags(self):
         """ """
-        tags = models.Keychain.all().order('-popularity').order('-updated')
+        tags = models.Keychain.all().filter('public =', True)
+        tags = tags.order('-popularity').order('-updated')
         tags = tags.fetch(NUM_POPULAR_TAGS)
         max_popularity = tags[0].popularity
         for tag in tags:
