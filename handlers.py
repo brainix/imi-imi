@@ -25,6 +25,7 @@
 import cgi
 import datetime
 import logging
+import operator
 import os
 import traceback
 import urllib
@@ -135,6 +136,7 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
         max_popularity = tags[0].popularity
         for tag in tags:
             tag.popularity /= max_popularity
+        tags = sorted(tags, key=operator.attrgetter('word'))
         return tags
 
 
