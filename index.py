@@ -40,7 +40,7 @@ _log = logging.getLogger(__name__)
 class RequestHandler(webapp.RequestHandler):
     """Base request handler, from which other request handlers inherit."""
 
-    def _create_bookmark(self, url, public):
+    def _create_bookmark(self, url):
         """Create a reference for the current user and the specified URL."""
         email = users.get_current_user().email()
         url, mime_type, title, words, html_hash = utils.tokenize_url(url)
@@ -57,11 +57,11 @@ class RequestHandler(webapp.RequestHandler):
                                          key_name=reference_key)
             reference.bookmark = bookmark
             reference = self._common(url, mime_type, title, words, html_hash,
-                                     public, bookmark, reference)
+                                     bookmark, reference, True)
             _log.info('%s created reference %s' % (email, url))
         return reference
 
-    def _update_bookmark(self, bookmark_key, reference_key, public):
+    def _update_bookmark(self, bookmark_key, reference_key):
         """Update the reference corresponding to the specified reference key."""
         email = users.get_current_user().email()
         bookmark = models.Bookmark.get_by_key_name(bookmark_key)
@@ -76,7 +76,7 @@ class RequestHandler(webapp.RequestHandler):
             url = reference.bookmark.url
             url, mime_type, title, words, html_hash = utils.tokenize_url(url)
             reference = self._common(url, mime_type, title, words, html_hash,
-                                     public, bookmark, reference)
+                                     bookmark, reference, False)
             _log.info('%s updated reference %s' % (email, url))
         return reference
 
@@ -97,8 +97,8 @@ class RequestHandler(webapp.RequestHandler):
                 self._unindex_bookmark(reference.bookmark)
             _log.info('%s deleted reference %s' % (email, url))
 
-    def _common(self, url, mime_type, title, words, html_hash, public, bookmark,
-                reference):
+    def _common(self, url, mime_type, title, words, html_hash, bookmark,
+                reference, increment_popularity):
         """Perform the operations common to creating / updating references."""
         reindex = bookmark.html_hash != html_hash
         if reindex:
@@ -111,25 +111,20 @@ class RequestHandler(webapp.RequestHandler):
             _log.debug("not re-tagging and re-indexing bookmark %s "
                        "(HTML hasn't changed since last)" % url)
             tags = []
-        reference = self._save_bookmark(url, mime_type, title, tags,
-                                        html_hash, public, reference)
+        reference = self._save_bookmark(url, mime_type, title, tags, html_hash,
+                                        reference, increment_popularity)
         if reindex:
             self._index_bookmark(bookmark)
             _log.debug('re-tagged and re-indexed bookmark %s' % url)
         return reference
 
-    def _save_bookmark(self, url, mime_type, title, tags, html_hash, public,
-                       reference):
+    def _save_bookmark(self, url, mime_type, title, tags, html_hash, reference,
+                       increment_popularity):
         """Save the reference for the current user and the specified URL."""
         current_user, bookmark = users.get_current_user(), reference.bookmark
         verb = 'creating' if not bookmark.is_saved() else 'updating'
         _log.info('%s %s bookmark %s' % (current_user.email(), verb, url))
-        if not bookmark.is_saved():
-            bookmark.public = public
-        elif not bookmark.public and public:
-            bookmark.user = current_user
-            bookmark.created, bookmark.public = datetime.datetime.now(), True
-        if public:
+        if increment_popularity:
             bookmark.popularity += 1
         if bookmark.html_hash != html_hash:
             bookmark.url, bookmark.mime_type = url, mime_type
@@ -140,7 +135,7 @@ class RequestHandler(webapp.RequestHandler):
                 bookmark.words.append(tag['word'])
                 bookmark.counts.append(tag['count'])
             bookmark.html_hash = html_hash
-        reference.public, reference.bookmark = public, bookmark
+        reference.bookmark = bookmark
 
         # Subtle:  We want to update references and bookmarks transactionally,
         # so ordinarily, we'd wrap this method in our run_in_transaction
@@ -165,8 +160,7 @@ class RequestHandler(webapp.RequestHandler):
         bookmark, to_put, to_delete = reference.bookmark, [], []
         to_delete.append(reference)
         if bookmark is not None:
-            if reference.public:
-                bookmark.popularity -= 1
+            bookmark.popularity -= 1
             (to_put if bookmark.popularity else to_delete).append(bookmark)
         return to_put, to_delete, not bookmark.popularity
 
@@ -187,7 +181,7 @@ class RequestHandler(webapp.RequestHandler):
             keychain.stem, keychain.word = stem, word
             if not bookmark_key in keychain.keys:
                 keychain.keys.append(bookmark_key)
-            keychain = self._update_public_and_popularity(keychain)
+            keychain.popularity = len(keychain.keys)
             to_put.append(keychain)
         _log.debug('%s indexed bookmark %s' % (email, url))
         return to_put, [], None
@@ -214,14 +208,7 @@ class RequestHandler(webapp.RequestHandler):
                     msg += "but keychain %s doesn't have bookmark %s"
                     msg = msg % (bookmark_key, stem, keychain_key, bookmark_key)
                     _log.critical(msg)
-                keychain = self._update_public_and_popularity(keychain)
+                keychain.popularity = len(keychain.keys)
                 (to_put if keychain.keys else to_delete).append(keychain)
         _log.debug('%s unindexed bookmark %s' % (email, url))
         return to_put, to_delete, None
-
-    def _update_public_and_popularity(self, keychain):
-        """ """
-        keychain.public = bool([b for b in db.get(keychain.keys)
-                                if b is not None and b.public])
-        keychain.popularity = len(keychain.keys)
-        return keychain

@@ -8,6 +8,11 @@
         <span class="saved_by">
             Saved by
             <a href="/users/{{ reference.user.email }}">{{ reference.user.nickname }}</a>
+            {% if reference.bookmark.popularity|add:"-1" %}
+                and {{ reference.bookmark.popularity|add:"-1" }}
+                other{% ifnotequal reference.bookmark.popularity 2 %}s{% endifnotequal %},
+                updated
+            {% endif %}
             {{ reference.updated|beautify_datetime }}
         </span>
 
@@ -21,7 +26,7 @@
                             <input name="reference_key_to_delete" type="hidden"
                                    value="{{ reference.key.name }}" />
                             <input class="submit" type="submit"
-                                   value="delete me" />
+                                   value="delete" />
                         </div>
                     </form>
                 </div>
@@ -34,7 +39,7 @@
                             <input name="reference_key_to_update" type="hidden"
                                    value="{{ reference.key.name }}" />
                             <input class="submit" type="submit"
-                                   value="update me" />
+                                   value="update" />
                         </div>
                     </form>
                 </div>

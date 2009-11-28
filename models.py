@@ -34,7 +34,6 @@ class _BaseModel(polymodel.PolyModel):
     user = db.UserProperty(auto_current_user_add=True)
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
-    public = db.BooleanProperty(default=True)
     popularity = db.IntegerProperty(default=0)
 
 

@@ -8,6 +8,11 @@
         <span class="saved_by">
             Saved by
             <a href="/users/{{ bookmark.user.email }}">{{ bookmark.user.nickname }}</a>
+            {% if bookmark.popularity|add:"-1" %}
+                and {{ bookmark.popularity|add:"-1" }}
+                other{% ifnotequal bookmark.popularity 2 %}s{% endifnotequal %},
+                updated
+            {% endif %}
             {{ bookmark.updated|beautify_datetime }}
         </span>
 

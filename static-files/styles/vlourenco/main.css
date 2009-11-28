@@ -316,7 +316,7 @@ form .submit:hover {
 
 #bookmarks .update_bookmark, #bookmarks .delete_bookmark {
     float: right;
-    margin-left: 1em;
+    margin-left: 0.25em;
 }
 
 #bookmarks .update_bookmark .form_element, #bookmarks .delete_bookmark .form_element {

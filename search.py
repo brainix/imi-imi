@@ -54,7 +54,7 @@ class RequestHandler(webapp.RequestHandler):
         bookmarks = None if query_stems else set()
         for s in query_stems:
             k = set(self._query_stems_to_bookmark_keys([s]))
-            b = set([b.url for b in db.get(k) if b is not None and b.public])
+            b = set([b.url for b in db.get(k) if b is not None])
             bookmarks = b if bookmarks is None else bookmarks & b
             if not bookmarks:
                 break
@@ -69,8 +69,6 @@ class RequestHandler(webapp.RequestHandler):
         entities = (models.Reference if references else models.Bookmark).all()
         if query_users:
             entities.filter('user IN', query_users)
-        if len(query_users) != 1 or query_users[0] != users.get_current_user():
-            entities = entities.filter('public =', True)
         if before is not None:
             entities = entities.filter('updated <', before)
         entities.order('-updated')
@@ -126,7 +124,8 @@ class RequestHandler(webapp.RequestHandler):
             bookmark_keys = self._query_stems_to_bookmark_keys(query_stems)
             bookmarks = db.get(bookmark_keys)
             if query_users:
-                bookmarks = [b for b in bookmarks if b.user in query_users]
+                bookmarks = [b for b in bookmarks
+                             if b is not None and b.user in query_users]
         else:
             bookmarks = models.Bookmark.all()
             if query_users:
@@ -146,9 +145,8 @@ class RequestHandler(webapp.RequestHandler):
         Up to this point, our resulting bookmarks could've been cached, perhaps
         by a different user and long ago, so we haven't made any assumptions
         about the current situation.  Now, take into account the current
-        situation - only return the bookmarks the current user has permission to
-        see, and only the bookmarks that should appear on the requested results
-        page, etc.
+        situation - only return the bookmarks that should appear on the
+        requested results page, etc.
 
         This method's results can't be cached, so please keep this method as
         efficient as reasonable.
@@ -156,7 +154,6 @@ class RequestHandler(webapp.RequestHandler):
         query_key = self._compute_cache_key('_search_bookmarks_specific',
                                             query_users, query_words)
         _log.debug("computing bookmarks for query '%s'" % query_key)
-        bookmarks = self._apply_fig_leaf(bookmarks)
         if before is not None:
             bookmarks = self._filter_before(bookmarks, before)
         if per_page:
@@ -204,7 +201,8 @@ class RequestHandler(webapp.RequestHandler):
         l = []
         try:
             for bookmark in bookmarks:
-                l.append(bookmark)
+                if bookmark is not None:
+                    l.append(bookmark)
         except (MemoryError, db.Timeout,):
             _log.warning('reading bookmarks from query into list timed out :-(')
         else:
@@ -230,17 +228,14 @@ class RequestHandler(webapp.RequestHandler):
             x_val = sum(map(lambda stem: get_count(stem, x), stems))
             y_val = sum(map(lambda stem: get_count(stem, y), stems))
             if x_val == y_val:
-                # The bookmarks are equally relevant to the given stems, so pick
-                # the one updated more recently.
-                x_val, y_val = x.updated, y.updated
+                # The bookmarks are equally relevant to the given stems, so
+                # pick the more popular one.
+                x_val, y_val = x.popularity, y.popularity
+                if x_val == y_val:
+                    # The bookmarks are equally popular, so pick the one
+                    # updated more recently.
+                    x_val, y_val = x.updated, y.updated
         return 1 if x_val <= y_val else -1
-
-    def _apply_fig_leaf(self, bookmarks):
-        """Return only the public or the current user's bookmarks."""
-        current_user = users.get_current_user()
-        bookmarks = [b for b in bookmarks
-                     if b is not None and (b.public or b.user == current_user)]
-        return bookmarks
 
     def _filter_before(self, bookmarks, before):
         """Return only the bookmarks updated before the specified date/time."""

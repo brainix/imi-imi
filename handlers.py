@@ -124,21 +124,23 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
     @decorators.memcache_results(POPULAR_CACHE_SECS)
     def _popular_bookmarks(self):
         """ """
-        bookmarks = models.Bookmark.all().filter('public =', True)
-        bookmarks = bookmarks.order('-popularity').order('-updated')
+        bookmarks = models.Bookmark.all().order('-popularity').order('-updated')
         bookmarks = bookmarks.fetch(NUM_POPULAR_BOOKMARKS)
         return bookmarks
 
     @decorators.memcache_results(POPULAR_CACHE_SECS)
     def _popular_tags(self):
         """ """
-        tags = models.Keychain.all().filter('public =', True)
-        tags = tags.order('-popularity').order('-updated')
+        tags = models.Keychain.all().order('-popularity').order('-updated')
         tags = tags.fetch(NUM_POPULAR_TAGS)
-        max_popularity = tags[0].popularity
-        for tag in tags:
-            tag.popularity /= max_popularity
-        tags = sorted(tags, key=operator.attrgetter('word'))
+        try:
+            max_popularity = tags[0].popularity
+        except IndexError:
+            tags = []
+        else:
+            for tag in tags:
+                tag.popularity /= max_popularity
+            tags = sorted(tags, key=operator.attrgetter('word'))
         return tags
 
 
@@ -199,10 +201,10 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         if url_to_create or bookmark_key and reference_key_to_update:
             path = os.path.join(TEMPLATES, 'bookmarks', 'references.html')
             if url_to_create:
-                reference = self._create_bookmark(url_to_create, True)
+                reference = self._create_bookmark(url_to_create)
             else:
                 reference = self._update_bookmark(bookmark_key,
-                                                  reference_key_to_update, True)
+                                                  reference_key_to_update)
             references = [reference] if reference is not None else []
             values = {'snippet': True, 'current_user': current_user,
                 'target_user': target_user, 'references': references,}
@@ -240,7 +242,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
             suggestions = suggestions.replace('"', '')
             suggestions = suggestions.split(',')
             suggestions = [s for s in suggestions if s]
-            suggestions = [{'url': '/search/' + s.replace(' ', '_'),
+            suggestions = [{'url': '/search?query=' + s.replace(' ', '+'),
                             'text': s,
                             'has_results': bool(self._num_relevant_results(s)),}
                            for s in suggestions]
@@ -275,7 +277,7 @@ class Search(search.RequestHandler, _RequestHandler):
             if query_user:
                 title += ' saved by' + query_user.nickname()
             if query_words:
-                title += ' related to' + ' '.join(query_words)
+                title += ' related to ' + ' '.join(query_words)
             bookmarks, more = self._search_bookmarks(query_users=query_users,
                                                      query_words=query_words,
                                                      page=page)
