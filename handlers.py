@@ -37,9 +37,11 @@ import packages
 import simplejson
 
 from config import DATETIME_FORMAT, DEBUG, HTTP_CODE_TO_TITLE, LIVE_SEARCH_URL
+from config import NUM_POPULAR_BOOKMARKS, NUM_POPULAR_TAGS, POPULAR_CACHE_SECS
 from config import RSS_NUM_ITEMS, SEARCH_CACHE_SECS, TEMPLATES
 import decorators
 import index
+import models
 import rss
 import search
 import utils
@@ -111,10 +113,29 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
                                                    per_page=RSS_NUM_ITEMS)
             return self._serve_rss(rss_url=rss_url, references=references,
                                    saved_by='everyone')
+        bookmarks, tags = self._popular_bookmarks(), self._popular_tags()
         values = {'title': 'social bookmarking', 'rss_url': rss_url,
             'login_url': login_url, 'current_user': current_user,
-            'logout_url': logout_url, 'active_tab': active_tab, 'debug': DEBUG,}
+            'logout_url': logout_url, 'active_tab': active_tab,
+            'bookmarks': bookmarks, 'tags': tags, 'debug': DEBUG,}
         self.response.out.write(template.render(path, values, debug=DEBUG))
+
+    @decorators.memcache_results(POPULAR_CACHE_SECS)
+    def _popular_bookmarks(self):
+        """ """
+        bookmarks = models.Bookmark.all().order('-popularity').order('-updated')
+        bookmarks = bookmarks.fetch(NUM_POPULAR_BOOKMARKS)
+        return bookmarks
+
+    @decorators.memcache_results(POPULAR_CACHE_SECS)
+    def _popular_tags(self):
+        """ """
+        tags = models.Keychain.all().order('-popularity').order('-updated')
+        tags = tags.fetch(NUM_POPULAR_TAGS)
+        max_popularity = tags[0].popularity
+        for tag in tags:
+            tag.popularity /= max_popularity
+        return tags
 
 
 class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
