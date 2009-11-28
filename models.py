@@ -35,6 +35,7 @@ class _BaseModel(polymodel.PolyModel):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
     public = db.BooleanProperty(default=True)
+    popularity = db.IntegerProperty(default=0)
 
 
 class Bookmark(_BaseModel):
@@ -46,7 +47,6 @@ class Bookmark(_BaseModel):
     words = db.ListProperty(str, default=[])
     counts = db.ListProperty(float, default=[])
     html_hash = db.StringProperty(default='')
-    popularity = db.IntegerProperty(default=0)
 
     @staticmethod
     def key_name(url):

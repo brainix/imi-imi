@@ -185,6 +185,7 @@ class RequestHandler(webapp.RequestHandler):
             keychain.stem, keychain.word = stem, word
             if not bookmark_key in keychain.keys:
                 keychain.keys.append(bookmark_key)
+                keychain.popularity = len(keychain.keys)
                 to_put.append(keychain)
         _log.debug('%s indexed bookmark %s' % (email, url))
         return to_put, [], None
@@ -211,6 +212,7 @@ class RequestHandler(webapp.RequestHandler):
                     msg += "but keychain %s doesn't have bookmark %s"
                     msg = msg % (bookmark_key, stem, keychain_key, bookmark_key)
                     _log.critical(msg)
+                keychain.popularity = len(keychain.keys)
                 (to_put if keychain.keys else to_delete).append(keychain)
         _log.debug('%s unindexed bookmark %s' % (email, url))
         return to_put, to_delete, None
