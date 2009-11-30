@@ -57,54 +57,39 @@ class RequestHandler(webapp.RequestHandler):
                                          key_name=reference_key)
             reference.bookmark = bookmark
             reference = self._common(url, mime_type, title, words, html_hash,
-                                     bookmark, reference, True)
+                                     reference, True)
             _log.info('%s created reference %s' % (email, url))
         return reference
 
-    def _update_bookmark(self, bookmark_key, reference_key):
+    def _update_bookmark(self, reference):
         """Update the reference corresponding to the specified reference key."""
         email = users.get_current_user().email()
-        bookmark = models.Bookmark.get_by_key_name(bookmark_key)
-        url = bookmark.url
+        url = reference.bookmark.url
         _log.info('%s updating reference %s' % (email, url))
-        reference = models.Reference.get_by_key_name(reference_key,
-                                                     parent=bookmark)
-        if reference is None:
-            _log.warning("%s couldn't update reference %s (doesn't exist)" %
-                         (email, url))
-        else:
-            url = reference.bookmark.url
-            url, mime_type, title, words, html_hash = utils.tokenize_url(url)
-            reference = self._common(url, mime_type, title, words, html_hash,
-                                     bookmark, reference, False)
-            _log.info('%s updated reference %s' % (email, url))
+        url, mime_type, title, words, html_hash = utils.tokenize_url(url)
+        reference = self._common(url, mime_type, title, words, html_hash,
+                                 reference, False)
+        _log.info('%s updated reference %s' % (email, url))
         return reference
 
-    def _delete_bookmark(self, bookmark_key, reference_key):
+    def _delete_bookmark(self, reference):
         """Delete the reference corresponding to the specified reference key."""
         email = users.get_current_user().email()
-        bookmark = models.Bookmark.get_by_key_name(bookmark_key)
-        url = bookmark.url
+        url = reference.bookmark.url
         _log.info('%s deleting reference %s' % (email, url))
-        reference = models.Reference.get_by_key_name(reference_key,
-                                                     parent=bookmark)
-        if reference is None:
-            _log.warning("%s couldn't delete reference %s (doesn't exist)" %
-                         (email, url))
-        else:
-            unindex = self._unsave_bookmark(reference)
-            if unindex:
-                self._unindex_bookmark(reference.bookmark)
-            _log.info('%s deleted reference %s' % (email, url))
+        unindex = self._unsave_bookmark(reference)
+        if unindex:
+            self._unindex_bookmark(reference.bookmark)
+        _log.info('%s deleted reference %s' % (email, url))
 
-    def _common(self, url, mime_type, title, words, html_hash, bookmark,
-                reference, increment_popularity):
+    def _common(self, url, mime_type, title, words, html_hash, reference,
+                increment_popularity):
         """Perform the operations common to creating / updating references."""
-        reindex = bookmark.html_hash != html_hash
+        reindex = reference.bookmark.html_hash != html_hash
         if reindex:
             _log.debug('re-tagging and re-indexing bookmark %s '
                        '(HTML has changed since last)' % url)
-            self._unindex_bookmark(bookmark)
+            self._unindex_bookmark(reference.bookmark)
             stop_words, stop_words_hash = utils.read_stop_words()
             tags = utils.auto_tag(words, stop_words)
         else:
@@ -114,7 +99,7 @@ class RequestHandler(webapp.RequestHandler):
         reference = self._save_bookmark(url, mime_type, title, tags, html_hash,
                                         reference, increment_popularity)
         if reindex:
-            self._index_bookmark(bookmark)
+            self._index_bookmark(reference.bookmark)
             _log.debug('re-tagged and re-indexed bookmark %s' % url)
         return reference
 
@@ -135,7 +120,6 @@ class RequestHandler(webapp.RequestHandler):
                 bookmark.words.append(tag['word'])
                 bookmark.counts.append(tag['count'])
             bookmark.html_hash = html_hash
-        reference.bookmark = bookmark
 
         # Subtle:  We want to update references and bookmarks transactionally,
         # so ordinarily, we'd wrap this method in our run_in_transaction

@@ -31,6 +31,7 @@ import traceback
 import urllib
 
 from google.appengine.api import users
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 
@@ -170,23 +171,30 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         """Create, update, or delete a bookmark."""
         current_user = target_user = users.get_current_user()
         url_to_create = self.request.get('url_to_create')
-        bookmark_key = self.request.get('bookmark_key')
-        reference_key_to_update = self.request.get('reference_key_to_update')
-        reference_key_to_delete = self.request.get('reference_key_to_delete')
+        key = self.request.get('bookmark_key')
+        bookmark = models.Bookmark.get_by_key_name(key) if key else None
+        key = self.request.get('reference_key_to_update')
+        reference_to_update = models.Reference.get_by_key_name(key, parent=bookmark) if key else None
+        key = self.request.get('reference_key_to_delete')
+        reference_to_delete = models.Reference.get_by_key_name(key, parent=bookmark) if key else None
 
-        if url_to_create or bookmark_key and reference_key_to_update:
+        if url_to_create or reference_to_update is not None:
             path = os.path.join(TEMPLATES, 'bookmarks', 'references.html')
             if url_to_create:
                 reference = self._create_bookmark(url_to_create)
+            elif reference_to_update.user == current_user:
+                reference = self._update_bookmark(reference_to_update)
             else:
-                reference = self._update_bookmark(bookmark_key,
-                                                  reference_key_to_update)
+                _log.error("couldn't update reference (insufficient privileges")
             references = [reference] if reference is not None else []
             values = {'snippet': True, 'current_user': current_user,
                 'target_user': target_user, 'references': references,}
             self.response.out.write(template.render(path, values, debug=DEBUG))
-        elif bookmark_key and reference_key_to_delete:
-            self._delete_bookmark(bookmark_key, reference_key_to_delete)
+        elif reference_to_delete is not None:
+            if reference_to_delete.user == current_user:
+                self._delete_bookmark(reference_to_delete)
+            else:
+                _log.error("couldn't delete reference (insufficient privileges")
         else:
             _log.error('/users got POST request but no bookmark to create, '
                        'update, or delete')
