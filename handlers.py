@@ -114,34 +114,10 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
                                                    per_page=RSS_NUM_ITEMS)
             return self._serve_rss(rss_url=rss_url, references=references,
                                    saved_by='everyone')
-        bookmarks, tags = self._popular_bookmarks(), self._popular_tags()
         values = {'title': 'social bookmarking', 'rss_url': rss_url,
             'login_url': login_url, 'current_user': current_user,
-            'logout_url': logout_url, 'active_tab': active_tab,
-            'bookmarks': bookmarks, 'tags': tags, 'debug': DEBUG,}
+            'logout_url': logout_url, 'active_tab': active_tab, 'debug': DEBUG,}
         self.response.out.write(template.render(path, values, debug=DEBUG))
-
-    @decorators.memcache_results(POPULAR_CACHE_SECS)
-    def _popular_bookmarks(self):
-        """ """
-        bookmarks = models.Bookmark.all().order('-popularity').order('-updated')
-        bookmarks = bookmarks.fetch(NUM_POPULAR_BOOKMARKS)
-        return bookmarks
-
-    @decorators.memcache_results(POPULAR_CACHE_SECS)
-    def _popular_tags(self):
-        """ """
-        tags = models.Keychain.all().order('-popularity').order('-updated')
-        tags = tags.fetch(NUM_POPULAR_TAGS)
-        try:
-            max_popularity = tags[0].popularity
-        except IndexError:
-            tags = []
-        else:
-            for tag in tags:
-                tag.popularity /= max_popularity
-            tags = sorted(tags, key=operator.attrgetter('word'))
-        return tags
 
 
 class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
@@ -266,7 +242,7 @@ class Search(search.RequestHandler, _RequestHandler):
         path = os.path.join(TEMPLATES, 'bookmarks', file_name)
         login_url, current_user, logout_url = self._get_user()
 
-        if not query_words:
+        if not query_words and not query_user:
             # This is an Easter egg, but an intentional and a useful one.  If we
             # got a blank search query, show all of the bookmarks sorted reverse
             # chronologically.
@@ -275,18 +251,23 @@ class Search(search.RequestHandler, _RequestHandler):
         else:
             title = 'bookmarks'
             if query_user:
-                title += ' saved by' + query_user.nickname()
+                title += ' saved by ' + query_user.nickname()
             if query_words:
+                if query_user:
+                    title += ','
                 title += ' related to ' + ' '.join(query_words)
             bookmarks, more = self._search_bookmarks(query_users=query_users,
                                                      query_words=query_words,
                                                      page=page)
-        more_url = self._compute_more_url() if more else None
+        try:
+            more_url = self._compute_more_url() if more else None
+        except ValueError:
+            return self._serve_error(404)
 
         values = {'snippet': snippet, 'title': title, 'login_url': login_url,
             'current_user': current_user, 'logout_url': logout_url,
-            'target_words': query_words, 'bookmarks': bookmarks,
-            'more_url': more_url, 'debug': DEBUG,}
+            'target_user': query_user, 'target_words': query_words,
+            'bookmarks': bookmarks, 'more_url': more_url, 'debug': DEBUG,}
         self.response.out.write(template.render(path, values, debug=DEBUG))
 
     def _parse_query(self):
@@ -299,20 +280,27 @@ class Search(search.RequestHandler, _RequestHandler):
         query_words = query_words.replace('%20', ' ')
         query_words = utils.extract_words_from_string(query_words)
         page = self.request.get('page', default_value='0')
+
+        # Subtle: This next line might throw a ValueError exception, but the
+        # caller catches it and serves a 404.
         page = int(page)
+
         return query_user, query_users, query_words, page
 
     def _compute_more_url(self):
         """ """
         path, query = self.request.path, self.request.query
-        query, index = cgi.parse_qsl(query), 0
+        query, index, page, success = cgi.parse_qsl(query), 0, 0, False
         for index in range(len(query)):
             if query[index][0] == 'page':
+                # Subtle: This next line might throw a ValueError exception,
+                # but the caller catches it and serves a 404.
+                page = int(query[index][1])
+                query[index] = ('page', str(page + 1))
+                success = True
                 break
-        page = int(query[index][1]) if index < len(query) else 0
-        if index < len(query):
-            query.remove(index)
-        query.insert(index, ('page', str(page + 1)))
+        if not success:
+            query.append(('page', str(page + 1)))
         query = urllib.urlencode(query)
         more_url = path + '?' + query
         return more_url

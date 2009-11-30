@@ -3,12 +3,7 @@
 <h2>
     Saved by
     {% if target_user %}
-        {% if not friends_view %}
-            <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>,
-        {% else %}
-            <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>&rsquo;s
-            <a href="/friends/{{ target_user.email }}">Friends</a>,
-        {% endif %}
+        <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>,
     {% else %}
         Everyone,
     {% endif %}
@@ -16,7 +11,7 @@
     Related to
     {% if target_words %}
         {% for target_word in target_words %}
-            <a href="/search/{{ target_word }}">{{ target_word }}</a>
+            <a href="/search?query={{ target_word }}">{{ target_word }}</a>
         {% endfor %}
     {% else %}
         Everything
