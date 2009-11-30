@@ -185,6 +185,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
             elif reference_to_update.user == current_user:
                 reference = self._update_bookmark(reference_to_update)
             else:
+                reference = None
                 _log.error("couldn't update reference (insufficient privileges")
             references = [reference] if reference is not None else []
             values = {'snippet': True, 'current_user': current_user,
@@ -207,8 +208,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         """Someone is typing a search query.  Provide some live search results.
 
         This method gets called every time anyone types a single letter in the
-        search box.  Keep this method as efficient as possible and aggressively
-        cache its results.
+        search box.  Keep this method as efficient as possible.
         """
         query = self.request.get('query').replace(' ', '%20').lower()
         html = self._live_search(query)
@@ -216,6 +216,12 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
 
     @decorators.memcache_results(SEARCH_CACHE_SECS)
     def _live_search(self, query):
+        """Fetch & render HTML for the live search results for the given query.
+
+        This method potentially gets called every time anyone types a single
+        letter in the search box.  Keep this method as efficient as possible
+        and aggressively cache its results.
+        """
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
         url, status_code, mime_type, suggestions = utils.fetch_content(url)
@@ -279,7 +285,7 @@ class Search(search.RequestHandler, _RequestHandler):
         self.response.out.write(template.render(path, values, debug=DEBUG))
 
     def _parse_query(self):
-        """ """
+        """From the URL query parameter, parse out the features to search on."""
         query_user = self.request.get('user')
         query_user = users.User(email=query_user) if query_user else query_user
         query_users = [query_user] if query_user else []

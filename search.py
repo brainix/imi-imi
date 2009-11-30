@@ -123,15 +123,12 @@ class RequestHandler(webapp.RequestHandler):
                 raise errors.SearchError(msg='generic query')
             bookmark_keys = self._query_stems_to_bookmark_keys(query_stems)
             bookmarks = db.get(bookmark_keys)
-            if query_users:
-                bookmarks = [b for b in bookmarks
-                             if b is not None and b.user in query_users]
         else:
             bookmarks = models.Bookmark.all()
-            if query_users:
-                bookmarks.filter('user IN', query_users)
             bookmarks = bookmarks.order('-updated')
-            bookmarks = self._bookmarks_to_list(bookmarks)
+        bookmarks = self._query_to_list(bookmarks)
+        if query_users:
+            bookmarks = self._filter_query_users(query_users, bookmarks)
         if query_words:
             bookmarks.sort(cmp=lambda x, y: self._cmp(query_stems, x, y))
         _log.debug("computed bookmarks for query '%s'" % query_key)
@@ -166,15 +163,6 @@ class RequestHandler(webapp.RequestHandler):
         _log.debug("computed bookmarks for query '%s'" % query_key)
         return bookmarks, more
 
-    def _compute_cache_key(self, prefix, query_users, query_words):
-        """Compute a string for a computation for use as a cache key."""
-        cache_key = prefix
-        if query_users:
-            cache_key += ' users: ' + ' '.join([u.email() for u in query_users])
-        if query_words:
-            cache_key += ' words: ' + ' '.join(query_words)
-        return cache_key
-
     def _query_words_to_stems(self, query_words):
         """ """
         stop_words, stop_words_hash = utils.read_stop_words()
@@ -195,19 +183,36 @@ class RequestHandler(webapp.RequestHandler):
         bookmark_keys = list(set(bookmark_keys))
         return bookmark_keys
 
-    def _bookmarks_to_list(self, bookmarks):
-        """Convert a bookmark query object into a list of bookmark objects."""
-        _log.debug('reading bookmarks from query into list')
+    def _compute_cache_key(self, prefix, query_users, query_words):
+        """Compute a string for a computation for use as a cache key."""
+        cache_key = prefix
+        if query_users:
+            cache_key += ' users: ' + ' '.join([u.email() for u in query_users])
+        if query_words:
+            cache_key += ' words: ' + ' '.join(query_words)
+        return cache_key
+
+    def _query_to_list(self, query):
+        """Convert a query object into a list of entity objects."""
+        _log.debug('reading entities from query into list')
         l = []
         try:
-            for bookmark in bookmarks:
-                if bookmark is not None:
-                    l.append(bookmark)
+            for entity in query:
+                if entity is not None:
+                    l.append(entity)
         except (MemoryError, db.Timeout,):
-            _log.warning('reading bookmarks from query into list timed out :-(')
+            _log.warning('reading entities from query into list timed out :-(')
         else:
-            _log.debug('read bookmarks from query object into list')
+            _log.debug('read entities from query into list')
         return l
+
+    def _filter_query_users(self, query_users, bookmarks):
+        """ """
+        references = models.Reference.all().filter('user IN', query_users)
+        references = self._query_to_list(references)
+        urls = set([r.bookmark.url for r in references])
+        bookmarks = [b for b in bookmarks if b.url in urls]
+        return bookmarks
 
     def _cmp(self, stems, x, y):
         """Determine which bookmark is more relevant to the given stems."""
@@ -222,17 +227,20 @@ class RequestHandler(webapp.RequestHandler):
                 count = z.counts[index]
             return count
 
+        # Pick the bookmark relevant to more of the given stems.
         x_val = len(set(stems) & set(x.stems))
         y_val = len(set(stems) & set(y.stems))
         if x_val == y_val:
+            # Both bookmarks are relevant to the same number of the given stems,
+            # so pick the one more relevant to the given stems.
             x_val = sum(map(lambda stem: get_count(stem, x), stems))
             y_val = sum(map(lambda stem: get_count(stem, y), stems))
             if x_val == y_val:
-                # The bookmarks are equally relevant to the given stems, so
+                # Both bookmarks are equally relevant to the given stems, so
                 # pick the more popular one.
                 x_val, y_val = x.popularity, y.popularity
                 if x_val == y_val:
-                    # The bookmarks are equally popular, so pick the one
+                    # Both bookmarks are equally popular, so pick the one
                     # updated more recently.
                     x_val, y_val = x.updated, y.updated
         return 1 if x_val <= y_val else -1
