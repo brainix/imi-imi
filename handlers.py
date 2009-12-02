@@ -102,6 +102,7 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
         if page not in ('', 'home', 'rss',):
             return self._serve_error(404)
         path = os.path.join(TEMPLATES, 'home', 'index.html')
+        rss_url = self._get_rss_url()
         login_url, current_user, logout_url = self._get_user()
         if page in ('', 'home',) and current_user is None:
             active_tab = 'imi-imi'
@@ -109,12 +110,8 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
             active_tab = ''
         if page not in ('home', 'rss',) and current_user is not None:
             self.redirect('/users/' + current_user.email())
-        rss_url = self._get_rss_url()
         if page == 'rss':
-            references, more = self._get_bookmarks(references=True,
-                                                   per_page=RSS_NUM_ITEMS)
-            return self._serve_rss(rss_url=rss_url, references=references,
-                                   saved_by='everyone')
+            return self._serve_rss()
         values = {'title': 'social bookmarking', 'rss_url': rss_url,
             'login_url': login_url, 'current_user': current_user,
             'logout_url': logout_url, 'active_tab': active_tab, 'debug': DEBUG,}
@@ -131,8 +128,8 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         snippet = bool(before)
         file_name = 'index.html' if not snippet else 'references.html'
         path = os.path.join(TEMPLATES, 'bookmarks', file_name)
-        login_url, current_user, logout_url = self._get_user()
         rss_url = self._get_rss_url()
+        login_url, current_user, logout_url = self._get_user()
         if not target_email:
             return self._serve_error(404)
         target_email = target_email.replace('%40', '@')
@@ -142,8 +139,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         title = 'bookmarks saved by %s' % target_user.nickname()
         if before == 'rss':
             saved_by = target_user.nickname()
-            return self._serve_rss(rss_url=rss_url, saved_by=saved_by,
-                                   query_users=[target_user])
+            return self._serve_rss(saved_by=saved_by, query_users=[target_user])
         try:
             before = datetime.datetime.strptime(before, DATETIME_FORMAT)
         except (TypeError, ValueError):

@@ -24,56 +24,19 @@
 
 import cStringIO
 import datetime
-import functools
 import logging
 import operator
 
-from google.appengine.api import memcache
 from google.appengine.ext import webapp
 
 import packages
 from pyrss2gen import PyRSS2Gen
 
 from config import RSS_NUM_ITEMS, RSS_NUM_TAGS, RSS_CACHE_SECS
+import decorators
 
 
 _log = logging.getLogger(__name__)
-
-
-def _cache_rss(method):
-    """Decorate an RSS request - cache and serve its resulting XML.
-    
-    While trolling through imi-imi's Google App Engine dashboard
-    (http://appengine.google.com/dashboard?&app_id=imi-imi), I discovered
-    that computing RSS feeds is pretty expensive.  It's probably worth caching
-    computed RSS feeds.
-    """
-    @functools.wraps(method)
-    def wrap(self, *args, **kwds):
-        method_name = method.func_name
-        rss_url = kwds.get('rss_url')
-        if rss_url.endswith('/'):
-            rss_url = rss_url[:-1]
-        key = method_name + ' url: ' + rss_url
-        _log.debug("trying to retrieve cached XML for RSS '%s'" % key)
-        xml = memcache.get(key)
-        if xml is not None:
-            _log.debug("retrieved cached XML for RSS '%s'" % key)
-        else:
-            _log.debug("couldn't retrieve cached XML for RSS '%s'" % key)
-            _log.debug("caching XML for RSS '%s'" % key)
-            xml = method(self, *args, **kwds)
-            try:
-                success = memcache.set(key, xml, time=RSS_CACHE_SECS)
-            except MemoryError:
-                success = False
-            if success:
-                _log.debug("cached XML for RSS '%s'" % key)
-            else:
-                _log.error("couldn't cache XML for RSS '%s'" % key)
-        self.response.headers['Content-Type'] = 'application/rss+xml'
-        self.response.out.write(xml)
-    return wrap
 
 
 class RequestHandler(webapp.RequestHandler):
@@ -95,17 +58,21 @@ class RequestHandler(webapp.RequestHandler):
             rss_url = uri + '/rss'
         return rss_url
 
-    @_cache_rss
-    def _serve_rss(self, rss_url=None, saved_by='everyone', references=tuple(),
-                   query_users=tuple(), num_rss_items=RSS_NUM_ITEMS,
-                   num_rss_tags=RSS_NUM_TAGS):
+    def _serve_rss(self, *args, **kwds):
+        """ """
+        xml = self._compute_rss(**kwds)
+        self.response.headers['Content-Type'] = 'application/rss+xml'
+        self.response.out.write(xml)
+
+    @decorators.memcache_results(RSS_CACHE_SECS)
+    def _compute_rss(self, saved_by='everyone', query_users=tuple(),
+                     num_rss_items=RSS_NUM_ITEMS, num_rss_tags=RSS_NUM_TAGS):
         """Return the XML for an RSS feed for the specified users' bookmarks."""
         title = 'imi-imi - bookmarks saved by %s' % saved_by
         link = self.request.uri.rsplit('/rss', 1)[0]
-        if not references:
-            references, more = self._get_bookmarks(references=True,
-                                                   query_users=query_users,
-                                                   per_page=num_rss_items)
+        references, more = self._get_bookmarks(references=True,
+                                               query_users=query_users,
+                                               per_page=num_rss_items)
         items = []
         for reference in references:
             bookmark, tags = reference.bookmark, []
