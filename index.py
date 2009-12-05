@@ -45,13 +45,16 @@ class RequestHandler(webapp.RequestHandler):
         email = users.get_current_user().email()
         url, mime_type, title, words, html_hash = utils.tokenize_url(url)
         _log.info('%s creating reference %s' % (email, url))
+        bookmark_key = models.Bookmark.key_name(url)
+        bookmark = models.Bookmark.get_by_key_name(bookmark_key)
         reference_key = models.Reference.key_name(email, url)
-        reference = models.Reference.get_by_key_name(reference_key)
+        reference = models.Reference.get_by_key_name(reference_key,
+                                                     parent=bookmark)
         if reference is not None:
-            _log.warning("%s couldn't create reference %s (already exists)" %
-                         (email, url))
+            reference = None
+            message = "%s couldn't create reference %s (already exists)"
+            _log.warning(message % (email, url))
         else:
-            bookmark_key = models.Bookmark.key_name(url)
             bookmark = models.Bookmark.get_or_insert(bookmark_key)
             reference = models.Reference(parent=bookmark,
                                          key_name=reference_key)

@@ -59,7 +59,7 @@ class RequestHandler(webapp.RequestHandler):
         return rss_url
 
     def _serve_rss(self, *args, **kwds):
-        """ """
+        """Serve the XML for an RSS feed for the given users' bookmarks."""
         xml = self._compute_rss(**kwds)
         self.response.headers['Content-Type'] = 'application/rss+xml'
         self.response.out.write(xml)
@@ -67,13 +67,12 @@ class RequestHandler(webapp.RequestHandler):
     @decorators.memcache_results(RSS_CACHE_SECS)
     def _compute_rss(self, saved_by='everyone', query_users=tuple(),
                      num_rss_items=RSS_NUM_ITEMS, num_rss_tags=RSS_NUM_TAGS):
-        """Return the XML for an RSS feed for the specified users' bookmarks."""
+        """Compute the XML for an RSS feed for the given users' bookmarks."""
         title = 'imi-imi - bookmarks saved by %s' % saved_by
-        link = self.request.uri.rsplit('/rss', 1)[0]
+        link, items = self.request.uri.rsplit('/rss', 1)[0], []
         references, more = self._get_bookmarks(references=True,
                                                query_users=query_users,
                                                per_page=num_rss_items)
-        items = []
         for reference in references:
             bookmark, tags = reference.bookmark, []
             for word, count in zip(bookmark.words, bookmark.counts):
