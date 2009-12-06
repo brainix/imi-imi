@@ -249,6 +249,11 @@ form .submit:hover {
     width: 455px !important;
 }
 
+.url_to_create_with_throbber_shown {
+    -moz-border-radius: 6px !important;
+    -webkit-border-radius: 6px !important;
+}
+
 #content .create_bookmark form .submit {
     -moz-border-radius: 0 0 6px 6px;
     -webkit-border-radius: 6px;
@@ -257,7 +262,7 @@ form .submit:hover {
     background: #405156;
     float: right;
     font-size: 16px;
-    height: 32px;
+    height: 36px;
     margin-bottom: 2.5em;
     margin-right: 0;
     width: auto !important;
@@ -270,7 +275,7 @@ form .submit:hover {
 #create_bookmark_throbber {
     display: none;
     float: right;
-    height: 32px;
+    height: 36px;
     margin-bottom: 2.5em;
 }
 

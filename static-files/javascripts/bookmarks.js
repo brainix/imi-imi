@@ -60,6 +60,7 @@ function blur_bookmark() {
 function create_bookmark() {
     // Modify the behavior of the create bookmark bar.
 
+    $("#url_to_create").addClass("url_to_create_with_throbber_shown");
     $("#create_bookmark_throbber").show();
     $("#content .create_bookmark .submit").hide();
 
@@ -74,6 +75,7 @@ function create_bookmark() {
             $("#bookmark_list li.bookmark:hidden").slideDown("slow");
         },
         complete: function(xml_http_request, text_status) {
+            $("#url_to_create").removeClass("url_to_create_with_throbber_shown");
             $("#content .create_bookmark .submit").show();
             $("#create_bookmark_throbber").hide();
         },
