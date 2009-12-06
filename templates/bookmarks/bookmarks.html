@@ -61,10 +61,12 @@
         {% if not bookmark.words and not bookmark|is_image and not bookmark|is_audio %}
             <p>
                 We couldn&rsquo;t auto-tag
-                <a href="{{ bookmark.url }}">{{ bookmark.url }}</a>.  The server
-                may be down, the URL may be incorrect, or the URL may not point
-                to text, HTML, an image, an MP3, or a YouTube video.
+                <a href="{{ bookmark.url }}">{{ bookmark.url }}</a>.  The URL
+                may be incorrect, the server may be down, or the URL may not
+                point to text, HTML, an image, an MP3, or a YouTube video.
             </p>
         {% endif %}
     </li>
 {% endfor %}
+
+{% include "more.html" %}

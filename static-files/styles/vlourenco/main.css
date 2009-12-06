@@ -378,12 +378,19 @@ form .submit:hover {
 #bookmarks .more_bookmarks form .submit {
     background: #405156;
     font-size: 12px;
+    height: 29px;
     text-align: center;
     width: 100%;
 }
 
 #bookmarks .more_bookmarks form .submit:hover {
     background: #B62F2F;
+}
+
+#more_bookmarks_throbber {
+    display: none;
+    height: 29px;
+    text-align: center;
 }
 
 #footer {

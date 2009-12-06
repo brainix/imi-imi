@@ -22,6 +22,7 @@
 
 const DEFAULT_BOOKMARK_TEXT = "enter a url to bookmark";
 
+var create_bookmark_submitted = false;
 var more_bookmarks_clicked = false;
 
 
@@ -60,26 +61,30 @@ function blur_bookmark() {
 function create_bookmark() {
     // Modify the behavior of the create bookmark bar.
 
-    $("#url_to_create").addClass("url_to_create_with_throbber_shown");
-    $("#create_bookmark_throbber").show();
-    $("#content .create_bookmark .submit").hide();
+    if (!create_bookmark_submitted) {
+        create_bookmark_submitted = true;
+        $("#url_to_create").addClass("url_to_create_with_throbber_shown");
+        $("#create_bookmark_throbber").show();
+        $("#content .create_bookmark .submit").hide();
 
-    $.ajax({
-        type: "POST",
-        url: "/users",
-        data: "url_to_create=" + $("#url_to_create").val(),
-        success: function(data, text_status) {
-            $("#bookmark_list").prepend(data);
-            $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
-            $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
-            $("#bookmark_list li.bookmark:hidden").slideDown("slow");
-        },
-        complete: function(xml_http_request, text_status) {
-            $("#url_to_create").removeClass("url_to_create_with_throbber_shown");
-            $("#content .create_bookmark .submit").show();
-            $("#create_bookmark_throbber").hide();
-        },
-    });
+        $.ajax({
+            type: "POST",
+            url: "/users",
+            data: "url_to_create=" + $("#url_to_create").val(),
+            success: function(data, text_status) {
+                $("#bookmark_list").prepend(data);
+                $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
+                $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
+                $("#bookmark_list li.bookmark:hidden").slideDown("slow");
+            },
+            complete: function(xml_http_request, text_status) {
+                $("#content .create_bookmark .submit").show();
+                $("#create_bookmark_throbber").hide();
+                $("#url_to_create").removeClass("url_to_create_with_throbber_shown");
+                create_bookmark_submitted = false;
+            },
+        });
+    }
 
     // Cancel out the default behavior of the create bookmark form.
     return false;
@@ -159,7 +164,10 @@ function more_bookmarks() {
 
     if (!more_bookmarks_clicked) {
         more_bookmarks_clicked = true;
+        $("#more_bookmarks_throbber").show();
+        $("#more_bookmarks .more_bookmarks .submit").hide();
         var more_url = $("#more_url").val();
+
         $.ajax({
             type: "GET",
             url: more_url,
@@ -171,8 +179,10 @@ function more_bookmarks() {
                 $("#bookmark_list #more_bookmarks form").submit(more_bookmarks);
                 $("#bookmark_list li.bookmark:hidden").slideDown("slow");
             },
+            complete: function(xml_http_request, text_status) {
+                more_bookmarks_clicked = false;
+            },
         });
-        more_bookmarks_clicked = false;
     }
 
     // Cancel out the default behavior of the more bookmarks form.

@@ -11,9 +11,12 @@
             {% include "create.html" %}
             <div id="bookmarks" class="lowercase">
                 <ul id="bookmark_list">
-                    {% include "bookmarks.html" %}
-                    {% include "references.html" %}
-                    {% include "more.html" %}
+                    {% if bookmarks %}
+                        {% include "bookmarks.html" %}
+                    {% endif %}
+                    {% if references %}
+                        {% include "references.html" %}
+                    {% endif %}
                 </ul>
             </div>
         </div>

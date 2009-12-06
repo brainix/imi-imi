@@ -96,7 +96,7 @@
                     <p>
                         We couldn&rsquo;t auto-tag
                         <a href="{{ reference.bookmark.url }}">{{ reference.bookmark.url }}</a>.
-                        The server may be down, the URL may be incorrect, or the
+                        The URL may be incorrect, the server may be down, or the
                         URL may not point to text, HTML, an image, an MP3, or a
                         YouTube video.
                     </p>
@@ -105,3 +105,5 @@
         {% endif %}
     </li>
 {% endfor %}
+
+{% include "more.html" %}
