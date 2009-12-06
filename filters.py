@@ -43,12 +43,12 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
     """Convert a bookmark's title into something presentable."""
     title = bookmark.title or bookmark.url
     if title != bookmark.url:
-        # The bookmark's title is different from its URL.  That means we were
-        # able to parse out the title from the HTML when we indexed the
-        # bookmark, and the title is something meaningful.  All we have to do
-        # now is make sure the title is short enough.  If it's too long, lop off
-        # some words, preferably splitting at punctuation, so we're left with
-        # something still meaningful.
+        # The bookmark's title is different from its URL.  That means that we
+        # were able to parse out the title from the HTML when we indexed the
+        # bookmark, and that the title is something meaningful.  All that we
+        # have to do now is to make sure that the title is short enough.  If
+        # it's too long, then lop off some words, preferably splitting at
+        # punctuation, so that we're left with something still meaningful.
         words = title.split()
         if len(words) > max_words:
             words = words[:max_words]
@@ -59,8 +59,8 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
                 title = title[:slice_index]
         title = title.strip()
     else:
-        # The bookmark's title is the same as its URL.  That means we weren't
-        # able to parse out the title from the HTML when we indexed the
+        # The bookmark's title is the same as its URL.  That means that we
+        # weren't able to parse out the title from the HTML when we indexed the
         # bookmark.
         if is_image(bookmark) or is_audio(bookmark):
             # The URL points to some non-HTML (image or audio) file.  Strip off

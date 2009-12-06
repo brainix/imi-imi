@@ -33,12 +33,12 @@ $(function() {
     // Hooray, a page has been loaded!  Go through the DOM and modify the
     // behavior of every element that we want to bless with AJAX.  :-D
 
-    $("#query").click(click_search);
+    $("#query").focus(focus_search);
     $("#query").blur(blur_search);
     $("#query").keyup(fetch_live_results);
     $("#query").keydown(scroll_live_results);
 
-    $("#url_to_create").click(click_bookmark);
+    $("#url_to_create").focus(focus_bookmark);
     $("#url_to_create").blur(blur_bookmark);
     $("#create_bookmark").submit(create_bookmark);
     $(".update_bookmark").submit(update_bookmark);

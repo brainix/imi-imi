@@ -104,11 +104,11 @@ class RequestHandler(webapp.RequestHandler):
         """Return a list of bookmarks that match some given criteria.
         
         The sort order is implicit in the criteria.  If search terms are
-        specified, the bookmarks should be sorted by relevance.  Otherwise, they
-        should be sorted in reverse chronological order.
+        specified, then the bookmarks should be sorted by relevance.
+        Otherwise, they should be sorted in reverse chronological order.
 
-        If there's some problem with the search criteria, raise a SearchError
-        exception.
+        If there's some problem with the search criteria, then raise a
+        SearchError exception.
         """
         query_key = self._compute_cache_key('_search_bookmarks_generic',
                                             query_users, query_words)
@@ -145,8 +145,8 @@ class RequestHandler(webapp.RequestHandler):
         situation - only return the bookmarks that should appear on the
         requested results page, etc.
 
-        This method's results can't be cached, so please keep this method as
-        efficient as reasonable.
+        This method's results can't be cached, so please keep this method
+        efficient.
         """
         query_key = self._compute_cache_key('_search_bookmarks_specific',
                                             query_users, query_words)

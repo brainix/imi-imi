@@ -46,7 +46,7 @@ def require_login(method):
     """
     @functools.wraps(method)
     def wrap(self, *args, **kwds):
-        if not users.get_current_user():
+        if users.get_current_user() is None:
             # The user isn't logged in.  Redirect to a login page that redirects
             # back to the current URL (corresponding to the decorated method).
             self.redirect(users.create_login_url(self.request.uri))
@@ -62,9 +62,9 @@ def memcache_results(cache_secs):
     This is a convenient decorator to use on an expensive method that doesn't
     always need to return live results.  Conceptually, we check the memcache
     for the results of a method call.  If those results have already been
-    computed and cached, we simply return them.  Otherwise, we call the method
-    to compute the results, cache the results (so that future calls will hit
-    the cache), then return the results.
+    computed and cached, then we simply return them.  Otherwise, we call the
+    method to compute the results, cache the results (so that future calls will
+    hit the cache), then return the results.
 
     We take into account the module, class, and method names, positional
     argument values, and keyword argument names and values when computing the
@@ -122,8 +122,8 @@ def _compute_memcache_key(self, method, *args, **kwds):
 def run_in_transaction(method):
     """Transactionally execute a method.
 
-    If we can't execute the method transactionally, just run it
-    non-transactionally.
+    If we can't execute the method transactionally, then just run it non-
+    transactionally.
     """
     @functools.wraps(method)
     def wrap(*args, **kwds):

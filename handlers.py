@@ -91,11 +91,11 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
         """Serve a get request for /.  Serve the homepage or site-wide RSS feed.
         
         This method doubles as a catch-all for URLs that don't map to any other
-        request handler.  If we didn't receive a page keyword argument, the user
-        requested /, so serve the home page.  If page is 'home' or 'rss', serve
-        the home page or site-wide RSS feed, respectively.  If page is anything
-        else, the user requested a URL for something that doesn't exist, so
-        serve a 404.
+        request handler.  If we didn't receive a page keyword argument, then
+        the user requested /, so serve the home page.  If page is 'home' or
+        'rss', then serve the home page or site-wide RSS feed, respectively.
+        If page is anything else, then the user requested a URL for something
+        that doesn't exist, so serve a 404.
         """
         if page.endswith('/'):
             page = page[:-1]
@@ -253,9 +253,9 @@ class Search(search.RequestHandler, _RequestHandler):
         login_url, current_user, logout_url = self._get_user()
 
         if not query_words and not query_user:
-            # This is an Easter egg, but an intentional and a useful one.  If we
-            # got a blank search query, show all of the bookmarks sorted reverse
-            # chronologically.
+            # This is an Easter egg, but an intentional and a useful one.  If
+            # we got a blank search query, then show all of the bookmarks
+            # sorted reverse chronologically.
             title = 'all bookmarks'
             bookmarks, more = self._get_bookmarks(page=page)
         else:
@@ -300,17 +300,16 @@ class Search(search.RequestHandler, _RequestHandler):
     def _compute_more_url(self):
         """ """
         path, query = self.request.path, self.request.query
-        query, index, page, success = cgi.parse_qsl(query), 0, 0, False
+        query, index, success = cgi.parse_qsl(query), 0, False
         for index in range(len(query)):
             if query[index][0] == 'page':
                 # Subtle: This next line might throw a ValueError exception,
                 # but the caller catches it and serves a 404.
-                page = int(query[index][1])
-                query[index] = ('page', str(page + 1))
-                success = True
+                page = str(int(query[index][1]) + 1)
+                query[index], success = ('page', page), True
                 break
         if not success:
-            query.append(('page', str(page + 1)))
+            query.append(('page', '1'))
         query = urllib.urlencode(query)
         more_url = path + '?' + query
         return more_url
@@ -331,7 +330,7 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         if method == 'normalize-url':
             obj = self._normalize_url()
-        if method == 'auto-tag':
+        elif method == 'auto-tag':
             obj = self._auto_tag()
         else:
             obj = self._serve_error(404, 'Unrecognized method "%s".' % method)

@@ -43,14 +43,14 @@ var live_result_selected = -1;          // Which live result is selected.
 
 
 /*----------------------------------------------------------------------------*\
- |                               click_search()                               |
+ |                               focus_search()                               |
 \*----------------------------------------------------------------------------*/
 
-function click_search() {
-    // The user has clicked into the search bar.  If the bar contains the
-    // default explanatory text, clear it out to contain no text.  Otherwise, if
-    // the user previously entered a search query and we successfully fetched
-    // some live search results, show those results.
+function focus_search() {
+    // The user has clicked or tabbed into the search bar.  If the bar contains
+    // the default explanatory text, then clear it out to contain no text.
+    // Otherwise, if the user previously entered a search query and we
+    // successfully fetched some live search results, then show those results.
 
     if ($("#query").val() == DEFAULT_QUERY_TEXT) {
         $("#query").val("");
@@ -68,10 +68,10 @@ function click_search() {
 \*----------------------------------------------------------------------------*/
 
 function blur_search() {
-    // The user has clicked out of the search bar.  If the bar contains no text,
-    // populate it with the default explanatory text.  Otherwise, if the user
-    // previously entered a search query and we successfully fetched some live
-    // search results, hide those results.
+    // The user has clicked or tabbed out of the search bar.  If the bar
+    // contains no text, then populate it with the default explanatory text.
+    // Otherwise, if the user previously entered a search query and we
+    // successfully fetched some live search results, then hide those results.
 
     if ($("#query").val() == "") {
         $("#query").val(DEFAULT_QUERY_TEXT);
@@ -90,8 +90,8 @@ function blur_search() {
 
 function fetch_live_results(event) {
     // The user has pressed a key in the search bar.  Try to fetch some live
-    // search results.  If we succeed, display the live results.  If we fail
-    // for any reason, hide the live results.
+    // search results.  If we succeed, then display the live results.  If we
+    // fail for any reason, then hide the live results.
 
     key_code = event.keyCode || event.which || window.event.keyCode;
     if (key_code == KEY_BACKSPACE || key_code == KEY_SPACE || key_code == KEY_DELETE ||
@@ -99,8 +99,8 @@ function fetch_live_results(event) {
         key_code >= KEY_A && key_code <= KEY_Z) {
 
         // The user has somehow modified the search query.  If we're currently
-        // waiting on live results, abort that request (in favor of the request
-        // that we're about to make).
+        // waiting on live results, then abort that request (in favor of the
+        // request that we're about to make).
         if (current_live_search_request != null) {
             current_live_search_request.abort()
             current_live_search_request = null;
@@ -157,7 +157,7 @@ function fetch_live_results(event) {
 
     if (key_code == KEY_ESCAPE) {
         // The user pressed the escape key.  If we're currently waiting on live
-        // results, abort that request.  Also, clear out the search query
+        // results, then abort that request.  Also, clear out the search query
         // string and hide any previously fetched live results.
         if (current_live_search_request != null) {
             current_live_search_request.abort()

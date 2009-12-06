@@ -27,12 +27,13 @@ var more_bookmarks_clicked = false;
 
 
 /*----------------------------------------------------------------------------*\
- |                              click_bookmark()                              |
+ |                              focus_bookmark()                              |
 \*----------------------------------------------------------------------------*/
 
-function click_bookmark() {
-    // The user has clicked into the "save bookmark" bar.  If the bar contains
-    // the default explanatory text, clear it out to contain no text.
+function focus_bookmark() {
+    // The user has clicked or tabbed into the "save bookmark" bar.  If the bar
+    // contains the default explanatory text, then clear it out to contain no
+    // text.
 
     if ($("#url_to_create").val() == DEFAULT_BOOKMARK_TEXT) {
         $("#url_to_create").val("");
@@ -45,8 +46,9 @@ function click_bookmark() {
 \*----------------------------------------------------------------------------*/
 
 function blur_bookmark() {
-    // The user has clicked out of the "save bookmark" bar.  If the bar contains
-    // no text, populate it with the default explanatory text.
+    // The user has clicked or tabbed out of the "save bookmark" bar.  If the
+    // bar contains no text, then populate it with the default explanatory
+    // text.
 
     if ($("#url_to_create").val() == "") {
         $("#url_to_create").val(DEFAULT_BOOKMARK_TEXT);
