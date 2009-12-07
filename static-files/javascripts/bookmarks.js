@@ -100,9 +100,10 @@ function create_bookmark() {
 function update_bookmark() {
     // Modify the behavior of the update bookmark buttons.
 
-    var bookmark = $(this).closest("li");
     var bookmark_key = $(this).find("input[name='bookmark_key']").val();
     var reference_key = $(this).find("input[name='reference_key_to_update']").val();
+    var stale_bookmark = $(this).closest("li");
+    var element_to_scroll = $.browser.safari ? "body" : "html";
     var offset = $("#create_bookmark").offset().top;
 
     $.ajax({
@@ -113,9 +114,9 @@ function update_bookmark() {
             "reference_key_to_update": reference_key,
         },
         success: function(data, text_status) {
-            bookmark.slideUp("slow", function() {
-                bookmark.remove();
-                $("body").animate({scrollTop: offset}, "slow", "swing", function() {
+            stale_bookmark.slideUp("slow", function() {
+                stale_bookmark.remove();
+                $(element_to_scroll).animate({scrollTop: offset}, "slow", "swing", function() {
                     $("#bookmark_list").prepend(data);
                     $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
                     $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
