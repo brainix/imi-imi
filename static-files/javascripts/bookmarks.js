@@ -103,6 +103,7 @@ function update_bookmark() {
     var bookmark = $(this).closest("li");
     var bookmark_key = $(this).find("input[name='bookmark_key']").val();
     var reference_key = $(this).find("input[name='reference_key_to_update']").val();
+    var offset = $("#create_bookmark").offset().top;
 
     $.ajax({
         type: "POST",
@@ -114,10 +115,12 @@ function update_bookmark() {
         success: function(data, text_status) {
             bookmark.slideUp("slow", function() {
                 bookmark.remove();
-                $("#bookmark_list").prepend(data);
-                $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
-                $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
-                $("#bookmark_list li.bookmark:hidden").slideDown("slow");
+                $("body").animate({scrollTop: offset}, "slow", "swing", function() {
+                    $("#bookmark_list").prepend(data);
+                    $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
+                    $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
+                    $("#bookmark_list li.bookmark:hidden").slideDown("slow");
+                });
             });
         },
     });

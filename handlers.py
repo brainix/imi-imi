@@ -180,6 +180,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
                 reference = self._create_bookmark(url_to_create)
             elif reference_to_update.user == current_user:
                 reference = self._update_bookmark(reference_to_update)
+                reference.updated = datetime.datetime.now()
             else:
                 reference = None
                 _log.error("couldn't update reference (insufficient privileges")
