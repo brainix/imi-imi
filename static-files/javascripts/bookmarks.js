@@ -64,7 +64,11 @@ function create_bookmark() {
     // Modify the behavior of the create bookmark bar.
 
     if (!create_bookmark_submitted) {
+        // Don't allow the user to click the "save bookmark" button again,
+        // until we're done with this procedure.
         create_bookmark_submitted = true;
+
+        // Transform the "save bookmark" button into a spinner.
         $("#url_to_create").addClass("url_to_create_with_throbber_shown");
         $("#create_bookmark_throbber").show();
         $("#content .create_bookmark .submit").hide();
@@ -80,9 +84,13 @@ function create_bookmark() {
                 $("#bookmark_list li.bookmark:hidden").slideDown("slow");
             },
             complete: function(xml_http_request, text_status) {
+                // Transform the spinner back into the "save bookmark" button.
                 $("#content .create_bookmark .submit").show();
                 $("#create_bookmark_throbber").hide();
                 $("#url_to_create").removeClass("url_to_create_with_throbber_shown");
+
+                // We're done with this procedure.  Allow the user to click the
+                // "save bookmark" button again.
                 create_bookmark_submitted = false;
             },
         });
@@ -168,24 +176,38 @@ function delete_bookmark() {
 function more_bookmarks() {
     // Modify the behavior of the more bookmarks button.
 
+    var more_url = $("#more_url").val();
+
     if (!more_bookmarks_clicked) {
+        // Don't allow the user to click the "more bookmarks" button again,
+        // until we're done with this procedure.
         more_bookmarks_clicked = true;
+
+        // Transform the "more bookmarks" button into a spinner.
         $("#more_bookmarks_throbber").show();
         $("#more_bookmarks .more_bookmarks .submit").hide();
-        var more_url = $("#more_url").val();
 
         $.ajax({
             type: "GET",
             url: more_url,
             success: function(data, text_status) {
+                // Get rid of the spinner.
                 $("#bookmark_list #more_bookmarks").remove();
+
                 $("#bookmark_list").append(data);
                 $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
                 $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
                 $("#bookmark_list #more_bookmarks form").submit(more_bookmarks);
                 $("#bookmark_list li.bookmark:hidden").slideDown("slow");
             },
+            error: function(xml_http_request, text_status, error_thrown) {
+                // Transform the spinner back into the "more bookmarks" button.
+                $("#more_bookmarks .more_bookmarks .submit").show();
+                $("#more_bookmarks_throbber").hide();
+            },
             complete: function(xml_http_request, text_status) {
+                // We're done with this procedure.  Allow the user to click the
+                // "more bookmark" button again.
                 more_bookmarks_clicked = false;
             },
         });

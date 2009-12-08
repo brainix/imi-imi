@@ -299,7 +299,7 @@ class Search(search.RequestHandler, _RequestHandler):
         return query_user, query_users, query_words, page
 
     def _compute_more_url(self):
-        """ """
+        """Compute the URL for the next search results page."""
         path, query = self.request.path, self.request.query
         query, index, success = cgi.parse_qsl(query), 0, False
         for index in range(len(query)):
@@ -326,7 +326,7 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
 
     @decorators.no_browser_cache
     def get(self):
-        """ """
+        """Someone has made an API GET request.  Service it."""
         method = self.request.get('method')
         self.response.headers['Content-Type'] = 'application/json'
         if method == 'normalize-url':
@@ -338,14 +338,14 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
         self.response.out.write(simplejson.dumps(obj))
 
     def _normalize_url(self):
-        """ """
+        """Normalize the specified URL."""
         url = self.request.get('url')
         if not url:
             return self._serve_error(406, '"url" parameter not specified.')
         return utils.normalize_url(url)
 
     def _auto_tag(self):
-        """ """
+        """Auto-tag the specified URL or HTML / text snippet."""
         url = self.request.get('url')
         html = self.request.get('html')
         if not url and not html:

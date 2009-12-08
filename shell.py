@@ -34,10 +34,6 @@ import optparse
 import os
 import sys
 
-# Set the environment variables required to authenticate in order to do anything
-# "interesting" to the datastore:
-os.environ['AUTH_DOMAIN'] = 'gmail.com'
-os.environ['USER_EMAIL'] = 'brainix@gmail.com'
 
 # Enumerate the directories containing the Google App Engine modules on
 # Unix-like operating systems:
@@ -67,30 +63,49 @@ from google.appengine.ext.remote_api import remote_api_stub
 
 def main():
     """Launch a Python console able to interact with imi-imi's datastore."""
-    app_id, host = parse_args()
+
+    # Parse the command-line arguments:
+    parser = config_parser()
+    app_id, host, auth_domain, email = parse_args(parser)
+
+    # Set the environment variables required to authenticate in order to do
+    # anything "interesting" with/to the datastore:
+    os.environ['AUTH_DOMAIN'], os.environ['USER_EMAIL'] = auth_domain, email
+
+    # Connect to the datastore:
     remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', auth, host)
+
+    # Finally, launch the interactive console:
     code.interact('%s shell' % app_id, None, locals())
 
 
-def parse_args():
-    """Parse the command-line arguments for the app ID and the host.
+def config_parser():
+    """Configure the command-line argument parser."""
+    usage = '%prog [--host=app-id.appspot.com] [--auth_domain=gmail.com] '
+    usage += '[--email=brainix@gmail.com] app-id'
+    parser = optparse.OptionParser(description=__doc__, usage=usage)
+    parser.add_option('--host', dest='host', default=None,
+                      help='Google App Engine app host name')
+    parser.add_option('--auth_domain', dest='auth_domain', default='gmail.com',
+                      help='authentication domain')
+    parser.add_option('--email', dest='email', default='brainix@gmail.com',
+                      help='email address')
+    return parser
+
+
+def parse_args(parser):
+    """Parse the command-line arguments.
 
     If the user provided incorrect or insufficient command-line arguments, print
     usage information and exit the shell.
     """
-    usage = '%prog [--host=app_id.appspot.com] app_id'
-    parser = optparse.OptionParser(description=__doc__, usage=usage)
-    parser.add_option('--host', dest='host', default=None,
-                      help='Google App Engine app host name')
     opts, args = parser.parse_args(sys.argv[1:])
-    try:
-        app_id = args[0]
-    except IndexError:
-        parser.error('argument required: Google App Engine app ID')
-    if len(args) > 1:
-        parser.error('only one argument allowed: Google App Engine app ID')
+    if len(args) != 1:
+        parser.error('exactly one argument required: Google App Engine app ID')
+    app_id = args[0]
     host = opts.host if opts.host is not None else app_id + '.appspot.com'
-    return app_id, host
+    auth_domain, email = opts.auth_domain, opts.email
+    return app_id, host, auth_domain, email
 
 
 def auth():

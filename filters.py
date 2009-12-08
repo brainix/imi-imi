@@ -71,7 +71,7 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
 
 @register.filter
 def beautify_datetime(dt1):
-    """Convert a Python datetime into something human readable."""
+    """Convert a Python datetime object into a pleasantly readable string."""
     dt = datetime.datetime
     dt2 = dt.now()
     suffix = 'ago' if dt1 < dt2 else 'from now'
@@ -105,7 +105,7 @@ def beautify_datetime(dt1):
 @register.filter
 def style_tag(bookmark, word, size_prefix='size', color_prefix='color',
               scale=8):
-    """ """
+    """For a bookmark & a word, compute the style (size & color) for the tag."""
     try:
         index = bookmark.words.index(word)
     except ValueError:

@@ -164,7 +164,7 @@ class RequestHandler(webapp.RequestHandler):
         return bookmarks, more
 
     def _query_words_to_stems(self, query_words):
-        """ """
+        """Convert words into stems, throwing away dupes and common words."""
         stop_words, stop_words_hash = utils.read_stop_words()
         query_words = [w for w in query_words if not w in stop_words]
         query_words = list(set(query_words))
@@ -173,7 +173,7 @@ class RequestHandler(webapp.RequestHandler):
         return query_stems
 
     def _query_stems_to_bookmark_keys(self, query_stems):
-        """ """
+        """Convert a list of stems into a list of relevant bookmark keys."""
         bookmark_keys = []
         for stem in query_stems:
             keychain_key_name = models.Keychain.key_name(stem)
@@ -207,7 +207,7 @@ class RequestHandler(webapp.RequestHandler):
         return l
 
     def _filter_query_users(self, query_users, bookmarks):
-        """ """
+        """Sift out only the bookmarks saved by the specified users."""
         references = models.Reference.all().filter('user IN', query_users)
         references = self._query_to_list(references)
         urls = set([r.bookmark.url for r in references])
