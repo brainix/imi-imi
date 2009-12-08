@@ -30,6 +30,7 @@ This code was written by Nick Johnson and swiftly yoinked by Raj Shah.  See:
 
 import code
 import getpass
+import optparse
 import os
 import sys
 
@@ -38,18 +39,58 @@ import sys
 os.environ['AUTH_DOMAIN'] = 'gmail.com'
 os.environ['USER_EMAIL'] = 'brainix@gmail.com'
 
-# Add the directories containing the Google App Engine modules to the Python
-# path:
+# Enumerate the directories containing the Google App Engine modules on
+# Unix-like operating systems:
 GOOGLE_APP_ENGINE_DIRS = (
     os.path.join('/', 'usr', 'local', 'google_appengine'),
     os.path.join('/', 'usr', 'local', 'google_appengine', 'lib', 'yaml', 'lib'),
 )
+
+# Enumerate the directories containing the Google App Engine modules on Windows
+# operating systems:
+"""
+GOOGLE_APP_ENGINE_DIRS = (
+    os.path.join('C:\\', 'Program Files', 'Google', 'google_appengine'),
+    os.path.join('C:\\', 'Program Files', 'Google', 'google_appengine', 'lib', 'yaml', 'lib'),
+)
+"""
+
+# Add the directories containing the Google App Engine modules to the Python
+# path:
 for dir in GOOGLE_APP_ENGINE_DIRS:
     if not dir in sys.path:
         sys.path.append(dir)
 
 from google.appengine.ext import db
 from google.appengine.ext.remote_api import remote_api_stub
+
+
+def main():
+    """Launch a Python console able to interact with imi-imi's datastore."""
+    app_id, host = parse_args()
+    remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', auth, host)
+    code.interact('%s shell' % app_id, None, locals())
+
+
+def parse_args():
+    """Parse the command-line arguments for the app ID and the host.
+
+    If the user provided incorrect or insufficient command-line arguments, print
+    usage information and exit the shell.
+    """
+    usage = '%prog [--host=app_id.appspot.com] app_id'
+    parser = optparse.OptionParser(description=__doc__, usage=usage)
+    parser.add_option('--host', dest='host', default=None,
+                      help='Google App Engine app host name')
+    opts, args = parser.parse_args(sys.argv[1:])
+    try:
+        app_id = args[0]
+    except IndexError:
+        parser.error('argument required: Google App Engine app ID')
+    if len(args) > 1:
+        parser.error('only one argument allowed: Google App Engine app ID')
+    host = opts.host if opts.host is not None else app_id + '.appspot.com'
+    return app_id, host
 
 
 def auth():
@@ -59,27 +100,6 @@ def auth():
     operation that requires authentication.
     """
     return raw_input('username: '), getpass.getpass('password: ')
-
-
-def parse_args():
-    """Parse the command-line arguments for the app ID and the host.
-
-    If the user provided incorrect or insufficient command-line arguments, print
-    usage information and exit the shell.
-    """
-    if len(sys.argv) not in (2, 3,):
-        print 'usage: %s app_id [host]' % sys.argv[0]
-        sys.exit(1)
-    app_id = sys.argv[1]
-    host = sys.argv[2] if len(sys.argv) == 3 else app_id + '.appspot.com'
-    return app_id, host
-
-
-def main():
-    """Launch a Python console able to interact with imi-imi's datastore."""
-    app_id, host = parse_args()
-    remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', auth, host)
-    code.interact('%s shell' % app_id, None, locals())
 
 
 if __name__ == '__main__':
