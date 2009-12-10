@@ -29,10 +29,11 @@ import os
 _log = logging.getLogger(__name__)
 
 
-# Programmatically determine whether to turn on debug mode.  If we're running on
-# the SDK, turn on debug mode.  Otherwise, turn off debug mode.
-SERVER_SOFTWARE = os.getenv('SERVER_SOFTWARE')
-DEBUG = SERVER_SOFTWARE and SERVER_SOFTWARE.split('/')[0] == 'Development'
+# Programmatically determine whether to turn on debug mode.  If we're running
+# on the SDK, then turn on debug mode.  Otherwise, we're running on the cloud,
+# so turn off debug mode.
+SERVER_SOFTWARE = os.getenv('SERVER_SOFTWARE', '')
+DEBUG = SERVER_SOFTWARE.split('/', 1)[0] == 'Development'
 _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
 
 

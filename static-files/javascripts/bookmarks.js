@@ -84,6 +84,11 @@ function create_bookmark() {
                 $("#bookmark_list li.bookmark:hidden").slideDown("slow");
             },
             complete: function(xml_http_request, text_status) {
+                // Clear out the URL that the user entered into the "save
+                // bookmark" bar.  This facilitates the rapid entry of multiple
+                // URLs.
+                $("#url_to_create").val("");
+
                 // Transform the spinner back into the "save bookmark" button.
                 $("#content .create_bookmark .submit").show();
                 $("#create_bookmark_throbber").hide();
@@ -146,23 +151,28 @@ function update_bookmark() {
 function delete_bookmark() {
     // Modify the behavior of the delete bookmark buttons.
 
-    var bookmark = $(this).closest("li");
-    var bookmark_key = $(this).find("input[name='bookmark_key']").val();
-    var reference_key = $(this).find("input[name='reference_key_to_delete']").val();
+    var confirm_delete = confirm("Delete bookmark?");
 
-    $.ajax({
-        type: "POST",
-        url: "/users",
-        data: {
-            "bookmark_key": bookmark_key,
-            "reference_key_to_delete": reference_key,
-        },
-        complete: function(xml_http_request, text_status) {
-            bookmark.slideUp("slow", function() {
-                bookmark.remove();
-            });
-        },
-    });
+    if (confirm_delete) {
+
+        var bookmark_key = $(this).find("input[name='bookmark_key']").val();
+        var reference_key = $(this).find("input[name='reference_key_to_delete']").val();
+        var bookmark = $(this).closest("li");
+
+        $.ajax({
+            type: "POST",
+            url: "/users",
+            data: {
+                "bookmark_key": bookmark_key,
+                "reference_key_to_delete": reference_key,
+            },
+            complete: function(xml_http_request, text_status) {
+                bookmark.slideUp("slow", function() {
+                    bookmark.remove();
+                });
+            },
+        });
+    }
 
     // Cancel out the default behavior of the delete bookmark forms.
     return false;

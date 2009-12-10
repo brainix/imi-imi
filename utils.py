@@ -41,14 +41,22 @@ import urllib
 import urlparse
 
 try:
+    # Try to use Google App Engine's urlfetch API.
     from google.appengine.api.urlfetch import fetch
     from google.appengine.api.urlfetch import InvalidURLError
     from google.appengine.api.urlfetch import DownloadError
     from google.appengine.api.urlfetch import ResponseTooLargeError
-    _exceptions = (InvalidURLError, DownloadError, ResponseTooLargeError)
 except ImportError:
+    # Oops.  We can't use Google App Engine's urlfetch API.  We mustn't be
+    # running on Google App Engine.  That's cool - fall back to Python's
+    # urllib2.
     import urllib2
+    _on_google_app_engine = False
     _exceptions = (urllib2.URLError,)
+else:
+    # Awesome.  We can use Google App Engine's urlfetch API.
+    _on_google_app_engine = True
+    _exceptions = (InvalidURLError, DownloadError, ResponseTooLargeError)
 
 import packages
 from beautifulsoup.BeautifulSoup import BeautifulSoup
@@ -95,6 +103,20 @@ def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
 
     That's "make sure the status code is OK" as in "okay," *not* "0K" as in
     "zero kilobytes."  Just in case there was any confusion.
+
+    Since the following is a doctest, we know that we must be running this
+    script in someone's development environment, I.E. not on Google App Engine.
+    Make sure that this script properly detected that:
+        >>> _on_google_app_engine
+        False
+
+    Example usage:
+        >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
+        >>> url, status_code, mime_type, content = fetch_content(url)
+        >>> url
+        'http://www.gutenberg.org/files/11/11-h/11-h.htm'
+        >>> status_code, mime_type, len(content)
+        (200, 'text/html', 179982)
     """
     url, status_code, mime_type, content = normalize_url(url), None, '', None
     if not url:
@@ -102,32 +124,22 @@ def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
     else:
         _log.debug('fetching %s' % url)
         try:
-            try:
+            if _on_google_app_engine:
                 response = fetch(url, allow_truncated=True,
                                  follow_redirects=True)
-            except NameError:
+            else:
                 response = urllib2.urlopen(url)
         except _exceptions, e:
-            # Oops.  Either the URL wasn't valid (probably wasn't fully
-            # qualified - didn't begin with http:// or https://), or there was
-            # a problem retrieving the data.
+            # Oops.  Either the URL was invalid, or there was a problem
+            # retrieving the data.
             _log.warning("couldn't fetch %s (%s)" % (url, type(e)))
         else:
-            try:
-                url = normalize_url(response.headers.get('location', url))
-                status_code = response.status_code
-                mime_type = response.headers.get('content-type')
-                content = response.content
-            except AttributeError:
-                url = normalize_url(response.geturl())
-                status_code = response.code
-                mime_type = response.headers.get('Content-Type')
-                content = response.read()
+            url, status_code, mime_type, content = _grok_response(response, url)
             if status_code not in status_codes:
                 # Oops.  We retrieved some data, but the server returned an
                 # unacceptable status code.
-                _log.warning('fetched %s, but status code %s' % (url,
-                                                                 status_code))
+                _log.warning('fetched %s, but status code %s' %
+                             (url, status_code))
                 status_code, mime_type, content = None, '', None
             _log.debug('fetched %s' % url)
         if ';' in mime_type:
@@ -135,11 +147,26 @@ def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
     return url, status_code, mime_type, content
 
 
+def _grok_response(response, url):
+    """From a response, extract the URL, status code, MIME type, and content."""
+    if _on_google_app_engine:
+        url = normalize_url(response.headers.get('location', url))
+        status_code = response.status_code
+        mime_type = response.headers.get('content-type')
+        content = response.content
+    else:
+        url = normalize_url(response.geturl())
+        status_code = response.code
+        mime_type = response.headers.get('Content-Type')
+        content = response.read()
+    return url, status_code, mime_type, content
+
+
 def normalize_url(url):
     """Normalize a URL.
     
-    We normalize URLs in order to determine whether two syntactically different
-    URLs are equivalent.
+    We normalize URLs in order to determine whether or not two syntactically
+    different URLs are equivalent.
 
     Example usage:
         >>> normalize_url('google.com')
@@ -362,8 +389,7 @@ def auto_tag(words, stop_words, min_count=FETCH_MIN_COUNT):
     # stems into tags.
     tags, max_count = {}, 0
     for word in [word for word in set(words) if not word in stop_words]:
-        tag = {}
-        tag['stem'], tag['word'] = stemmer.stem(word), word
+        tag = {'stem': stemmer.stem(word), 'word': word}
         tag['count'] = float(words.count(word))
         try:
             tags[tag['stem']]['count'] += tag['count']
