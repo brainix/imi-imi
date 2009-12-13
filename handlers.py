@@ -56,10 +56,15 @@ class _RequestHandler(webapp.RequestHandler):
     """Base request handler, from which other request handlers inherit."""
 
     def handle_exception(self, exception, debug_mode):
-        """Houston, we have a problem...  Handle a 500 internal server error."""
+        """Houston, we have a problem...  Handle an uncaught exception.
+
+        This method overrides the webapp.RequestHandler class's
+        handle_exception method.  This method gets called whenever there's an
+        uncaught exception anywhere in the imi-imi code.
+        """
         error_message = traceback.format_exc()  # Get the traceback.
         _log.critical(error_message)            # Log the traceback.
-        self._serve_error(500)                  # Serve the error page.
+        self._serve_error(500)                  # Serve the 500 error page.
 
     def _serve_error(self, error_code):
         """Houston, we have a problem...  Serve an error page."""

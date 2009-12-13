@@ -43,6 +43,24 @@ var live_result_selected = -1;          // Which live result is selected.
 
 
 /*----------------------------------------------------------------------------*\
+ |                               init_search()                                |
+\*----------------------------------------------------------------------------*/
+
+function init_search() {
+    // Hooray, a page has been loaded!
+
+    // Go through the DOM and modify the behavior of every element that we want
+    // to bless with AJAX.
+    $("#query").focus(focus_search);
+    $("#query").blur(blur_search);
+    $("#query").keyup(fetch_live_results);
+    $("#query").keydown(scroll_live_results);
+
+    $("#query").val(DEFAULT_QUERY_TEXT);
+}
+
+
+/*----------------------------------------------------------------------------*\
  |                               focus_search()                               |
 \*----------------------------------------------------------------------------*/
 

@@ -20,7 +20,7 @@
 \*----------------------------------------------------------------------------*/
 
 
-const images = new Array(
+const IMAGES_TO_PRELOAD = new Array(
     "/static-files/images/favicon.ico",
     "/static-files/images/throbber.gif"
 );
@@ -29,29 +29,19 @@ const images = new Array(
 /*----------------------------------------------------------------------------*\
  |                                    $()                                     |
 \*----------------------------------------------------------------------------*/
+
 $(function() {
-    // Hooray, a page has been loaded!  Go through the DOM and modify the
-    // behavior of every element that we want to bless with AJAX.  :-D
-
-    $("#query").focus(focus_search);
-    $("#query").blur(blur_search);
-    $("#query").keyup(fetch_live_results);
-    $("#query").keydown(scroll_live_results);
-
-    $("#url_to_create").focus(focus_bookmark);
-    $("#url_to_create").blur(blur_bookmark);
-    $("#create_bookmark").submit(create_bookmark);
-    $(".update_bookmark").submit(update_bookmark);
-    $(".delete_bookmark").submit(delete_bookmark);
-    $("#more_bookmarks form").submit(more_bookmarks);
-
-    preload_images(images);
+    // Hooray, a page has been loaded!
+    init_search();
+    init_bookmarks();
+    preload_images(IMAGES_TO_PRELOAD);
 });
 
 
 /*----------------------------------------------------------------------------*\
  |                              preload_images()                              |
 \*----------------------------------------------------------------------------*/
+
 function preload_images(images) {
     if (document.images) {
         for (index in images) {

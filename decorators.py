@@ -174,6 +174,7 @@ def no_browser_cache(method):
     @functools.wraps(method)
     def wrap(self, *args, **kwds):
         self.response.headers['Cache-Control'] = 'no-store'
+        self.response.headers['Expires'] = '-1'
         self.response.headers['Pragma'] = 'no-cache'
         return method(self, *args, **kwds)
     return wrap

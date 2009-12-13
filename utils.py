@@ -216,7 +216,6 @@ def normalize_url(url):
         >>> normalize_url('HTTPS://GOOGLE.COM:8443/../a/%c2/../%b1/./%b.html?sex=male&first=raj&middle=&last=shah')
         'https://google.com:8443/a/%B1/%b.html?first=raj&last=shah&sex=male'
     """
-
     _log.debug('normalizing %s' % url)
 
     # Make sure that there's a scheme (http or https).
