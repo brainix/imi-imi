@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------#
 #   decorators.py                                                              #
 #                                                                              #
-#   Copyright (c) 2009, Code A La Mode, original authors.                      #
+#   Copyright (c) 2009-2010, Code A La Mode, original authors.                 #
 #                                                                              #
 #       This file is part of imi-imi.                                          #
 #                                                                              #
@@ -59,7 +59,13 @@ def require_login(method):
 def memcache_results(cache_secs):
     """Decorate a method with the memcache pattern.
 
-    This is a convenient decorator to use on an expensive method that doesn't
+    Technically, the memcache_results function isn't a decorator.  It's a
+    function that returns a decorator.  We have to jump through these hoops
+    because we want to pass an argument to the decorator - how long to cache
+    the results.  But a decorator can only accept one argument - the method to
+    be decorated.
+
+    memcache_results is convenient to use on an expensive method that doesn't
     always need to return live results.  Conceptually, we check the memcache
     for the results of a method call.  If those results have already been
     computed and cached, then we simply return them.  Otherwise, we call the

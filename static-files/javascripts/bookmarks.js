@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*\
  |  bookmarks.js                                                              |
  |                                                                            |
- |  Copyright (c) 2009, Code A La Mode, original authors.                     |
+ |  Copyright (c) 2009-2010, Code A La Mode, original authors.                |
  |                                                                            |
  |      This file is part of imi-imi.                                         |
  |                                                                            |
@@ -42,14 +42,16 @@ function init_bookmarks() {
     $(".delete_bookmark").submit(delete_bookmark);
     $("#more_bookmarks form").submit(more_bookmarks);
 
+    // Make sure that the "save bookmark" bar displays the default explanatory
+    // text.
+    $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
+
     // For some reason, sometimes (particularly when we're clicking
     // back/forward through the pages in the site) our button labels get
     // confused.  Straighten them out.
     $("#create_bookmark .submit").val("save bookmark");
     $(".update_bookmark .submit").val("update");
     $(".delete_bookmark .submit").val("delete");
-
-    $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
 }
 
 

@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------#
 #   main.py                                                                    #
 #                                                                              #
-#   Copyright (c) 2009, Code A La Mode, original authors.                      #
+#   Copyright (c) 2009-2010, Code A La Mode, original authors.                 #
 #                                                                              #
 #       This file is part of imi-imi.                                          #
 #                                                                              #
@@ -76,10 +76,14 @@ def profile(output='log', sort_by='time', num_stats=80,
             callees=False, callers=False):
     """Profile imi-imi's performance."""
     if not output in ('log', 'html',):
-        _log.critical('unintelligible profile output spec: %s' % output)
+        message = "unintelligible profile output spec: %s " % output
+        message += "(must be 'log' or 'html')"
+        _log.critical(message)
         main()
     if not sort_by in ('time', 'cumulative',):
-        _log.critical('unintelligible profile sort order spec: %s' % sort_by)
+        message = "unintelligible profile sort order spec: %s " % sort_by
+        message += "(must be 'time' or 'cumulative')"
+        _log.critical()
         main()
     else:
         profile = cProfile.Profile()

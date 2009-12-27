@@ -3,7 +3,7 @@
 #------------------------------------------------------------------------------#
 #   shell.py                                                                   #
 #                                                                              #
-#   Copyright (c) 2009, Code A La Mode, original authors.                      #
+#   Copyright (c) 2009-2010, Code A La Mode, original authors.                 #
 #                                                                              #
 #       This file is part of imi-imi.                                          #
 #                                                                              #

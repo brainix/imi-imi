@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*\
  |  search.js                                                                 |
  |                                                                            |
- |  Copyright (c) 2009, Code A La Mode, original authors.                     |
+ |  Copyright (c) 2009-2010, Code A La Mode, original authors.                |
  |                                                                            |
  |      This file is part of imi-imi.                                         |
  |                                                                            |
@@ -56,6 +56,7 @@ function init_search() {
     $("#query").keyup(fetch_live_results);
     $("#query").keydown(scroll_live_results);
 
+    // Make sure that the search bar displays the default explanatory text.
     $("#query").val(DEFAULT_QUERY_TEXT);
 }
 
@@ -230,8 +231,8 @@ function hide_live_results() {
 
 function scroll_live_results(event) {
     // The user has released a key in the search bar.  If the user hit the up
-    // or down arrow key, and if any live search results have been shown, then
-    // scroll up or down through the live search results.
+    // or down arrow key, and if any live search results have been fetched and
+    // displayed, then scroll up or down through the live search results.
 
     key_code = event.keyCode || event.which || window.event.keyCode;
     if (key_code == KEY_UP || key_code == KEY_DOWN) {
