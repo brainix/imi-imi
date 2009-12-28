@@ -22,25 +22,25 @@
 
 const DEFAULT_CREATE_BOOKMARK_TEXT = "enter a url to bookmark";
 
-var create_bookmark_submitted = false;
-var more_bookmarks_clicked = false;
+var createBookmarkSubmitted = false;
+var moreBookmarksClicked = false;
 
 
 /*----------------------------------------------------------------------------*\
- |                              init_bookmarks()                              |
+ |                              initBookmarks()                               |
 \*----------------------------------------------------------------------------*/
 
-function init_bookmarks() {
+function initBookmarks() {
     // Hooray, a page has been loaded!
 
     // Go through the DOM and modify the behavior of every element that we want
     // to bless with AJAX.
-    $("#url_to_create").focus(focus_create_bookmark);
-    $("#url_to_create").blur(blur_create_bookmark);
-    $("#create_bookmark").submit(create_bookmark);
-    $(".update_bookmark").submit(update_bookmark);
-    $(".delete_bookmark").submit(delete_bookmark);
-    $("#more_bookmarks form").submit(more_bookmarks);
+    $("#url_to_create").focus(focusCreateBookmark);
+    $("#url_to_create").blur(blurCreateBookmark);
+    $("#create_bookmark").submit(createBookmark);
+    $(".update_bookmark").submit(updateBookmark);
+    $(".delete_bookmark").submit(deleteBookmark);
+    $("#more_bookmarks form").submit(moreBookmarks);
 
     // Make sure that the "save bookmark" bar displays the default explanatory
     // text.
@@ -56,10 +56,10 @@ function init_bookmarks() {
 
 
 /*----------------------------------------------------------------------------*\
- |                          focus_create_bookmark()                           |
+ |                           focusCreateBookmark()                            |
 \*----------------------------------------------------------------------------*/
 
-function focus_create_bookmark() {
+function focusCreateBookmark() {
     // The user has clicked or tabbed into the "save bookmark" bar.  If the bar
     // contains the default explanatory text, then clear it out to contain no
     // text.
@@ -71,10 +71,10 @@ function focus_create_bookmark() {
 
 
 /*----------------------------------------------------------------------------*\
- |                           blur_create_bookmark()                           |
+ |                            blurCreateBookmark()                            |
 \*----------------------------------------------------------------------------*/
 
-function blur_create_bookmark() {
+function blurCreateBookmark() {
     // The user has clicked or tabbed out of the "save bookmark" bar.  If the
     // bar contains no text, then populate it with the default explanatory
     // text.
@@ -86,16 +86,16 @@ function blur_create_bookmark() {
 
 
 /*----------------------------------------------------------------------------*\
- |                             create_bookmark()                              |
+ |                              createBookmark()                              |
 \*----------------------------------------------------------------------------*/
 
-function create_bookmark() {
+function createBookmark() {
     // Modify the behavior of the create bookmark bar.
 
-    if (!create_bookmark_submitted) {
+    if (!createBookmarkSubmitted) {
         // Don't allow the user to click the "save bookmark" button again,
         // until we're done with this procedure.
-        create_bookmark_submitted = true;
+        createBookmarkSubmitted = true;
 
         // Transform the "save bookmark" button into a spinner.
         $("#url_to_create").addClass("url_to_create_with_throbber_shown");
@@ -110,7 +110,7 @@ function create_bookmark() {
             type: "POST",
             url: "/users",
             data: "url_to_create=" + $("#url_to_create").val(),
-            success: function(data, text_status) {
+            success: function(data, textStatus) {
                 // Hooray, we succeed!  Clear out the URL that the user entered
                 // into the "save bookmark" bar.  This facilitates the rapid
                 // entry of multiple URLs.
@@ -118,11 +118,11 @@ function create_bookmark() {
 
                 // Slide down the new bookmark's HTML snippet.
                 $("#bookmark_list").prepend(data);
-                $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
-                $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
+                $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(updateBookmark);
+                $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                 $("#bookmark_list li.bookmark:hidden").slideDown("slow");
             },
-            complete: function(xml_http_request, text_status) {
+            complete: function(xmlHttpRequest, textStatus) {
                 // Transform the spinner back into the "save bookmark" button.
                 $("#content .create_bookmark .submit").show();
                 $("#create_bookmark_throbber").hide();
@@ -130,7 +130,7 @@ function create_bookmark() {
 
                 // We're done with this procedure.  Allow the user to click the
                 // "save bookmark" button again.
-                create_bookmark_submitted = false;
+                createBookmarkSubmitted = false;
             },
         });
     }
@@ -141,32 +141,32 @@ function create_bookmark() {
 
 
 /*----------------------------------------------------------------------------*\
- |                             update_bookmark()                              |
+ |                              updateBookmark()                              |
 \*----------------------------------------------------------------------------*/
 
-function update_bookmark() {
+function updateBookmark() {
     // Modify the behavior of the "update bookmark" buttons.
 
-    var bookmark_key = $(this).find("input[name='bookmark_key']").val();
-    var reference_key = $(this).find("input[name='reference_key_to_update']").val();
-    var stale_bookmark = $(this).closest("li");
-    var element_to_scroll = $.browser.safari ? "body" : "html";
+    var bookmarkKey = $(this).find("input[name='bookmark_key']").val();
+    var referenceKey = $(this).find("input[name='reference_key_to_update']").val();
+    var staleBookmark = $(this).closest("li");
+    var elementToScroll = $.browser.safari ? "body" : "html";
     var offset = $("#create_bookmark").offset().top;
 
     $.ajax({
         type: "POST",
         url: "/users",
         data: {
-            "bookmark_key": bookmark_key,
-            "reference_key_to_update": reference_key,
+            "bookmark_key": bookmarkKey,
+            "reference_key_to_update": referenceKey,
         },
-        success: function(data, text_status) {
-            stale_bookmark.slideUp("slow", function() {
-                stale_bookmark.remove();
-                $(element_to_scroll).animate({scrollTop: offset}, "slow", "swing", function() {
+        success: function(data, textStatus) {
+            staleBookmark.slideUp("slow", function() {
+                staleBookmark.remove();
+                $(elementToScroll).animate({scrollTop: offset}, "slow", "swing", function() {
                     $("#bookmark_list").prepend(data);
-                    $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
-                    $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
+                    $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(updateBookmark);
+                    $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                     $("#bookmark_list li.bookmark:hidden").slideDown("slow");
                 });
             });
@@ -179,19 +179,19 @@ function update_bookmark() {
 
 
 /*----------------------------------------------------------------------------*\
- |                             delete_bookmark()                              |
+ |                              deleteBookmark()                              |
 \*----------------------------------------------------------------------------*/
 
-function delete_bookmark() {
+function deleteBookmark() {
     // Modify the behavior of the "delete bookmark" buttons.
 
-    var confirm_delete = confirm("Delete bookmark?");
+    var confirmDelete = confirm("Delete bookmark?");
 
-    if (confirm_delete) {
+    if (confirmDelete) {
         // OK.  The user has clicked a "delete bookmark" button and confirmed
         // that that's what he/she meant to do.
-        var bookmark_key = $(this).find("input[name='bookmark_key']").val();
-        var reference_key = $(this).find("input[name='reference_key_to_delete']").val();
+        var bookmarkKey = $(this).find("input[name='bookmark_key']").val();
+        var referenceKey = $(this).find("input[name='reference_key_to_delete']").val();
         var bookmark = $(this).closest("li");
 
         // Make the AJAX request to delete the bookmark.  Whether we succeed or
@@ -200,10 +200,10 @@ function delete_bookmark() {
             type: "POST",
             url: "/users",
             data: {
-                "bookmark_key": bookmark_key,
-                "reference_key_to_delete": reference_key,
+                "bookmark_key": bookmarkKey,
+                "reference_key_to_delete": referenceKey,
             },
-            complete: function(xml_http_request, text_status) {
+            complete: function(xmlHttpRequest, textStatus) {
                 bookmark.slideUp("slow", function() {
                     bookmark.remove();
                 });
@@ -217,18 +217,18 @@ function delete_bookmark() {
 
 
 /*----------------------------------------------------------------------------*\
- |                              more_bookmarks()                              |
+ |                              moreBookmarks()                               |
 \*----------------------------------------------------------------------------*/
 
-function more_bookmarks() {
+function moreBookmarks() {
     // Modify the behavior of the "more bookmarks" button.
 
-    var more_url = $("#more_url").val();
+    var moreUrl = $("#more_url").val();
 
-    if (!more_bookmarks_clicked) {
+    if (!moreBookmarksClicked) {
         // Don't allow the user to click the "more bookmarks" button again,
         // until we're done with this procedure.
-        more_bookmarks_clicked = true;
+        moreBookmarksClicked = true;
 
         // Transform the "more bookmarks" button into a spinner.
         $("#more_bookmarks_throbber").show();
@@ -241,8 +241,8 @@ function more_bookmarks() {
         // button.
         $.ajax({
             type: "GET",
-            url: more_url,
-            success: function(data, text_status) {
+            url: moreUrl,
+            success: function(data, textStatus) {
                 // Hooray, we succeeded!  Get rid of the spinner.
                 $("#bookmark_list #more_bookmarks").remove();
 
@@ -250,9 +250,9 @@ function more_bookmarks() {
                 // snippet - modify the behavior of the update, delete, and
                 // more bookmarks buttons.
                 $("#bookmark_list").append(data);
-                $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(update_bookmark);
-                $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(delete_bookmark);
-                $("#bookmark_list #more_bookmarks form").submit(more_bookmarks);
+                $("#bookmark_list li.bookmark:hidden .update_bookmark").submit(updateBookmark);
+                $("#bookmark_list li.bookmark:hidden .delete_bookmark").submit(deleteBookmark);
+                $("#bookmark_list #more_bookmarks form").submit(moreBookmarks);
 
                 // Finally, slide down the more bookmarks HTML snippet.
                 // Subtle: If there are yet more bookmarks, then this
@@ -261,17 +261,17 @@ function more_bookmarks() {
                 // there's nothing more required of us there.
                 $("#bookmark_list li.bookmark:hidden").slideDown("slow");
             },
-            error: function(xml_http_request, text_status, error_thrown) {
+            error: function(xmlHttpRequest, textStatus, errorThrown) {
                 // Oops, we failed.  :-(  Transform the spinner back into the
                 // "more bookmarks" button to allow the user to click it and
                 // try again.
                 $("#more_bookmarks .more_bookmarks .submit").show();
                 $("#more_bookmarks_throbber").hide();
             },
-            complete: function(xml_http_request, text_status) {
+            complete: function(xmlHttpRequest, textStatus) {
                 // We're done with this procedure.  Allow the user to click the
                 // "more bookmark" button again.
-                more_bookmarks_clicked = false;
+                moreBookmarksClicked = false;
             },
         });
     }

@@ -36,25 +36,25 @@ const KEY_A = 65;
 const KEY_Z = 90;
 
 
-var current_live_search_request = null; // The current live search's XMLHttpRequest object.
-var live_results_fetched = false;       // Whether live results have been fetched.
-var live_results_shown = false;         // Whether live results are shown.
-var live_result_selected = -1;          // Which live result is selected.
+var currentLiveSearchRequest = null; // The current live search's XMLHttpRequest object.
+var liveResultsFetched = false;      // Whether live results have been fetched.
+var liveResultsShown = false;        // Whether live results are shown.
+var liveResultSelected = -1;         // Which live result is selected.
 
 
 /*----------------------------------------------------------------------------*\
- |                               init_search()                                |
+ |                                initSearch()                                |
 \*----------------------------------------------------------------------------*/
 
-function init_search() {
+function initSearch() {
     // Hooray, a page has been loaded!
 
     // Go through the DOM and modify the behavior of every element that we want
     // to bless with AJAX.
-    $("#query").focus(focus_search);
-    $("#query").blur(blur_search);
-    $("#query").keyup(fetch_live_results);
-    $("#query").keydown(scroll_live_results);
+    $("#query").focus(focusSearch);
+    $("#query").blur(blurSearch);
+    $("#query").keyup(fetchLiveResults);
+    $("#query").keydown(scrollLiveResults);
 
     // Make sure that the search bar displays the default explanatory text.
     $("#query").val(DEFAULT_QUERY_TEXT);
@@ -62,10 +62,10 @@ function init_search() {
 
 
 /*----------------------------------------------------------------------------*\
- |                               focus_search()                               |
+ |                               focusSearch()                                |
 \*----------------------------------------------------------------------------*/
 
-function focus_search() {
+function focusSearch() {
     // The user has clicked or tabbed into the search bar.  If the bar contains
     // the default explanatory text, then clear it out to contain no text.
     // Otherwise, if the user previously entered a search query and we
@@ -75,18 +75,18 @@ function focus_search() {
         $("#query").val("");
     }
     else {
-        if (live_results_fetched && !live_results_shown) {
-            show_live_results();
+        if (liveResultsFetched && !liveResultsShown) {
+            showLiveResults();
         }
     }
 }
 
 
 /*----------------------------------------------------------------------------*\
- |                               blur_search()                                |
+ |                                blurSearch()                                |
 \*----------------------------------------------------------------------------*/
 
-function blur_search() {
+function blurSearch() {
     // The user has clicked or tabbed out of the search bar.  If the bar
     // contains no text, then populate it with the default explanatory text.
     // Otherwise, if the user previously entered a search query and we
@@ -96,72 +96,72 @@ function blur_search() {
         $("#query").val(DEFAULT_QUERY_TEXT);
     }
     else {
-        if (live_results_shown) {
-            hide_live_results();
+        if (liveResultsShown) {
+            hideLiveResults();
         }
     }
 }
 
 
 /*----------------------------------------------------------------------------*\
- |                            fetch_live_results()                            |
+ |                             fetchLiveResults()                             |
 \*----------------------------------------------------------------------------*/
 
-function fetch_live_results(event) {
+function fetchLiveResults(event) {
     // The user has pressed a key in the search bar.  Try to fetch some live
     // search results.  If we succeed, then display the live results.  If we
     // fail for any reason, then hide the live results.
 
-    key_code = event.keyCode || event.which || window.event.keyCode;
-    if (key_code == KEY_BACKSPACE || key_code == KEY_SPACE || key_code == KEY_DELETE ||
-        key_code >= KEY_0 && key_code <= KEY_9 ||
-        key_code >= KEY_A && key_code <= KEY_Z) {
+    var keyCode = event.keyCode || event.which || window.event.keyCode;
+    if (keyCode == KEY_BACKSPACE || keyCode == KEY_SPACE || keyCode == KEY_DELETE ||
+        keyCode >= KEY_0 && keyCode <= KEY_9 ||
+        keyCode >= KEY_A && keyCode <= KEY_Z) {
 
         // The user has somehow modified the search query.  If we're currently
         // waiting on live results, then abort that request (in favor of the
         // request that we're about to make).
-        if (current_live_search_request != null) {
-            current_live_search_request.abort()
-            current_live_search_request = null;
+        if (currentLiveSearchRequest != null) {
+            currentLiveSearchRequest.abort()
+            currentLiveSearchRequest = null;
         }
 
-        query_string = $("#query").val();
-        if (query_string) {
+        var queryString = $("#query").val();
+        if (queryString) {
             // OK, the search query string isn't empty.  Make an AJAX request
             // for live results for this particular search query string.
-            current_live_search_request = $.ajax({
+            currentLiveSearchRequest = $.ajax({
                 type: "GET",
                 url: "/live_search",
-                data: "query=" + query_string,
-                success: function(data, text_status) {
+                data: "query=" + queryString,
+                success: function(data, textStatus) {
                     if (data.length > 1) {
                         // Hooray!  The AJAX call succeeded and returned some
                         // live results.  Display them.
-                        live_results_fetched = true;
-                        live_result_selected = -1;
+                        liveResultsFetched = true;
+                        liveResultSelected = -1;
                         $("#live_search").html(data);
-                        show_live_results();
+                        showLiveResults();
                     }
                     else {
                         // Oops.  The AJAX call succeeded but didn't return any
                         // live results.  Hide any previously fetched live
                         // results.
-                        live_results_fetched = false;
-                        hide_live_results();
+                        liveResultsFetched = false;
+                        hideLiveResults();
                     }
                 },
-                error: function(request, text_status, error_thrown) {
+                error: function(request, textStatus, errorThrown) {
                     // Oops.  The AJAX call failed.  Hide any previously
                     // fetched live results.
-                    live_results_fetched = false;
-                    hide_live_results();
+                    liveResultsFetched = false;
+                    hideLiveResults();
                 },
-                complete: function(request, text_status) {
+                complete: function(request, textStatus) {
                     // This function gets called whether the AJAX call succeeds
                     // or fails.  In either case, the AJAX call has completed,
                     // so set the the current live search's XMLHttpRequest
                     // object to null.
-                    current_live_search_request = null;
+                    currentLiveSearchRequest = null;
                 },
             });
         }
@@ -169,22 +169,22 @@ function fetch_live_results(event) {
         else {
             // Oops.  The search query string is empty - there's nothing to
             // fetch.  Hide any previously fetched live results.
-            live_results_fetched = false;
-            hide_live_results();
+            liveResultsFetched = false;
+            hideLiveResults();
         }
     }
 
-    if (key_code == KEY_ESCAPE) {
+    if (keyCode == KEY_ESCAPE) {
         // The user pressed the escape key.  If we're currently waiting on live
         // results, then abort that request.  Also, clear out the search query
         // string and hide any previously fetched live results.
-        if (current_live_search_request != null) {
-            current_live_search_request.abort()
-            current_live_search_request = null;
+        if (currentLiveSearchRequest != null) {
+            currentLiveSearchRequest.abort()
+            currentLiveSearchRequest = null;
         }
-        live_results_fetched = false;
+        liveResultsFetched = false;
         $("#query").val("");
-        hide_live_results();
+        hideLiveResults();
     }
 
     // Subtle:  Here, the default behavior is to display newly typed characters
@@ -196,14 +196,14 @@ function fetch_live_results(event) {
 
 
 /*----------------------------------------------------------------------------*\
- |                            show_live_results()                             |
+ |                             showLiveResults()                              |
 \*----------------------------------------------------------------------------*/
 
-function show_live_results() {
+function showLiveResults() {
     // Fade in the previously fetched live search results.
 
-    if (!live_results_shown) {
-        live_results_shown = true;
+    if (!liveResultsShown) {
+        liveResultsShown = true;
         $("#query").addClass("query_with_live_search_shown");
         $("#live_search").fadeIn("slow");
     }
@@ -211,14 +211,14 @@ function show_live_results() {
 
 
 /*----------------------------------------------------------------------------*\
- |                            hide_live_results()                             |
+ |                             hideLiveResults()                              |
 \*----------------------------------------------------------------------------*/
 
-function hide_live_results() {
+function hideLiveResults() {
     // Fade out the previously fetched live search results.
 
-    if (live_results_shown) {
-        live_results_shown = false;
+    if (liveResultsShown) {
+        liveResultsShown = false;
         $("#query").removeClass("query_with_live_search_shown");
         $("#live_search").fadeOut("slow");
     }
@@ -226,31 +226,31 @@ function hide_live_results() {
 
 
 /*----------------------------------------------------------------------------*\
- |                           scroll_live_results()                            |
+ |                            scrollLiveResults()                             |
 \*----------------------------------------------------------------------------*/
 
-function scroll_live_results(event) {
+function scrollLiveResults(event) {
     // The user has released a key in the search bar.  If the user hit the up
     // or down arrow key, and if any live search results have been fetched and
     // displayed, then scroll up or down through the live search results.
 
-    key_code = event.keyCode || event.which || window.event.keyCode;
-    if (key_code == KEY_UP || key_code == KEY_DOWN) {
-        if (live_results_shown) {
-            live_results = $("#live_search ul li a");
-            if (live_results.length > 0) {
-                if (live_result_selected != -1) {
-                    id = "#live_search_result_" + live_result_selected;
+    var keyCode = event.keyCode || event.which || window.event.keyCode;
+    if (keyCode == KEY_UP || keyCode == KEY_DOWN) {
+        if (liveResultsShown) {
+            var liveResults = $("#live_search ul li a");
+            if (liveResults.length > 0) {
+                if (liveResultSelected != -1) {
+                    id = "#live_search_result_" + liveResultSelected;
                     $(id).removeClass("live_search_result_selected");
                 }
-                live_result_selected += key_code == KEY_UP ? -1 : 1;
-                if (live_result_selected < 0) {
-                    live_result_selected = live_results.length - 1;
+                liveResultSelected += keyCode == KEY_UP ? -1 : 1;
+                if (liveResultSelected < 0) {
+                    liveResultSelected = liveResults.length - 1;
                 }
-                if (live_result_selected > live_results.length - 1) {
-                    live_result_selected = 0;
+                if (liveResultSelected > liveResults.length - 1) {
+                    liveResultSelected = 0;
                 }
-                id = "#live_search_result_" + live_result_selected;
+                id = "#live_search_result_" + liveResultSelected;
                 $("#query").val($(id).html());
                 $(id).addClass("live_search_result_selected");
             }

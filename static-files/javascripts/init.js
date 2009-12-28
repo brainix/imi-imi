@@ -32,17 +32,17 @@ const IMAGES_TO_PRELOAD = new Array(
 
 $(function() {
     // Hooray, a page has been loaded!
-    init_search();
-    init_bookmarks();
-    preload_images(IMAGES_TO_PRELOAD);
+    initSearch();
+    initBookmarks();
+    preloadImages(IMAGES_TO_PRELOAD);
 });
 
 
 /*----------------------------------------------------------------------------*\
- |                              preload_images()                              |
+ |                              preloadImages()                               |
 \*----------------------------------------------------------------------------*/
 
-function preload_images(images) {
+function preloadImages(images) {
     if (document.images) {
         for (index in images) {
             image = new Image();
