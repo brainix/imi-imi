@@ -109,8 +109,8 @@ class RequestHandler(webapp.RequestHandler):
         current_user, bookmark = users.get_current_user(), reference.bookmark
         verb = 'creating' if not bookmark.is_saved() else 'updating'
         _log.info('%s %s bookmark %s' % (current_user.email(), verb, url))
-        bookmark.users.append(current_user)
-        bookmark.users = list(set(bookmark.users))
+        if current_user not in bookmark.users:
+            bookmark.users.append(current_user)
         bookmark.popularity = len(bookmark.users)
         if bookmark.html_hash != html_hash:
             bookmark.url, bookmark.mime_type = url, mime_type
@@ -145,7 +145,8 @@ class RequestHandler(webapp.RequestHandler):
         current_user, bookmark = users.get_current_user(), reference.bookmark
         to_put, to_delete = [], [reference]
         if bookmark is not None:
-            bookmark.users = list(set(bookmark.users) - set([current_user]))
+            while current_user in bookmark.users:
+                bookmark.users.remove(current_user)
             bookmark.popularity = len(bookmark.users)
             (to_put if bookmark.popularity else to_delete).append(bookmark)
         return to_put, to_delete, not bookmark.popularity
