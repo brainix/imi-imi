@@ -18,13 +18,13 @@
 #       You should have received a copy of the GNU General Public License      #
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
-
 """Google App Engine datastore models."""
 
 
 import functools
 import hashlib
 
+from google.appengine.api.users import User
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
@@ -38,7 +38,13 @@ class _BaseModel(polymodel.PolyModel):
 
 
 class Bookmark(_BaseModel):
-    """Model describing a bookmark."""
+    """Model describing a bookmark.
+
+    This model contains the various metadata and data that describe a bookmark.
+    But it also acts as a forward index describing which search queries should
+    match the particular bookmark.
+    """
+    users = db.ListProperty(User, default=[])
     url = db.LinkProperty()
     mime_type = db.StringProperty(default='')
     title = db.StringProperty(multiline=True)
@@ -64,7 +70,11 @@ class Reference(_BaseModel):
 
 
 class Keychain(_BaseModel):
-    """Model describing which bookmarks should match a query for a stem."""
+    """Model describing which bookmarks should match a query for a stem.
+    
+    This model acts as a reverse index describing which bookmarks should match
+    a particular search query.
+    """
     stem = db.StringProperty()
     word = db.StringProperty()
     keys = db.ListProperty(db.Key, default=[])

@@ -18,7 +18,6 @@
 #       You should have received a copy of the GNU General Public License      #
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
-
 """Request handlers."""
 
 
@@ -354,9 +353,11 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
         url = self.request.get('url')
         html = self.request.get('html')
         if not url and not html:
-            return self._serve_error(406, 'Both "url" and "html" parameters specified.')
+            error_message = 'Neither "url" nor "html" parameter specified.'
+            return self._serve_error(406, error_message)
         if url and html:
-            return self._serve_error(406, 'Neither "url" nor "html" parameter specified.')
+            error_message = 'Both "url" and "html" parameters specified.'
+            return self._serve_error(406, error_message)
         if url:
             url, mime_type, title, words, html_hash = utils.tokenize_url(url)
         elif html:

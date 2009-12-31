@@ -18,7 +18,6 @@
 #       You should have received a copy of the GNU General Public License      #
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
-
 """Decorators to alter the behavior of request handler methods."""
 
 
@@ -71,11 +70,6 @@ def memcache_results(cache_secs):
     computed and cached, then we simply return them.  Otherwise, we call the
     method to compute the results, cache the results (so that future calls will
     hit the cache), then return the results.
-
-    We take into account the module, class, and method names, positional
-    argument values, and keyword argument names and values when computing the
-    memcache key for the method call.  This eliminates the possibility of a
-    false positive memcache hit.
     """
     def wrap1(method):
         @functools.wraps(method)

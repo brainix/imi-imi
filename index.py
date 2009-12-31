@@ -18,7 +18,6 @@
 #       You should have received a copy of the GNU General Public License      #
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
-
 """Bookmark saving and indexing logic."""
 
 
@@ -60,7 +59,7 @@ class RequestHandler(webapp.RequestHandler):
                                          key_name=reference_key)
             reference.bookmark = bookmark
             reference = self._common(url, mime_type, title, words, html_hash,
-                                     reference, True)
+                                     reference)
             _log.info('%s created reference %s' % (email, url))
         return reference
 
@@ -71,7 +70,7 @@ class RequestHandler(webapp.RequestHandler):
         _log.info('%s updating reference %s' % (email, url))
         url, mime_type, title, words, html_hash = utils.tokenize_url(url)
         reference = self._common(url, mime_type, title, words, html_hash,
-                                 reference, False)
+                                 reference)
         _log.info('%s updated reference %s' % (email, url))
         return reference
 
@@ -85,8 +84,7 @@ class RequestHandler(webapp.RequestHandler):
             self._unindex_bookmark(reference.bookmark)
         _log.info('%s deleted reference %s' % (email, url))
 
-    def _common(self, url, mime_type, title, words, html_hash, reference,
-                increment_popularity):
+    def _common(self, url, mime_type, title, words, html_hash, reference):
         """Perform the operations common to creating / updating references."""
         reindex = reference.bookmark.html_hash != html_hash
         if reindex:
@@ -100,20 +98,20 @@ class RequestHandler(webapp.RequestHandler):
                        "(HTML hasn't changed since last)" % url)
             tags = []
         reference = self._save_bookmark(url, mime_type, title, tags, html_hash,
-                                        reference, increment_popularity)
+                                        reference)
         if reindex:
             self._index_bookmark(reference.bookmark)
             _log.debug('re-tagged and re-indexed bookmark %s' % url)
         return reference
 
-    def _save_bookmark(self, url, mime_type, title, tags, html_hash, reference,
-                       increment_popularity):
+    def _save_bookmark(self, url, mime_type, title, tags, html_hash, reference):
         """Save the reference for the current user and the specified URL."""
         current_user, bookmark = users.get_current_user(), reference.bookmark
         verb = 'creating' if not bookmark.is_saved() else 'updating'
         _log.info('%s %s bookmark %s' % (current_user.email(), verb, url))
-        if increment_popularity:
-            bookmark.popularity += 1
+        bookmark.users.append(current_user)
+        bookmark.users = list(set(bookmark.users))
+        bookmark.popularity = len(bookmark.users)
         if bookmark.html_hash != html_hash:
             bookmark.url, bookmark.mime_type = url, mime_type
             bookmark.title = title
@@ -144,10 +142,11 @@ class RequestHandler(webapp.RequestHandler):
     @decorators.batch_put_and_delete
     def _unsave_bookmark(self, reference):
         """Delete the reference for the current user and the specified URL."""
-        bookmark, to_put, to_delete = reference.bookmark, [], []
-        to_delete.append(reference)
+        current_user, bookmark = users.get_current_user(), reference.bookmark
+        to_put, to_delete = [], [reference]
         if bookmark is not None:
-            bookmark.popularity -= 1
+            bookmark.users = list(set(bookmark.users) - set([current_user]))
+            bookmark.popularity = len(bookmark.users)
             (to_put if bookmark.popularity else to_delete).append(bookmark)
         return to_put, to_delete, not bookmark.popularity
 

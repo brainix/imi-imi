@@ -18,3 +18,4 @@
 #       You should have received a copy of the GNU General Public License      #
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
+"""File necessary to identify this directory as a Python package."""

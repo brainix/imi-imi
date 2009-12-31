@@ -20,7 +20,6 @@
 #       You should have received a copy of the GNU General Public License      #
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
-
 """Launch an interactive Python console with access to imi-imi's datastore.
 
 This code was written by Nick Johnson and swiftly yoinked by Raj Shah.  See:
