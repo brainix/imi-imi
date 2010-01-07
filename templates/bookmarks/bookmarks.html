@@ -7,10 +7,29 @@
 
         <span class="saved_by">
             Saved by
-            <a href="/users/{{ bookmark.user.email }}">{{ bookmark.user.nickname }}</a>
-            {% if bookmark.popularity|add:"-1" %}
-                and {{ bookmark.popularity|add:"-1" }}
-                other{% ifnotequal bookmark.popularity 2 %}s{% endifnotequal %},
+            {% if not bookmark.popularity|add:"-1" %}
+                <a href="/users/{{ bookmark.user.email }}">{{ bookmark.user.nickname }}</a>
+            {% else %}
+                <span id="others_short_{{ bookmark|hash_bookmark }}">
+                    <a href="/users/{{ bookmark.user.email }}">{{ bookmark.user.nickname }}</a>
+                    and {{ bookmark.popularity|add:"-1" }}
+                    other{{ bookmark.popularity|add:"-1"|pluralize }}
+                    <a href="#"
+                       onclick="$('#others_short_{{ bookmark|hash_bookmark }}').hide();
+                                $('#others_long_{{ bookmark|hash_bookmark }}').show();
+                                return false;">&rarr;</a>
+                </span>
+                <span id="others_long_{{ bookmark|hash_bookmark }}"
+                      style="display: none">
+                    {% for user in bookmark.users %}
+                        {% if forloop.last %}and{% endif %}
+                        <a href="/users/{{ user.email }}">{{ user.nickname }}</a>{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                    <a href="#"
+                       onclick="$('#others_long_{{ bookmark|hash_bookmark }}').hide();
+                                $('#others_short_{{ bookmark|hash_bookmark }}').show();
+                                return false;">&larr;</a>
+                </span>
                 updated
             {% endif %}
             {{ bookmark.updated|beautify_datetime }}
@@ -33,8 +52,8 @@
             <script type="text/javascript" src="swfobject.js"></script>
             <div id="{{ bookmark.key.id }}">
                 <p>
-                    You need Flash player 8+ and JavaScript enabled to view this
-                    video.
+                    You need Flash player 8+ installed and JavaScript enabled
+                    to view this video.
                 </p>
             </div>
             <script type="text/javascript">

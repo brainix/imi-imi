@@ -22,6 +22,7 @@
 
 
 import datetime
+import hashlib
 import logging
 import math
 import urlparse
@@ -66,6 +67,12 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
             # the extra gunk and return just the filename as the title.
             title = urlparse.urlparse(title).path.rsplit('/', 1)[-1]
     return title
+
+
+@register.filter
+def hash_bookmark(bookmark):
+    """Convert a bookmark's URL into a hash suitable for use as a DOM ID."""
+    return hashlib.md5(bookmark.url).hexdigest()
 
 
 @register.filter

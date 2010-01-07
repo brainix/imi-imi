@@ -112,9 +112,10 @@ function createBookmark() {
             data: "url_to_create=" + $("#url_to_create").val(),
             success: function(data, textStatus) {
                 // Hooray, we succeed!  Clear out the URL that the user entered
-                // into the "save bookmark" bar.  This facilitates the rapid
-                // entry of multiple URLs.
+                // into the "save bookmark" bar and set the input focus on that
+                // bar.  This facilitates the rapid entry of multiple URLs.
                 $("#url_to_create").val("");
+                $("#url_to_create").focus();
 
                 // Slide down the new bookmark's HTML snippet.
                 $("#bookmark_list").prepend(data);

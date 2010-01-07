@@ -317,6 +317,9 @@ form .submit:hover {
     font-size: 14px;
     font-weight: 600;
     letter-spacing: -1px;
+    line-height: 100%;
+    margin-bottom: 1em;
+    margin-top: 0.5em;
 }
 
 #bookmarks li.bookmark span.saved_by a {

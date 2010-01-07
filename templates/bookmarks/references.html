@@ -7,41 +7,64 @@
 
         <span class="saved_by">
             Saved by
-            <a href="/users/{{ reference.user.email }}">{{ reference.user.nickname }}</a>
-            {% if reference.bookmark.popularity|add:"-1" %}
-                and {{ reference.bookmark.popularity|add:"-1" }}
-                other{% ifnotequal reference.bookmark.popularity 2 %}s{% endifnotequal %},
+            {% if not reference.bookmark.popularity|add:"-1" %}
+                <a href="/users/{{ reference.bookmark.user.email }}">{{ reference.bookmark.user.nickname }}</a>
+            {% else %}
+                <span id="others_short_{{ reference.bookmark|hash_bookmark }}">
+                    <a href="/users/{{ reference.user.email }}">{{ reference.user.nickname }}</a>
+                    and {{ reference.bookmark.popularity|add:"-1" }}
+                    other{{ reference.bookmark.popularity|add:"-1"|pluralize }}
+                    <a href="#"
+                       onclick="$('#others_short_{{ reference.bookmark|hash_bookmark }}').hide();
+                                $('#others_long_{{ reference.bookmark|hash_bookmark }}').show();
+                                $('#update_and_delete_bookmark_{{ reference.bookmark|hash_bookmark }}').hide();
+                                return false;">&rarr;</a>
+                </span>
+                <span id="others_long_{{ reference.bookmark|hash_bookmark }}"
+                      style="display: none">
+                    {% for user in reference.bookmark.users %}
+                        {% if forloop.last %}and{% endif %}
+                        <a href="/users/{{ user.email }}">{{ user.nickname }}</a>{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                    <a href="#"
+                       onclick="$('#others_long_{{ reference.bookmark|hash_bookmark }}').hide();
+                                $('#others_short_{{ reference.bookmark|hash_bookmark }}').show();
+                                $('#update_and_delete_bookmark_{{ reference.bookmark|hash_bookmark }}').show();
+                                return false;">&larr;</a>
+                </span>
                 updated
             {% endif %}
-            {{ reference.updated|beautify_datetime }}
+            {{ reference.bookmark.updated|beautify_datetime }}
         </span>
 
         {% if current_user and target_user %}
             {% ifequal current_user target_user %}
-                <div class="delete_bookmark">
-                    <form action="/users" method="post">
-                        <div class="form_element">
-                            <input name="bookmark_key" type="hidden"
-                                   value="{{ reference.parent_key.name }}" />
-                            <input name="reference_key_to_delete" type="hidden"
-                                   value="{{ reference.key.name }}" />
-                            <input class="submit" type="submit"
-                                   value="delete" />
-                        </div>
-                    </form>
-                </div>
+                <div id="update_and_delete_bookmark_{{ reference.bookmark|hash_bookmark }}">
+                    <div class="delete_bookmark">
+                        <form action="/users" method="post">
+                            <div class="form_element">
+                                <input name="bookmark_key" type="hidden"
+                                       value="{{ reference.parent_key.name }}" />
+                                <input name="reference_key_to_delete" type="hidden"
+                                       value="{{ reference.key.name }}" />
+                                <input class="submit" type="submit"
+                                       value="delete" />
+                            </div>
+                        </form>
+                    </div>
 
-                <div class="update_bookmark">
-                    <form action="/users" method="post">
-                        <div class="form_element">
-                            <input name="bookmark_key" type="hidden"
-                                   value="{{ reference.parent_key.name }}" />
-                            <input name="reference_key_to_update" type="hidden"
-                                   value="{{ reference.key.name }}" />
-                            <input class="submit" type="submit"
-                                   value="update" />
-                        </div>
-                    </form>
+                    <div class="update_bookmark">
+                        <form action="/users" method="post">
+                            <div class="form_element">
+                                <input name="bookmark_key" type="hidden"
+                                       value="{{ reference.parent_key.name }}" />
+                                <input name="reference_key_to_update" type="hidden"
+                                       value="{{ reference.key.name }}" />
+                                <input class="submit" type="submit"
+                                       value="update" />
+                            </div>
+                        </form>
+                    </div>
                 </div>
             {% endifequal %}
         {% endif %}
@@ -65,8 +88,8 @@
             <script type="text/javascript" src="swfobject.js"></script>
             <div id="{{ reference.bookmark.key.name }}">
                 <p>
-                    You need Flash player 8+ and JavaScript enabled to view this
-                    video.
+                    You need Flash player 8+ installed and JavaScript enabled
+                    to view this video.
                 </p>
             </div>
             <script type="text/javascript">
