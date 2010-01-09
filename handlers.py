@@ -73,11 +73,8 @@ class _RequestHandler(webapp.RequestHandler):
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         login_url, current_user, logout_url = self._get_user()
         error_url = self.request.url.split('//', 1)[-1]
-        values = {'title': title, 'login_url': login_url,
-            'current_user': current_user, 'logout_url': logout_url,
-            'error_code': error_code, 'error_url': error_url, 'debug': DEBUG,}
         self.error(error_code)
-        self.response.out.write(template.render(path, values, debug=DEBUG))
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def _get_user(self):
         """Return a login URL, the current user, and a logout URL."""
@@ -106,6 +103,7 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
         if page not in ('', 'home', 'rss',):
             return self._serve_error(404)
         path = os.path.join(TEMPLATES, 'home', 'index.html')
+        title = 'social bookmarking'
         rss_url = self._get_rss_url()
         login_url, current_user, logout_url = self._get_user()
         if page in ('', 'home',) and current_user is None:
@@ -116,10 +114,7 @@ class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
             self.redirect('/users/' + current_user.email())
         if page == 'rss':
             return self._serve_rss()
-        values = {'title': 'social bookmarking', 'rss_url': rss_url,
-            'login_url': login_url, 'current_user': current_user,
-            'logout_url': logout_url, 'active_tab': active_tab, 'debug': DEBUG,}
-        self.response.out.write(template.render(path, values, debug=DEBUG))
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
 class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
@@ -158,17 +153,13 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
             more_url = '/users/' + target_email + '/' + earliest_so_far
         else:
             more_url = None
-        values = {'snippet': snippet, 'title': title, 'rss_url': rss_url,
-            'login_url': login_url, 'current_user': current_user,
-            'logout_url': logout_url, 'active_tab': active_tab,
-            'target_user': target_user, 'references': references,
-            'more_url': more_url, 'debug': DEBUG,}
-        self.response.out.write(template.render(path, values, debug=DEBUG))
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     @decorators.no_browser_cache
     @decorators.require_login
     def post(self):
         """Create, update, or delete a bookmark."""
+        snippet = True
         current_user = target_user = users.get_current_user()
         url_to_create = self.request.get('url_to_create')
         key = self.request.get('bookmark_key')
@@ -189,9 +180,8 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
                 reference = None
                 _log.error("couldn't update reference (insufficient privileges")
             references = [reference] if reference is not None else []
-            values = {'snippet': True, 'current_user': current_user,
-                'target_user': target_user, 'references': references,}
-            self.response.out.write(template.render(path, values, debug=DEBUG))
+            self.response.out.write(template.render(path, locals(),
+                                                    debug=DEBUG))
         elif reference_to_delete is not None:
             if reference_to_delete.user == current_user:
                 self._delete_bookmark(reference_to_delete)
@@ -237,8 +227,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
                             'text': s,
                             'has_results': bool(self._num_relevant_results(s)),}
                            for s in suggestions]
-        values = {'suggestions': suggestions,}
-        html = template.render(path, values, debug=DEBUG)
+        html = template.render(path, locals(), debug=DEBUG)
         return html
 
 
@@ -249,15 +238,14 @@ class Search(search.RequestHandler, _RequestHandler):
     def get(self):
         """Given a search query, show related bookmarks, sorted by relevance."""
         try:
-            query_user, query_users, query_words, page = self._parse_query()
+            target_user, target_users, target_words, page = self._parse_query()
         except ValueError:
             return self._serve_error(404)
         snippet = page != 0
         file_name = 'index.html' if not snippet else 'bookmarks.html'
         path = os.path.join(TEMPLATES, 'bookmarks', file_name)
         login_url, current_user, logout_url = self._get_user()
-
-        if not query_words and not query_user:
+        if not target_words and not target_user:
             # This is an Easter egg, but an intentional and a useful one.  If
             # we got a blank search query, then show all of the bookmarks
             # sorted reverse chronologically.
@@ -265,25 +253,20 @@ class Search(search.RequestHandler, _RequestHandler):
             bookmarks, more = self._get_bookmarks(page=page)
         else:
             title = 'bookmarks'
-            if query_user:
-                title += ' saved by ' + query_user.nickname()
-            if query_words:
-                if query_user:
+            if target_user:
+                title += ' saved by ' + target_user.nickname()
+            if target_words:
+                if target_user:
                     title += ','
-                title += ' related to ' + ' '.join(query_words)
-            bookmarks, more = self._search_bookmarks(query_users=query_users,
-                                                     query_words=query_words,
+                title += ' related to ' + ' '.join(target_words)
+            bookmarks, more = self._search_bookmarks(query_users=target_users,
+                                                     query_words=target_words,
                                                      page=page)
         try:
             more_url = self._compute_more_url() if more else None
         except ValueError:
             return self._serve_error(404)
-
-        values = {'snippet': snippet, 'title': title, 'login_url': login_url,
-            'current_user': current_user, 'logout_url': logout_url,
-            'target_user': query_user, 'target_words': query_words,
-            'bookmarks': bookmarks, 'more_url': more_url, 'debug': DEBUG,}
-        self.response.out.write(template.render(path, values, debug=DEBUG))
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def _parse_query(self):
         """From the URL query parameter, parse out the features to search on."""
@@ -295,11 +278,9 @@ class Search(search.RequestHandler, _RequestHandler):
         query_words = query_words.replace('%20', ' ')
         query_words = utils.extract_words_from_string(query_words)
         page = self.request.get('page', default_value='0')
-
-        # Subtle: This next line might throw a ValueError exception, but the
-        # caller catches it and serves a 404.
+        # This next line might throw a ValueError exception, but the caller
+        # catches it and serves a 404.
         page = int(page)
-
         return query_user, query_users, query_words, page
 
     def _compute_more_url(self):
@@ -308,8 +289,8 @@ class Search(search.RequestHandler, _RequestHandler):
         query, index, success = cgi.parse_qsl(query), 0, False
         for index in range(len(query)):
             if query[index][0] == 'page':
-                # Subtle: This next line might throw a ValueError exception,
-                # but the caller catches it and serves a 404.
+                # This next line might throw a ValueError exception, but the
+                # caller catches it and serves a 404.
                 page = str(int(query[index][1]) + 1)
                 query[index], success = ('page', page), True
                 break
