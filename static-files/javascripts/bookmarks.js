@@ -52,6 +52,7 @@ function initBookmarks() {
     $("#create_bookmark .submit").val("save bookmark");
     $(".update_bookmark .submit").val("update");
     $(".delete_bookmark .submit").val("delete");
+    $("#more_bookmarks .submit").val("more bookmarks");
 }
 
 
