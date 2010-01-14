@@ -28,10 +28,22 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import db
 
-from config import DEFAULT_CACHE_SECS
+from config import DEFAULT_CACHE_SECS, MAINTENANCE
 
 
 _log = logging.getLogger(__name__)
+
+
+def disable_during_maintenance(method):
+    """Disable a request handler method during maintenance mode."""
+    @functools.wraps(method)
+    def wrap(self, *args, **kwds):
+        if MAINTENANCE:
+            if method.func_name == 'get':
+                return self._serve_maintenance()
+        else:
+            return method(self, *args, **kwds)
+    return wrap
 
 
 def require_login(method):

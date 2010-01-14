@@ -28,6 +28,15 @@ import os
 _log = logging.getLogger(__name__)
 
 
+# Whether or not we're running in maintenance mode.  If we're running in
+# maintenance mode, then all of our request handlers' get methods serve a
+# polite "we're doing maintenance, check back later" message and all of our
+# request handlers' put methods do nothing (in other words, nothing touches the
+# datastore).
+MAINTENANCE = False
+_log.debug('turning %s maintenance mode' % ('on' if MAINTENANCE else 'off'))
+
+
 # Programmatically determine whether to turn on debug mode.  If we're running
 # on the SDK, then turn on debug mode.  Otherwise, we're running on the cloud,
 # so turn off debug mode.
