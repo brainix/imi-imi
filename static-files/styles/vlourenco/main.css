@@ -225,6 +225,12 @@ form .submit:hover {
     margin-bottom: 10px;
 }
 
+#content .twtr-widget h3 {
+    clear: none;
+    font-weight: normal;
+    letter-spacing: normal;
+}
+
 #content p {
     float: left;
     font-size: 16px;

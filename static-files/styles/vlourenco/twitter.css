@@ -28,12 +28,12 @@
 
 .twtr-widget {
     position: relative;
-    font-size: 12px !important;
+    font-size: 12px;
     zoom: 1;
 }
 
 .twtr-fullscreen {
-    font-size: 220% !important;
+    font-size: 220%;
 }
 
 .twtr-widget .twtr-spinner {
@@ -50,7 +50,7 @@
 }
 
 .twtr-widget a img {
-    border: 0 !important;
+    border: 0;
 }
 
 .twtr-doc {
@@ -100,30 +100,30 @@
     float: left;
     width: 31px;
     height: 31px;
-    border: 0 !important;
+    border: 0;
 }
 
 .twtr-widget h3, .twtr-widget h4, .twtr-widget p {
-    font-size: 12px !important;
-    line-height: 1.2 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: auto !important;
+    font-size: 12px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
+    width: auto;
 }
 
 .twtr-widget-profile h3, .twtr-widget-profile h4 {
-    margin: 0 0 0 40px !important;
+    margin: 0 0 0 40px;
 }
 
 .twtr-widget h3 {
-    clear: none !important;
-    font-size: 11px !important;
-    font-weight: normal !important;
-    letter-spacing: normal !important;
+    clear: none;
+    font-size: 11px;
+    font-weight: normal;
+    letter-spacing: normal;
 }
 
 .twtr-widget h4 {
-    font-size: 16px !important;
+    font-size: 16px;
 }
 
 .twtr-widget i {
@@ -221,9 +221,9 @@
 }
 
 .twtr-doc a {
-    text-decoration: none !important;
+    text-decoration: none;
 }
 
 .twtr-doc a:hover {
-    text-decoration: underline !important;
+    text-decoration: underline;
 }

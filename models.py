@@ -28,12 +28,14 @@ from google.appengine.api.users import User
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
+from config import MAINTENANCE
+
 
 class _BaseModel(polymodel.PolyModel):
     """Base class with common attributes from which other models inherit."""
-    user = db.UserProperty(auto_current_user_add=True)
-    created = db.DateTimeProperty(auto_now_add=True)
-    updated = db.DateTimeProperty(auto_now=True)
+    user = db.UserProperty(auto_current_user_add=not MAINTENANCE)
+    created = db.DateTimeProperty(auto_now_add=not MAINTENANCE)
+    updated = db.DateTimeProperty(auto_now=not MAINTENANCE)
     popularity = db.IntegerProperty(default=0)
 
 
