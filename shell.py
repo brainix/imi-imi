@@ -22,7 +22,8 @@
 #------------------------------------------------------------------------------#
 """Launch an interactive Python console with access to imi-imi's datastore.
 
-This code was written by Nick Johnson and swiftly yoinked by Raj Shah.  See:
+Some of this code was written by Nick Johnson and swiftly yoinked by Raj Shah.
+See:
     http://code.google.com/appengine/articles/remote_api.html
 """
 

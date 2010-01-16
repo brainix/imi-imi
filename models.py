@@ -33,6 +33,19 @@ from config import MAINTENANCE
 
 class _BaseModel(polymodel.PolyModel):
     """Base class with common attributes from which other models inherit."""
+    # Typically, when the webapp creates/updates a persistent object, we want
+    # the datastore to automatically set that object's metadata.  (On creation,
+    # the object's user to the currently logged in user, and created and
+    # updated times to the current time.  On update, the object's updated time
+    # to the current time.)
+    #
+    # However, when we're performing maintenance on the datastore (such as
+    # adding an attribute to all persistent objects), we don't want the
+    # datastore to auto set this metadata.  (In fact, this auto set behavior
+    # has caused us to lose users' live data before.)
+    #
+    # Therefore, we specify for the datastore to auto set this metadata only
+    # when we're running in normal (non-maintenance) mode.
     user = db.UserProperty(auto_current_user_add=not MAINTENANCE)
     created = db.DateTimeProperty(auto_now_add=not MAINTENANCE)
     updated = db.DateTimeProperty(auto_now=not MAINTENANCE)

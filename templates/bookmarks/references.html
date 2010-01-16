@@ -8,10 +8,10 @@
         <span class="saved_by">
             Saved by
             {% if not reference.bookmark.popularity|add:"-1" %}
-                <a href="/users/{{ reference.bookmark.user.email }}">{{ reference.bookmark.user.nickname }}</a>
+                <a href="/users/{{ reference.bookmark.users.0.email }}">{{ reference.bookmark.users.0.nickname }}</a>
             {% else %}
                 <span id="others_short_{{ reference.bookmark|hash_bookmark }}">
-                    <a href="/users/{{ reference.user.email }}">{{ reference.user.nickname }}</a>
+                    <a href="/users/{{ reference.users.0.email }}">{{ reference.users.0.nickname }}</a>
                     and {{ reference.bookmark.popularity|add:"-1" }}
                     other{{ reference.bookmark.popularity|add:"-1"|pluralize }}
                     <a href="#"
