@@ -70,6 +70,10 @@ IMAGE_MIME_TYPES = ('image/bmp', 'image/gif', 'image/jpeg', 'image/png',
                     'image/svg+xml', 'image/tiff', 'image/vnd.microsoft.icon',)
 AUDIO_MIME_TYPES = ('audio/mpeg',)
 
+GRAVATAR_SIZE = 48
+GRAVATAR_RATING = 'x'
+GRAVATAR_DEFAULT = 'wavatar'
+
 # Options related to bookmark search logic:
 LIVE_SEARCH_URL = 'http://suggestqueries.google.com/complete/search?output=firefox&qu=%s'
 SEARCH_PER_PAGE = 5

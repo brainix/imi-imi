@@ -301,8 +301,8 @@ form .submit:hover {
 }
 
 #bookmarks li.bookmark {
-    color:  #D1D9DC;
-    margin-bottom: 3em;
+    color:  #959EA1;
+    margin-bottom: 1.5em;
 
     /*
      | The following explicit width specification shouldn't be necessary.  In
@@ -316,6 +316,13 @@ form .submit:hover {
      | For more information, see: http://dev.jquery.com/ticket/4541
      */
     width: 480px;
+}
+
+#bookmarks div.speech_bubble {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    background: #EDF0F1;
+    padding: 6px 10px 10px 10px;
 }
 
 #bookmarks li.bookmark span.saved_by {
@@ -343,7 +350,7 @@ form .submit:hover {
 
 #bookmarks .update_bookmark .form_element, #bookmarks .delete_bookmark .form_element {
     margin-bottom: 0;
-    margin-top: -2px;
+    margin-top: -1px;
 }
 
 #bookmarks .update_bookmark form input, form textarea {
@@ -362,13 +369,13 @@ form .submit:hover {
     width: auto;
 }
 
-#bookmarks li.bookmark img {
+#bookmarks li.bookmark img.bookmark {
     opacity: 0.75;
     filter: alpha(opacity=75);
     width: 480px;
 }
 
-#bookmarks li.bookmark img:hover {
+#bookmarks li.bookmark img.bookmark:hover {
     opacity: 1.0;
     filter: alpha(opacity=100);
 }
@@ -382,6 +389,10 @@ form .submit:hover {
     font-size: 14px;
     padding: 4px 10px;
     width: 462px;
+}
+
+#bookmarks div.gravatar {
+    text-align: right;
 }
 
 #bookmarks .more_bookmarks form .submit {

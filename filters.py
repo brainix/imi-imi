@@ -25,12 +25,14 @@ import datetime
 import hashlib
 import logging
 import math
+import urllib
 import urlparse
 
 from google.appengine.ext.webapp.template import create_template_register
 
 from config import AUDIO_MIME_TYPES, IMAGE_MIME_TYPES
 from config import TITLE_MAX_WORDS, TITLE_SLICE_POINTS
+from config import GRAVATAR_SIZE, GRAVATAR_RATING, GRAVATAR_DEFAULT
 
 
 _log = logging.getLogger(__name__)
@@ -67,6 +69,22 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
             # the extra gunk and return just the filename as the title.
             title = urlparse.urlparse(title).path.rsplit('/', 1)[-1]
     return title
+
+
+@register.filter
+def user_to_gravatar(user):
+    """Convert a user object into a Gravatar (globally recognized avatar) icon.
+
+    For more information, see:
+        http://en.gravatar.com/site/implement/url
+    """
+    base_url = 'http://www.gravatar.com/avatar/%s.jpg?%s'
+    email_hash = hashlib.md5(user.email().lower()).hexdigest()
+    query_dict = {'size': GRAVATAR_SIZE, 'rating': GRAVATAR_RATING,
+                  'default': GRAVATAR_DEFAULT,}
+    query_str = urllib.urlencode(query_dict)
+    gravatar = base_url % (email_hash, query_str)
+    return gravatar
 
 
 @register.filter
