@@ -70,9 +70,10 @@ IMAGE_MIME_TYPES = ('image/bmp', 'image/gif', 'image/jpeg', 'image/png',
                     'image/svg+xml', 'image/tiff', 'image/vnd.microsoft.icon',)
 AUDIO_MIME_TYPES = ('audio/mpeg',)
 
-GRAVATAR_SIZE = 48
-GRAVATAR_RATING = 'x'
-GRAVATAR_DEFAULT = 'wavatar'
+# Options related to Gravatars:
+GRAVATAR_SIZE = 48              # In pixels.
+GRAVATAR_RATING = 'x'           # Picture ratings: 'g', 'pg', 'r', or 'x'.
+GRAVATAR_DEFAULT = 'identicon'  # 'identicon', 'monsterid', or 'wavatar'.
 
 # Options related to bookmark search logic:
 LIVE_SEARCH_URL = 'http://suggestqueries.google.com/complete/search?output=firefox&qu=%s'

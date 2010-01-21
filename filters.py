@@ -72,7 +72,7 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
 
 
 @register.filter
-def user_to_gravatar(user):
+def user_to_gravatar(user, size=0):
     """Convert a user object into a Gravatar (globally recognized avatar) icon.
 
     For more information, see:
@@ -80,8 +80,8 @@ def user_to_gravatar(user):
     """
     base_url = 'http://www.gravatar.com/avatar/%s.jpg?%s'
     email_hash = hashlib.md5(user.email().lower()).hexdigest()
-    query_dict = {'size': GRAVATAR_SIZE, 'rating': GRAVATAR_RATING,
-                  'default': GRAVATAR_DEFAULT,}
+    query_dict = {'size': size if size else GRAVATAR_SIZE,
+                  'rating': GRAVATAR_RATING, 'default': GRAVATAR_DEFAULT,}
     query_str = urllib.urlencode(query_dict)
     gravatar = base_url % (email_hash, query_str)
     return gravatar

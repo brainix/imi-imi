@@ -199,6 +199,9 @@ form .submit:hover {
     font-size: 35px;
     font-weight: 300;
     letter-spacing: -2px;
+    line-height: 100%;
+    width: 480px;
+    word-wrap: break-word;
 }
 
 #heading {
@@ -318,11 +321,13 @@ form .submit:hover {
     width: 480px;
 }
 
-#bookmarks div.speech_bubble {
+#bookmarks div.speech_balloon {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
     background: #EDF0F1;
+    border: 1px solid #E4E4E4;
     padding: 6px 10px 10px 10px;
+    word-wrap: break-word;
 }
 
 #bookmarks li.bookmark span.saved_by {
@@ -372,7 +377,7 @@ form .submit:hover {
 #bookmarks li.bookmark img.bookmark {
     opacity: 0.75;
     filter: alpha(opacity=75);
-    width: 480px;
+    width: 460px;
 }
 
 #bookmarks li.bookmark img.bookmark:hover {
@@ -381,14 +386,19 @@ form .submit:hover {
 }
 
 #bookmarks li.bookmark p {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
     background: #EDF0F1;
-    clear: left;
+    clear: both;
     color: #516064;
+    float: none;
     font-size: 14px;
-    padding: 4px 10px;
-    width: 462px;
+    margin: 0;
+    padding: 0;
+    width: 460px;
+}
+
+#bookmarks div.speech_balloon_tail {
+    margin-top: -8px;
+    text-align: right;
 }
 
 #bookmarks div.gravatar {

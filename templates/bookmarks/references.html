@@ -1,6 +1,6 @@
 {% for reference in references %}
     <li class="bookmark" {% if snippet %}style="display: none;"{% endif %}>
-        <div class="speech_bubble">
+        <div class="speech_balloon">
             <h3>
                 <a href="{{ reference.bookmark.url }}"
                    rel="nofollow">{{ reference.bookmark|beautify_title }}</a>
@@ -80,7 +80,7 @@
             {% if reference.bookmark|is_audio %}
                 <embed type="application/x-shockwave-flash"
                        src="http://www.google.com/reader/ui/3247397568-audio-player.swf?audioUrl={{ reference.bookmark.url }}"
-                       height="27" width="100%" allowscriptaccess="never"
+                       height="27" width="460" allowscriptaccess="never"
                        quality="best" bgcolor="#FFFFFF" wmode="window"
                        flashvars="playerMode=embedded" />
             {% endif %}
@@ -98,7 +98,7 @@
                     var atts = {id: "myytplayer"};
                     swfobject.embedSWF("{{ reference.bookmark|make_youtube_url }}",
                                        "{{ reference.bookmark.key.name }}",
-                                       "480", "402", "8", null, null, params, atts);
+                                       "460", "385", "8", null, null, params, atts);
                 </script>
             {% endif %}
 
@@ -127,6 +127,10 @@
                     {% endif %}
                 {% endifequal %}
             {% endif %}
+        </div>
+
+        <div class="speech_balloon_tail">
+            <img src="/static-files/images/speech_balloon_tail.png" alt="" />
         </div>
 
         <div class="gravatar">

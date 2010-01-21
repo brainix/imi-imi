@@ -1,6 +1,6 @@
 {% for bookmark in bookmarks %}
     <li class="bookmark" {% if snippet %}style="display: none;"{% endif %}>
-        <div class="speech_bubble">
+        <div class="speech_balloon">
             <h3>
                 <a href="{{ bookmark.url }}"
                    rel="nofollow">{{ bookmark|beautify_title }}</a>
@@ -46,7 +46,7 @@
             {% if bookmark|is_audio %}
                 <embed type="application/x-shockwave-flash"
                        src="http://www.google.com/reader/ui/3247397568-audio-player.swf?audioUrl={{ bookmark.url }}"
-                       height="27" width="100%" allowscriptaccess="never"
+                       height="27" width="460" allowscriptaccess="never"
                        quality="best" bgcolor="#FFFFFF" wmode="window"
                        flashvars="playerMode=embedded" />
             {% endif %}
@@ -64,7 +64,7 @@
                     var atts = {id: "myytplayer"};
                     swfobject.embedSWF("{{ bookmark|make_youtube_url }}",
                                        "{{ bookmark.key.id }}",
-                                       "480", "402", "8", null, null, params, atts);
+                                       "460", "385", "8", null, null, params, atts);
                 </script>
             {% endif %}
 
@@ -88,6 +88,10 @@
                     point to text, HTML, an image, an MP3, or a YouTube video.
                 </p>
             {% endif %}
+        </div>
+
+        <div class="speech_balloon_tail">
+            <img src="/static-files/images/speech_balloon_tail.png" alt="" />
         </div>
 
         <div class="gravatar">
