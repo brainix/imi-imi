@@ -90,9 +90,9 @@ class Keychain(_BaseModel):
     This model acts as a reverse index describing which bookmarks should match
     a particular search query.
     """
-    stem = db.StringProperty()
-    word = db.StringProperty()
-    keys = db.ListProperty(db.Key, default=[])
+    stem = db.StringProperty(indexed=False)
+    word = db.StringProperty(indexed=False)
+    keys = db.ListProperty(db.Key, default=[], indexed=False)
 
     @staticmethod
     def key_name(stem):
