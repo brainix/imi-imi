@@ -200,8 +200,6 @@ form .submit:hover {
     font-weight: 300;
     letter-spacing: -2px;
     line-height: 100%;
-    width: 480px;
-    word-wrap: break-word;
 }
 
 #heading {

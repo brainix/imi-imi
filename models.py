@@ -61,12 +61,12 @@ class Bookmark(_BaseModel):
     """
     users = db.ListProperty(User, default=[])
     url = db.LinkProperty()
-    mime_type = db.StringProperty(default='')
-    title = db.StringProperty(multiline=True)
-    stems = db.ListProperty(str, default=[])
-    words = db.ListProperty(str, default=[])
-    counts = db.ListProperty(float, default=[])
-    html_hash = db.StringProperty(default='')
+    mime_type = db.StringProperty(default='', indexed=False)
+    title = db.StringProperty(multiline=True, indexed=False)
+    stems = db.ListProperty(str, default=[], indexed=False)
+    words = db.ListProperty(str, default=[], indexed=False)
+    counts = db.ListProperty(float, default=[], indexed=False)
+    html_hash = db.StringProperty(default='', indexed=False)
 
     @staticmethod
     def key_name(url):
