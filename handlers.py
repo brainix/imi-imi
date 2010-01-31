@@ -76,13 +76,6 @@ class _RequestHandler(webapp.RequestHandler):
         self.error(error_code)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
-    def _serve_maintenance(self):
-        """The site is under maintenance.  Serve a polite "bugger off" page."""
-        path = os.path.join(TEMPLATES, 'home', 'maintenance.html')
-        title, in_maintenance = 'in surgery', True
-        login_url, current_user, logout_url = self._get_user()
-        self.response.out.write(template.render(path, locals(), debug=DEBUG))
-
     def _get_user(self):
         """Return a login URL, the current user, and a logout URL."""
         login_url = users.create_login_url('/')
@@ -91,10 +84,23 @@ class _RequestHandler(webapp.RequestHandler):
         return login_url, current_user, logout_url
 
 
+class Maintenance(_RequestHandler):
+    """Request handler to serve all requests when in maintenance mode."""
+
+    def get(self, nonsense=''):
+        """The site is under maintenance.  Serve a polite "bugger off" page."""
+        path = os.path.join(TEMPLATES, 'home', 'maintenance.html')
+        title, in_maintenance = 'in surgery', True
+        login_url, current_user, logout_url = self._get_user()
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
+
+    def post(self):
+        pass
+
+
 class NotFound(_RequestHandler):
     """Request handler to serve a 404: Not Found error page."""
 
-    @decorators.disable_during_maintenance
     def get(self, nonsense=''):
         return self._serve_error(404)
 
@@ -102,7 +108,6 @@ class NotFound(_RequestHandler):
 class Home(rss.RequestHandler, _RequestHandler):
     """Request handler to serve / pages."""
 
-    @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     def get(self):
         """Serve a get request for / or /home.
@@ -119,7 +124,7 @@ class Home(rss.RequestHandler, _RequestHandler):
         rss_url = self._get_rss_url()
         login_url, current_user, logout_url = self._get_user()
         active_tab = 'imi-imi' if current_user is None else ''
-        if self.request.path == '' and current_user is not None:
+        if self.request.path == '/' and current_user is not None:
             self.redirect('/users/' + current_user.email())
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
@@ -127,7 +132,6 @@ class Home(rss.RequestHandler, _RequestHandler):
 class RSS(search.RequestHandler, rss.RequestHandler, _RequestHandler):
     """Request handler to serve the site-wide RSS feed."""
 
-    @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     def get(self):
         return self._serve_rss()
@@ -137,7 +141,6 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
             _RequestHandler):
     """Request handler to serve /users pages."""
 
-    @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     def get(self, target_email=None, before=None):
         """Show the specified user's bookmarks."""
@@ -172,7 +175,6 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
             more_url = None
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
-    @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     @decorators.require_login
     def post(self):
@@ -213,7 +215,6 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
 class LiveSearch(search.RequestHandler, _RequestHandler):
     """Request handler to serve /live_search pages."""
 
-    @decorators.disable_during_maintenance
     def get(self):
         """Someone is typing a search query.  Provide some live search results.
 
@@ -253,7 +254,6 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
 class Search(search.RequestHandler, _RequestHandler):
     """Request handler to serve /search pages."""
 
-    @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     def get(self):
         """Given a search query, show related bookmarks, sorted by relevance.
@@ -340,7 +340,6 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
     safe bet.  ;-)
     """
 
-    @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     def get(self):
         """Someone has made an API GET request.  Service it."""

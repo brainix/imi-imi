@@ -30,7 +30,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
-from config import DEBUG
+from config import MAINTENANCE, DEBUG
 import handlers
 
 
@@ -42,25 +42,30 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG)
     template.register_template_library('filters')
 
-    # This URL mapping operates by a "first-fit" model (rather than by a "best-
-    # fit" model).  Therefore, keep these URL maps ordered from most specific to
-    # most general.
-    #
-    # The final URL map matches every URL that none of the preceding maps
-    # match.  If the requested URL "falls through" to the final map, then we
-    # serve up a 404: not found page.
-    url_mapping = (
-        ('/api',                handlers.API),        # /api
-        ('/search',             handlers.Search),     # /search
-        ('/live_search',        handlers.LiveSearch), # /live_search
-        ('/users/(.*)/(.*)',    handlers.Users),      # /users/email@addr.com/before
-        ('/users/(.*)',         handlers.Users),      # /users/email@addr.com
-        ('/users',              handlers.Users),      # /users
-        ('/rss',                handlers.RSS),        # /rss
-        ('/home',               handlers.Home),       # /home
-        ('/',                   handlers.Home),       # /
-        ('(.*)',                handlers.NotFound),   # 404: Not Found.
-    )
+    if MAINTENANCE:
+        url_mapping = (
+            ('(.*)',                handlers.Maintenance),  #
+        )
+    else:
+        # This URL mapping operates by a "first-fit" model (rather than by a
+        # "best- fit" model).  Therefore, keep these URL maps ordered from most
+        # specific to most general.
+        #
+        # The final URL map matches every URL that none of the preceding maps
+        # match.  If the requested URL "falls through" to the final map, then
+        # we serve up a 404: not found page.
+        url_mapping = (
+            ('/api',                handlers.API),          # /api
+            ('/search',             handlers.Search),       # /search
+            ('/live_search',        handlers.LiveSearch),   # /live_search
+            ('/users/(.*)/(.*)',    handlers.Users),        # /users/email@addr.com/before
+            ('/users/(.*)',         handlers.Users),        # /users/email@addr.com
+            ('/users',              handlers.Users),        # /users
+            ('/rss',                handlers.RSS),          # /rss
+            ('/home',               handlers.Home),         # /home
+            ('/',                   handlers.Home),         # /
+            ('(.*)',                handlers.NotFound),     # 404: Not Found.
+        )
 
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)
     util.run_wsgi_app(app)
