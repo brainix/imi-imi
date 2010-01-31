@@ -104,7 +104,7 @@ class Home(rss.RequestHandler, _RequestHandler):
 
     @decorators.disable_during_maintenance
     @decorators.no_browser_cache
-    def get(self, page=''):
+    def get(self):
         """Serve a get request for / or /home.
         
         If an anonymous user requested /, then serve the homepage.  If a logged
@@ -112,16 +112,14 @@ class Home(rss.RequestHandler, _RequestHandler):
         either an anonymous or a logged in user requested /home, then serve the
         homepage.
         """
-        if page.endswith('/'):
-            page = page[:-1]
-        if page not in ('', 'home',):
+        if self.request.path not in ('/', '/home',):
             return self._serve_error(404)
         path = os.path.join(TEMPLATES, 'home', 'index.html')
         title = 'social bookmarking'
         rss_url = self._get_rss_url()
         login_url, current_user, logout_url = self._get_user()
         active_tab = 'imi-imi' if current_user is None else ''
-        if page == '' and current_user is not None:
+        if self.request.path == '' and current_user is not None:
             self.redirect('/users/' + current_user.email())
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
