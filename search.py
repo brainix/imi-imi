@@ -87,7 +87,7 @@ class RequestHandler(webapp.RequestHandler):
         try:
             bookmarks = self._search_bookmarks_generic(**kwds)
         except (errors.SearchError,), e:
-            if e.msg in ('no query', 'generic query'):
+            if e.error_message in ('no query', 'generic query'):
                 del kwds['query_words']
                 bookmarks, more = self._get_bookmarks(**kwds)
             else:
@@ -114,12 +114,12 @@ class RequestHandler(webapp.RequestHandler):
         _log.debug("computing bookmarks for query '%s'" % query_key)
         if not query_users and not query_words:
             _log.warning("couldn't compute bookmarks - no query")
-            raise errors.SearchError(msg='no query')
+            raise errors.SearchError(error_message='no query')
         if query_words:
             query_stems = self._query_words_to_stems(query_words)
             if not query_stems:
                 _log.warning("couldn't compute bookmarks - generic query")
-                raise errors.SearchError(msg='generic query')
+                raise errors.SearchError(error_message='generic query')
             bookmark_keys = self._query_stems_to_bookmark_keys(query_stems)
             bookmarks = db.get(bookmark_keys)
         else:

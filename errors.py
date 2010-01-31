@@ -26,7 +26,7 @@ Example throwing:
     >>> try:
     ...     1 / 0
     ... except ZeroDivisionError:
-    ...     raise SearchError(msg='divided by 0')
+    ...     raise SearchError(error_message='divided by 0')
     ... 
     Traceback (most recent call last):
       ...
@@ -34,78 +34,68 @@ Example throwing:
 
 Example throwing and catching:
     >>> def search():
-    ...     raise SearchError(msg='search error')
+    ...     raise SearchError(error_message='search error')
     ... 
     >>> try:
     ...     search()
     ... except SearchError, e:
-    ...     msg = e.msg
+    ...     error_message = e.error_message
     ...
 """
 
 
 class _Error(Exception):
     """Base class from which exception classes in this module inherit."""
-    pass
 
-
-class IndexError(_Error):
-    """Exception class to encapsulate errors while indexing bookmarks."""
+    _default_values = {}
 
     def __init__(self, *args, **kwds):
-        """Initialize a IndexError exception object.
+        """Initialize a custom exception object.
 
-        If the msg keyword argument wasn't specified during the IndexError
-        exception object instantiation, add it in here and give it a default
-        value for consistency.
+        If the error_message keyword argument wasn't specified during the
+        IndexError exception object instantiation, add it in here and give it a
+        default value for consistency.
 
         Example with keyword argument:
-            >>> e = IndexError(msg='Hello, World!')
-            >>> e.msg
+            >>> e = IndexError(error_message='Hello, World!')
+            >>> e.error_message
             'Hello, World!'
 
         Example without keyword argument:
             >>> e = IndexError()
-            >>> e.msg
+            >>> e.error_message
             'IndexError exception thrown'
         """
-        default_values = {
-            'msg': 'IndexError exception thrown',
-        }
-
-        for key in default_values:
+        for key in self._default_values:
             if not key in kwds:
-                kwds[key] = default_values[key]
+                kwds[key] = self._default_values[key]
         self.__dict__.update(kwds)
 
     def __str__(self):
-        """Return the string representation of a IndexError exception object.
+        """Return the string representation of a custom exception object.
 
         Example string representation:
             >>> e = IndexError()
             >>> print e
             IndexError exception thrown
         """
-        return self.msg
+        return self.error_message
+
+
+class IndexError(_Error):
+    """Exception class to encapsulate errors while indexing bookmarks."""
+
+    _default_values = {
+        'error_message': 'IndexError exception thrown',
+    }
 
 
 class SearchError(_Error):
     """Exception class to encapsulate errors while searching bookmarks."""
 
-    def __init__(self, *args, **kwds):
-        """Initialize a SearchError exception object."""
-        default_values = {
-            'msg': 'SearchError exception thrown',
-        }
-
-        for key in default_values:
-            if not key in kwds:
-                kwds[key] = default_values[key]
-        self.__dict__.update(kwds)
-
-    def __str__(self):
-        """Return the string representation of a SearchError exception obj."""
-        return self.msg
+    _default_values = {
+        'error_message': 'SearchError exception thrown',
+    }
 
 
 if __name__ == '__main__':

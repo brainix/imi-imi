@@ -30,8 +30,8 @@ _log = logging.getLogger(__name__)
 
 # Whether or not we're running in maintenance mode.  If we're running in
 # maintenance mode, then all of our request handlers' get methods serve a
-# polite "we're doing maintenance, check back later" message and all of our
-# request handlers' put methods do nothing (in other words, nothing touches the
+# polite "we're in surgery, check back later" message and all of our request
+# handlers' put methods do nothing (in other words, nothing touches the
 # datastore).
 MAINTENANCE = False
 _log.debug('turning %s maintenance mode' % ('on' if MAINTENANCE else 'off'))
@@ -69,6 +69,8 @@ PDF_MIME_TYPES = ('application/pdf',)
 IMAGE_MIME_TYPES = ('image/bmp', 'image/gif', 'image/jpeg', 'image/png',
                     'image/svg+xml', 'image/tiff', 'image/vnd.microsoft.icon',)
 AUDIO_MIME_TYPES = ('audio/mpeg',)
+YOUTUBE_BASE_URLS = ('http://youtube.com/watch?v=',
+                     'http://www.youtube.com/watch?v=',)
 
 # Options related to Gravatars:
 GRAVATAR_SIZE = 48              # In pixels.

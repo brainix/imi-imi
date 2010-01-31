@@ -30,7 +30,7 @@ import urlparse
 
 from google.appengine.ext.webapp.template import create_template_register
 
-from config import AUDIO_MIME_TYPES, IMAGE_MIME_TYPES
+from config import AUDIO_MIME_TYPES, IMAGE_MIME_TYPES, YOUTUBE_BASE_URLS
 from config import TITLE_MAX_WORDS, TITLE_SLICE_POINTS
 from config import GRAVATAR_SIZE, GRAVATAR_RATING, GRAVATAR_DEFAULT
 
@@ -73,7 +73,7 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
 
 @register.filter
 def user_to_gravatar(user, size=0):
-    """Convert a user object into a Gravatar (globally recognized avatar) icon.
+    """Convert a user object into a Gravatar (globally recognized avatar) URL.
 
     For more information, see:
         http://en.gravatar.com/site/implement/url
@@ -155,12 +155,7 @@ def is_audio(bookmark):
 @register.filter
 def is_youtube_video(bookmark):
     """Return whether or not a bookmark points to a YouTube video."""
-    if bookmark.url.startswith('http://youtube.com/watch?v='):
-        return True
-    elif bookmark.url.startswith('http://www.youtube.com/watch?v='):
-        return True
-    else:
-        return False
+    return bookmark.url.startswith(YOUTUBE_BASE_URLS)
 
 
 @register.filter

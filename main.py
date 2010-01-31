@@ -46,25 +46,20 @@ def main():
     # fit" model).  Therefore, keep these URL maps ordered from most specific to
     # most general.
     #
-    # We don't actually paginate.  (Who in the hell would issue a search query
-    # and then immediately click on result page 7?)  Instead, every time the
-    # user clicks the "more results" button, we use AJAX to serve up an HTML
-    # snippet to dynamically grow the results page.  In order to implement this
-    # scheme, every URL that doesn't specify a page number serves up a full HTML
-    # page, and every URL that does serves up only an HTML snippet.
-    #
-    # The final URL map matches every URL that none of the preceding maps match.
-    # If the URL "falls through" to the final map, and if the URL is exactly
-    # "/", we serve up the homepage.  However, if the URL is anything other than
-    # "/", we serve up the 404 page.
+    # The final URL map matches every URL that none of the preceding maps
+    # match.  If the requested URL "falls through" to the final map, then we
+    # serve up a 404: not found page.
     url_mapping = (
         ('/api',                handlers.API),        # /api
         ('/search',             handlers.Search),     # /search
         ('/live_search',        handlers.LiveSearch), # /live_search
-        ('/users/(.*)/(.*)',    handlers.Users),      # /users/email@addr.com/page_num
+        ('/users/(.*)/(.*)',    handlers.Users),      # /users/email@addr.com/before
         ('/users/(.*)',         handlers.Users),      # /users/email@addr.com
         ('/users',              handlers.Users),      # /users
-        ('/(.*)',               handlers.Home),       # /
+        ('/rss',                handlers.RSS),        # /rss
+        ('/home',               handlers.Home),       # /home
+        ('/',                   handlers.Home),       # /
+        ('(.*)',                handlers.NotFound),   # 404: Not Found.
     )
 
     app = webapp.WSGIApplication(url_mapping, debug=DEBUG)

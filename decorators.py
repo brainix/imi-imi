@@ -58,9 +58,18 @@ def require_login(method):
     @functools.wraps(method)
     def wrap(self, *args, **kwds):
         if users.get_current_user() is None:
-            # The user isn't logged in.  Redirect to a login page that redirects
-            # back to the current URL (corresponding to the decorated method).
-            self.redirect(users.create_login_url(self.request.uri))
+            # The user isn't logged in.
+            method_name = method.func_name
+            if method_name == 'get':
+                # The anonymous user issued a GET request.  Redirect to a login
+                # page that redirects back to the current URL (corresponding to
+                # the decorated method).
+                self.redirect(users.create_login_url(self.request.uri))
+            else:
+                # The anonymous user issued a PUT request.  Log it and ignore
+                # the request.
+                message = 'anonymous user issued %s request on URL %s; ignoring'
+                _log.info(message % (method_name.upper(), self.request.uri))
         else:
             # The user is logged in.  Fall through to the decorated method.
             return method(self, *args, **kwds)

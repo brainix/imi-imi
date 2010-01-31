@@ -91,38 +91,48 @@ class _RequestHandler(webapp.RequestHandler):
         return login_url, current_user, logout_url
 
 
-class Home(search.RequestHandler, rss.RequestHandler, _RequestHandler):
+class NotFound(_RequestHandler):
+    """Request handler to serve a 404: Not Found error page."""
+
+    @decorators.disable_during_maintenance
+    def get(self, nonsense=''):
+        return self._serve_error(404)
+
+
+class Home(rss.RequestHandler, _RequestHandler):
     """Request handler to serve / pages."""
 
     @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     def get(self, page=''):
-        """Serve a get request for /.  Serve the homepage or site-wide RSS feed.
+        """Serve a get request for / or /home.
         
-        This method doubles as a catch-all for URLs that don't map to any other
-        request handler.  If we didn't receive a page keyword argument, then
-        the user requested /, so serve the home page.  If page is 'home' or
-        'rss', then serve the home page or site-wide RSS feed, respectively.
-        If page is anything else, then the user requested a URL for something
-        that doesn't exist, so serve a 404.
+        If an anonymous user requested /, then serve the homepage.  If a logged
+        in user requested /, then redirect to that user's bookmarks page.  If
+        either an anonymous or a logged in user requested /home, then serve the
+        homepage.
         """
         if page.endswith('/'):
             page = page[:-1]
-        if page not in ('', 'home', 'rss',):
+        if page not in ('', 'home',):
             return self._serve_error(404)
         path = os.path.join(TEMPLATES, 'home', 'index.html')
         title = 'social bookmarking'
         rss_url = self._get_rss_url()
         login_url, current_user, logout_url = self._get_user()
-        if page in ('', 'home',) and current_user is None:
-            active_tab = 'imi-imi'
-        else:
-            active_tab = ''
-        if page not in ('home', 'rss',) and current_user is not None:
+        active_tab = 'imi-imi' if current_user is None else ''
+        if page == '' and current_user is not None:
             self.redirect('/users/' + current_user.email())
-        if page == 'rss':
-            return self._serve_rss()
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
+
+
+class RSS(search.RequestHandler, rss.RequestHandler, _RequestHandler):
+    """Request handler to serve the site-wide RSS feed."""
+
+    @decorators.disable_during_maintenance
+    @decorators.no_browser_cache
+    def get(self):
+        return self._serve_rss()
 
 
 class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
@@ -248,7 +258,18 @@ class Search(search.RequestHandler, _RequestHandler):
     @decorators.disable_during_maintenance
     @decorators.no_browser_cache
     def get(self):
-        """Given a search query, show related bookmarks, sorted by relevance."""
+        """Given a search query, show related bookmarks, sorted by relevance.
+
+        We don't actually "paginate" search results.  (What right-thinking,
+        red-blooded American would issue a search query and then immediately
+        click on result page 7?)  Instead, every time the user clicks the "more
+        results" button, we use AJAX to serve up an HTML snippet to dynamically
+        grow the results page.
+        
+        In order to implement this scheme, every requested URL that *doesn't*
+        specify a page number query parameter gets a full HTML page response;
+        every URL that *does* gets only an HTML snippet.
+        """
         try:
             target_user, target_users, target_words, page = self._parse_query()
         except ValueError:
@@ -316,7 +337,7 @@ class Search(search.RequestHandler, _RequestHandler):
 class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
     """Request handler to expose imi-imi's functionality through an API.
     
-    imi-imi exposes RESTful API calls which return JSON data.  This is similar
+    imi-imi exposes ReSTful API calls which return JSON data.  This is similar
     to Twitter's API, and following Twitter's API design decisions is probably a
     safe bet.  ;-)
     """

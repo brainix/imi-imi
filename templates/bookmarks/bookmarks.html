@@ -2,7 +2,7 @@
     <li class="bookmark" {% if snippet %}style="display: none;"{% endif %}>
         <div class="speech_balloon">
             <h3>
-                <a href="{{ bookmark.url }}"
+                <a href="{{ bookmark.url }}" target="_blank"
                    rel="nofollow">{{ bookmark|beautify_title }}</a>
             </h3>
 
@@ -37,7 +37,7 @@
             </span>
 
             {% if not bookmark.words and bookmark|is_image %}
-                <a href="{{ bookmark.url }}">
+                <a href="{{ bookmark.url }}" target="_blank">
                     <img src="{{ bookmark.url }}" class="bookmark"
                          alt="{{ bookmark|beautify_title }}" />
                 </a>
@@ -83,9 +83,10 @@
             {% if not bookmark.words and not bookmark|is_image and not bookmark|is_audio %}
                 <p>
                     We couldn&rsquo;t auto-tag
-                    <a href="{{ bookmark.url }}">{{ bookmark.url }}</a>.  The URL
-                    may be incorrect, the server may be down, or the URL may not
-                    point to text, HTML, an image, an MP3, or a YouTube video.
+                    <a href="{{ bookmark.url }}"
+                       target="_blank">{{ bookmark.url }}</a>.  The URL may be
+                    incorrect, the server may be down, or the URL may not point
+                    to text, HTML, an image, an MP3, or a YouTube video.
                 </p>
             {% endif %}
         </div>
