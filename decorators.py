@@ -163,8 +163,9 @@ def batch_put_and_delete(method):
 
         (entities_to_put, entities_to_delete, return_value)
 
-    This decorator puts and deletes the specified entities as batches, then
-    returns only the aforementioned return value.
+    where entities_to_put and entities_to_delete are lists of persisted
+    objects.  This decorator puts and deletes the aforementioned entities as
+    batches, then returns only the aforementioned return value, respectively.
     """
     @functools.wraps(method)
     def wrap(*args, **kwds):
