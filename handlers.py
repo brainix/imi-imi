@@ -94,7 +94,7 @@ class Maintenance(_RequestHandler):
         login_url, current_user, logout_url = self._get_user()
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
-    def post(self):
+    def post(self, nonsense=''):
         pass
 
 
@@ -106,7 +106,7 @@ class NotFound(_RequestHandler):
 
 
 class Home(rss.RequestHandler, _RequestHandler):
-    """Request handler to serve / pages."""
+    """Request handler to serve the homepage."""
 
     @decorators.no_browser_cache
     def get(self):
@@ -114,8 +114,8 @@ class Home(rss.RequestHandler, _RequestHandler):
         
         If an anonymous user requested /, then serve the homepage.  If a logged
         in user requested /, then redirect to that user's bookmarks page.  If
-        either an anonymous or a logged in user requested /home, then serve the
-        homepage.
+        either an anonymous user or a logged in user requested /home, then
+        serve the homepage.
         """
         if self.request.path not in ('/', '/home',):
             return self._serve_error(404)
@@ -139,7 +139,7 @@ class RSS(search.RequestHandler, rss.RequestHandler, _RequestHandler):
 
 class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
             _RequestHandler):
-    """Request handler to serve /users pages."""
+    """Request handler to serve users' pages and perform CRUD on bookmarks."""
 
     @decorators.no_browser_cache
     def get(self, target_email=None, before=None):
@@ -213,7 +213,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
 
 
 class LiveSearch(search.RequestHandler, _RequestHandler):
-    """Request handler to serve /live_search pages."""
+    """Request handler to serve live search HTML snippets."""
 
     def get(self):
         """Someone is typing a search query.  Provide some live search results.
@@ -225,24 +225,28 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         html = self._live_search(query)
         self.response.out.write(html)
 
-    @decorators.memcache_results(SEARCH_CACHE_SECS)
+    @decorators.memcache_results(cache_secs=SEARCH_CACHE_SECS)
     def _live_search(self, query):
         """Fetch & render HTML for the live search results for the given query.
 
         This method potentially gets called every time anyone types a single
         letter in the search box.  Keep this method as efficient as possible
         and aggressively cache its results.
+
+        TODO:  Here, give an example of what Google returns as live search
+        results.  That'll make the string munching more clear.
         """
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
         url, status_code, mime_type, suggestions = utils.fetch_content(url)
         if suggestions is not None:
-            suggestions = suggestions[1:]
-            suggestions = suggestions[suggestions.index('[')+2:]
-            suggestions = suggestions[:-2]
-            suggestions = suggestions.replace('"', '')
-            suggestions = suggestions.split(',')
-            suggestions = [s for s in suggestions if s]
+            suggestions = suggestions[1:]                           #
+            suggestions = suggestions[suggestions.index('[')+2:]    #
+            suggestions = suggestions[:-2]                          #
+            suggestions = suggestions.replace('"', '')              #
+            suggestions = suggestions.split(',')                    #
+            suggestions = [s for s in suggestions if s]             #
+
             suggestions = [{'url': '/search?query=' + s.replace(' ', '+'),
                             'text': s,
                             'has_results': bool(self._num_relevant_results(s)),}
@@ -252,7 +256,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
 
 
 class Search(search.RequestHandler, _RequestHandler):
-    """Request handler to serve /search pages."""
+    """Request handler to serve search results pages."""
 
     @decorators.no_browser_cache
     def get(self):
@@ -271,6 +275,8 @@ class Search(search.RequestHandler, _RequestHandler):
         try:
             target_user, target_users, target_words, page = self._parse_query()
         except ValueError:
+            # The "page" query parameter's value isn't an integer.
+            # Congratulations, enjoy your 404.
             return self._serve_error(404)
         snippet = page != 0
         file_name = 'index.html' if not snippet else 'bookmarks.html'
@@ -296,6 +302,8 @@ class Search(search.RequestHandler, _RequestHandler):
         try:
             more_url = self._compute_more_url() if more else None
         except ValueError:
+            # The "page" query parameter's value isn't an integer.
+            # Congratulations, enjoy your 404.
             return self._serve_error(404)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 

@@ -28,7 +28,7 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import db
 
-from config import DEFAULT_CACHE_SECS
+from config import DEFAULT_CACHE_SECS, DEFAULT_NUM_RETRIES
 
 
 _log = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ def require_login(method):
     return wrap
 
 
-def memcache_results(cache_secs):
+def memcache_results(cache_secs=DEFAULT_CACHE_SECS):
     """Decorate a method with the memcache pattern.
 
     Technically, the memcache_results function isn't a decorator.  It's a
@@ -129,26 +129,13 @@ def _compute_memcache_key(self, method, *args, **kwds):
 
 
 def run_in_transaction(method):
-    """Transactionally execute a method.
-
-    If we can't execute the method transactionally, then just run it non-
-    transactionally.
-    """
+    """Transactionally execute a method."""
     @functools.wraps(method)
     def wrap(*args, **kwds):
         method_name = method.func_name
         _log.debug('transactionally executing %s' % method_name)
-        try:
-            return_value = db.run_in_transaction(method, *args, **kwds)
-        except (db.BadRequestError, db.TransactionFailedError,):
-            # Oops.  We couldn't execute the method transactionally.  Just run
-            # it non-transactionally.
-            _log.warning("couldn't transactionally execute %s" % method_name)
-            _log.debug('non-transactionally executing %s' % method_name)
-            return_value = method(*args, **kwds)
-            _log.debug('non-transactionally executed %s' % method_name)
-        else:
-            _log.debug('transactionally executed %s' % method_name)
+        return_value = db.run_in_transaction(method, *args, **kwds)
+        _log.debug('transactionally executed %s' % method_name)
         return return_value
     return wrap
 

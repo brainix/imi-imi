@@ -40,7 +40,7 @@ _log = logging.getLogger(__name__)
 class RequestHandler(webapp.RequestHandler):
     """Base request handler, from which other request handlers inherit."""
 
-    @decorators.memcache_results(SEARCH_CACHE_SECS)
+    @decorators.memcache_results(cache_secs=SEARCH_CACHE_SECS)
     def _num_relevant_results(self, query_string):
         """Return the number of bookmarks that are relevant to the query string.
 
@@ -96,7 +96,7 @@ class RequestHandler(webapp.RequestHandler):
             bookmarks, more = self._search_bookmarks_specific(bookmarks, **kwds)
         return bookmarks, more
 
-    @decorators.memcache_results(SEARCH_CACHE_SECS)
+    @decorators.memcache_results(cache_secs=SEARCH_CACHE_SECS)
     def _search_bookmarks_generic(self, query_users=tuple(),
                                   query_words=tuple(), before=None, page=0,
                                   per_page=SEARCH_PER_PAGE):

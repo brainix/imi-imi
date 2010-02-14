@@ -41,21 +41,20 @@ class RequestHandler(webapp.RequestHandler):
 
     def _create_bookmark(self, url):
         """Create a reference for the current user and the specified URL."""
-        email, url, mime_type, title, words, html_hash, bookmark, reference, \
-            exists = self._get_bookmark(url)
-        _log.info('%s creating reference %s' % (email, url))
+        email, args, bookmark, reference, exists = self._get_bookmark(url)
+        _log.info('%s creating reference %s' % (email, args[0]))
         if exists['reference']:
             reference = None
             message = "%s couldn't create reference %s (already exists)"
-            _log.warning(message % (email, url))
+            _log.warning(message % (email, args[0]))
         else:
             reference.bookmark = bookmark
             if exists['bookmark']:
                 reference = self._save_bookmark(reference)
             else:
-                reference = self._common(url, mime_type, title, words,
-                                         html_hash, reference)
-            _log.info('%s created reference %s' % (email, url))
+                args = list(args) + [reference]
+                reference = self._common(*args)
+            _log.info('%s created reference %s' % (email, args[0]))
         return reference
 
     def _update_bookmark(self, reference):
@@ -80,29 +79,29 @@ class RequestHandler(webapp.RequestHandler):
     def _get_bookmark(self, url):
         """Get/create the bookmark/reference for the current user and URL."""
         email, url = users.get_current_user().email(), utils.normalize_url(url)
+        exists = {'bookmark': True, 'reference': True,}
         _log.debug('%s getting/creating bookmark/reference %s' % (email, url))
         bookmark_key = models.Bookmark.key_name(url)
         bookmark = models.Bookmark.get_by_key_name(bookmark_key)
-        exists = {'bookmark': True, 'reference': True,}
         if bookmark is None:
-            url, mime_type, title, words, html_hash = utils.tokenize_url(url)
-            bookmark_key = models.Bookmark.key_name(url)
-            bookmark = models.Bookmark.get_or_insert(bookmark_key)
-            exists['bookmark'] = False
+            args = utils.tokenize_url(url)
+            bookmark_key = models.Bookmark.key_name(args[0])
+            bookmark = models.Bookmark.get_by_key_name(bookmark_key)
+            if bookmark is None:
+                bookmark = models.Bookmark(key_name=bookmark_key)
+                exists['bookmark'] = False
         else:
-            url, mime_type = bookmark.url, bookmark.mime_type
-            title, words = bookmark.title, bookmark.words
-            html_hash = bookmark.html_hash
-        reference_key = models.Reference.key_name(email, url)
+            args = [bookmark.url, bookmark.mime_type, bookmark.title,
+                bookmark.words, bookmark.html_hash,]
+        reference_key = models.Reference.key_name(email, args[0])
         reference = models.Reference.get_by_key_name(reference_key,
                                                      parent=bookmark)
         if reference is None:
             reference = models.Reference(parent=bookmark,
                                          key_name=reference_key)
             exists['reference'] = False
-        _log.debug('%s got/created bookmark/reference %s' % (email, url))
-        return email, url, mime_type, title, words, html_hash, bookmark, \
-               reference, exists
+        _log.debug('%s got/created bookmark/reference %s' % (email, args[0]))
+        return email, args, bookmark, reference, exists
 
     def _common(self, url, mime_type, title, words, html_hash, reference):
         """Perform the operations common to creating / updating references."""

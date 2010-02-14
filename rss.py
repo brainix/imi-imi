@@ -63,7 +63,7 @@ class RequestHandler(webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'application/rss+xml'
         self.response.out.write(xml)
 
-    @decorators.memcache_results(RSS_CACHE_SECS)
+    @decorators.memcache_results(cache_secs=RSS_CACHE_SECS)
     def _compute_rss(self, saved_by='everyone', query_users=tuple(),
                      num_rss_items=RSS_NUM_ITEMS, num_rss_tags=RSS_NUM_TAGS):
         """Compute the XML for an RSS feed for the given users' bookmarks."""
