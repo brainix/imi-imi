@@ -233,19 +233,24 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         letter in the search box.  Keep this method as efficient as possible
         and aggressively cache its results.
 
-        TODO:  Here, give an example of what Google returns as live search
-        results.  That'll make the string munching more clear.
+        Google Suggest exposes a nice RESTful API.  To fetch suggestions for
+        the query "raj", one would visit the URL:
+            http://suggestqueries.google.com/complete/search?output=firefox&qu=raj
+
+        Google's suggestions would be returned in the form:
+            '["raj",["rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
+
         """
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
         url, status_code, mime_type, suggestions = utils.fetch_content(url)
         if suggestions is not None:
-            suggestions = suggestions[1:]                           #
-            suggestions = suggestions[suggestions.index('[')+2:]    #
-            suggestions = suggestions[:-2]                          #
-            suggestions = suggestions.replace('"', '')              #
-            suggestions = suggestions.split(',')                    #
-            suggestions = [s for s in suggestions if s]             #
+            suggestions = suggestions[1:]                           # '"raj",["rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
+            suggestions = suggestions[suggestions.index('[')+2:]    # 'rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
+            suggestions = suggestions[:-2]                          # 'rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"'
+            suggestions = suggestions.replace('"', '')              # 'rajaan bennett,rajon rondo,rajiv shah,raj kundra,raj rajaratnam,rajshri,raja bell,rajah,raj kundra wikipedia,raj patel'
+            suggestions = suggestions.split(',')                    # ['rajaan bennett', 'rajon rondo', 'rajiv shah', 'raj kundra', 'raj rajaratnam', 'rajshri', 'raja bell', 'rajah', 'raj kundra wikipedia', 'raj patel']
+            suggestions = [s for s in suggestions if s]             # ['rajaan bennett', 'rajon rondo', 'rajiv shah', 'raj kundra', 'raj rajaratnam', 'rajshri', 'raja bell', 'rajah', 'raj kundra wikipedia', 'raj patel']
 
             suggestions = [{'url': '/search?query=' + s.replace(' ', '+'),
                             'text': s,
@@ -308,7 +313,7 @@ class Search(search.RequestHandler, _RequestHandler):
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def _parse_query(self):
-        """From the URL query parameter, parse out the features to search on."""
+        """From the URL query parameter, parse the features to search on."""
         query_user = self.request.get('user')
         query_user = users.User(email=query_user) if query_user else query_user
         query_users = [query_user] if query_user else []
@@ -344,8 +349,8 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
     """Request handler to expose imi-imi's functionality through an API.
     
     imi-imi exposes ReSTful API calls which return JSON data.  This is similar
-    to Twitter's API, and following Twitter's API design decisions is probably a
-    safe bet.  ;-)
+    to Twitter's API, and following Twitter's API design decisions is probably
+    a safe bet.  ;-)
     """
 
     @decorators.no_browser_cache

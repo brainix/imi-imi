@@ -51,7 +51,6 @@ STOP_WORDS = os.path.join(_CURRENT_PATH, 'corpus', 'stop_words.txt')
 
 
 DEFAULT_CACHE_SECS = 60 if DEBUG else 3600
-DEFAULT_NUM_RETRIES = 3
 
 
 POPULAR_CACHE_SECS = 60 if DEBUG else 3600

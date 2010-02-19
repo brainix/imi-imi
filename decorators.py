@@ -28,7 +28,7 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import db
 
-from config import DEFAULT_CACHE_SECS, DEFAULT_NUM_RETRIES
+from config import DEFAULT_CACHE_SECS
 
 
 _log = logging.getLogger(__name__)

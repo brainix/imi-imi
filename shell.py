@@ -35,44 +35,28 @@ import os
 import sys
 
 
-# Enumerate the directories containing the Google App Engine modules on
-# Unix-like operating systems:
-GOOGLE_APP_ENGINE_DIRS = (
-    os.path.join('/', 'usr', 'local', 'google_appengine'),
-    os.path.join('/', 'usr', 'local', 'google_appengine', 'lib', 'yaml', 'lib'),
-)
-
-# Enumerate the directories containing the Google App Engine modules on Windows
-# operating systems:
-"""
-GOOGLE_APP_ENGINE_DIRS = (
-    os.path.join('C:\\', 'Program Files', 'Google', 'google_appengine'),
-    os.path.join('C:\\', 'Program Files', 'Google', 'google_appengine', 'lib', 'yaml', 'lib'),
-)
-"""
-
-# Add the directories containing the Google App Engine modules to the Python
-# path:
-for dir in GOOGLE_APP_ENGINE_DIRS:
-    if not dir in sys.path:
-        sys.path.append(dir)
-
-from google.appengine.ext import db
-from google.appengine.ext.remote_api import remote_api_stub
+# The default base (top-level) directory containing the Google App Engine SDK
+# on our current local platform:
+if sys.platform == 'win32':
+    DEFAULT_BASE_DIR = os.path.join('C:\\', 'Program Files', 'Google', 'google_appengine')
+else:
+    DEFAULT_BASE_DIR = os.path.join('/', 'usr', 'local', 'google_appengine')
 
 
 def main():
     """Launch a Python console able to interact with imi-imi's datastore."""
-
     # Parse the command-line arguments:
     parser = config_parser()
-    app_id, host, auth_domain, email = parse_args(parser)
+    app_id, host, auth_domain, email, base_dir = parse_args(parser)
 
     # Set the environment variables required to authenticate in order to do
     # anything "interesting" with/to the datastore:
     os.environ['AUTH_DOMAIN'], os.environ['USER_EMAIL'] = auth_domain, email
 
-    # Connect to the datastore:
+    # Get the necessary local Google App Engine modules:
+    remote_api_stub = import_modules(parser, base_dir)
+
+    # Connect to the remote datastore:
     remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', auth, host)
 
     # Finally, launch the interactive console:
@@ -82,7 +66,8 @@ def main():
 def config_parser():
     """Configure the command-line argument parser."""
     usage = '%prog [--host=app-id.appspot.com] [--auth_domain=gmail.com] '
-    usage += '[--email=brainix@gmail.com] app-id'
+    usage += '[--email=brainix@gmail.com] '
+    usage += '[--base_dir=/usr/local/google_appengine] app-id'
     parser = optparse.OptionParser(description=__doc__, usage=usage)
     parser.add_option('--host', dest='host', default=None,
                       help='Google App Engine app host name')
@@ -90,22 +75,53 @@ def config_parser():
                       help='authentication domain')
     parser.add_option('--email', dest='email', default='brainix@gmail.com',
                       help='email address')
+    parser.add_option('--base_dir', dest='base_dir', default=DEFAULT_BASE_DIR,
+                      help='directory where Google App Engine SDK installed')
     return parser
 
 
 def parse_args(parser):
     """Parse the command-line arguments.
 
-    If the user provided incorrect or insufficient command-line arguments, print
-    usage information and exit the shell.
+    If the user provided incorrect or insufficient command-line arguments, then
+    print usage information and exit the shell.
     """
     opts, args = parser.parse_args(sys.argv[1:])
     if len(args) != 1:
         parser.error('exactly one argument required: Google App Engine app ID')
     app_id = args[0]
     host = opts.host if opts.host is not None else app_id + '.appspot.com'
-    auth_domain, email = opts.auth_domain, opts.email
-    return app_id, host, auth_domain, email
+    auth_domain, email, base_dir = opts.auth_domain, opts.email, opts.base_dir
+    if not os.path.isdir(base_dir):
+        parser.error('%s not a directory containing Google App Engine SDK; ' %
+                     base_dir)
+    return app_id, host, auth_domain, email, base_dir
+
+
+def import_modules(parser, base_dir):
+    """Import and return the necessary local Google App Engine modules.
+
+    This is a little bit tricky because the Google App Engine SDK directories
+    are not in the Python path.
+    """
+    # Enumerate the directories containing the Google App Engine modules:
+    google_app_engine_dirs = (
+        base_dir,
+        os.path.join(base_dir, 'lib', 'yaml', 'lib'),
+    )
+
+    # Add those directories to the Python path:
+    for dir in google_app_engine_dirs:
+        if not dir in sys.path:
+            sys.path.append(dir)
+
+    # Finally, we can import the Google App Engine modules:
+    try:
+        from google.appengine.ext.remote_api import remote_api_stub
+    except ImportError:
+        parser.error('%s not a directory containing Google App Engine SDK; ' %
+                     base_dir)
+    return remote_api_stub
 
 
 def auth():
