@@ -58,6 +58,7 @@ def main():
             ('/api',                handlers.API),          # /api
             ('/search',             handlers.Search),       # /search
             ('/live_search',        handlers.LiveSearch),   # /live_search
+            ('/save_bookmark',      handlers.SaveBookmark), # /save_bookmark
             ('/users/(.*)/(.*)',    handlers.Users),        # /users/email@addr.com/before
             ('/users/(.*)',         handlers.Users),        # /users/email@addr.com
             ('/users',              handlers.Users),        # /users

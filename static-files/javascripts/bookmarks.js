@@ -42,9 +42,14 @@ function initBookmarks() {
     $(".delete_bookmark").submit(deleteBookmark);
     $("#more_bookmarks form").submit(moreBookmarks);
 
-    // Make sure that the "save bookmark" bar displays the default explanatory
-    // text.
-    $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
+    if ($("#url_to_create").length != 0 && $("#url_to_create").val() != DEFAULT_CREATE_BOOKMARK_TEXT) {
+        createBookmark();
+    }
+    else {
+        // Make sure that the "save bookmark" bar displays the default
+        // explanatory text.
+        $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
+    }
 
     // For some reason, sometimes (particularly when we're clicking
     // back/forward through the pages in the site) our button labels get

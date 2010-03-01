@@ -52,12 +52,12 @@ def require_login(method):
                 # The anonymous user issued a GET request.  Redirect to a login
                 # page that redirects back to the current URL (corresponding to
                 # the decorated method).
-                self.redirect(users.create_login_url(self.request.uri))
+                self.redirect(users.create_login_url(self.request.url))
             else:
                 # The anonymous user issued a PUT request.  Log it and ignore
                 # the request.
                 message = 'anonymous user issued %s request on URL %s; ignoring'
-                _log.info(message % (method_name.upper(), self.request.uri))
+                _log.info(message % (method_name.upper(), self.request.url))
         else:
             # The user is logged in.  Fall through to the decorated method.
             return method(self, *args, **kwds)

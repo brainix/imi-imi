@@ -86,7 +86,7 @@ class Reference(_BaseModel):
 
 class Keychain(_BaseModel):
     """Model describing which bookmarks should match a query for a stem.
-    
+
     This model acts as a reverse index describing which bookmarks should match
     a particular search query.
     """

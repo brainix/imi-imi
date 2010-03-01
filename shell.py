@@ -38,7 +38,8 @@ import sys
 # The default base (top-level) directory containing the Google App Engine SDK
 # on our current local platform:
 if sys.platform == 'win32':
-    DEFAULT_BASE_DIR = os.path.join('C:\\', 'Program Files', 'Google', 'google_appengine')
+    DEFAULT_BASE_DIR = os.path.join('C:\\', 'Program Files', 'Google',
+                                    'google_appengine')
 else:
     DEFAULT_BASE_DIR = os.path.join('/', 'usr', 'local', 'google_appengine')
 
