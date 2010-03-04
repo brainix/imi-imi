@@ -28,6 +28,18 @@ import os
 _log = logging.getLogger(__name__)
 
 
+# Whether or not we're running in profiling mode.  If we're running in
+# profiling mode, then all of our requests generate profiling output, either
+# printed in the log or appended to the generated HTML.
+PROFILING = False           # Must be True or False.
+PROFILING_OUTPUT = 'log'    # Must be 'log' or 'html'.
+PROFILING_SORT_BY = 'time'  # Must be 'time' or 'cumulative'.
+PROFILING_NUM_STATS = 80    # Must be an integer.
+PROFILING_CALLEES = False   # Must be True or False.
+PROFILING_CALLERS = False   # Must be True or False.
+_log.debug('turning %s profiling mode' % ('on' if PROFILING else 'off'))
+
+
 # Whether or not we're running in maintenance mode.  If we're running in
 # maintenance mode, then all of our request handlers' get methods serve a
 # polite "we're in surgery, check back later" message and all of our request
@@ -40,9 +52,14 @@ _log.debug('turning %s maintenance mode' % ('on' if MAINTENANCE else 'off'))
 # Programmatically determine whether to turn on debug mode.  If we're running
 # on the SDK, then turn on debug mode.  Otherwise, we're running on the cloud,
 # so turn off debug mode.
-SERVER_SOFTWARE = os.getenv('SERVER_SOFTWARE', '')
-DEBUG = SERVER_SOFTWARE.split('/', 1)[0] == 'Development'
+_SERVER_SOFTWARE = os.getenv('SERVER_SOFTWARE', '')
+DEBUG = _SERVER_SOFTWARE.split('/', 1)[0] == 'Development'
 _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
+
+
+# TODO: Look up the syntax for the following line, and if it fails, then make
+# sure that it produces a nice error message.
+# assert PROFILING and DEBUG or not PROFILING
 
 
 _CURRENT_PATH = os.path.dirname(__file__)

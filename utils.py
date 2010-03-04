@@ -201,9 +201,9 @@ def normalize_url(url):
         >>> normalize_url('google.com/search?first=rajiv&last=shah&middle=bakulesh&sex=male')
         'http://google.com/search?first=rajiv&last=shah&middle=bakulesh&sex=male'
         >>> normalize_url('google.com/index.html#location')
-        'http://google.com/'
+        'http://google.com/#location'
         >>> normalize_url('google.com/document.html#location')
-        'http://google.com/document.html'
+        'http://google.com/document.html#location'
         >>> normalize_url('google.com/a%c2%b1b')
         'http://google.com/a%C2%B1b'
         >>> normalize_url('google.com/a%c2%b1%b')
@@ -244,6 +244,9 @@ def normalize_url(url):
     input, output = [c for c in path.split('/') if c], []
     for component in input:
         if component == '..':
+            # Raj, the following line doesn't throw an IndexError.  Even if
+            # output is an empty list.  You've tested this several times.  Stop
+            # wasting your time.  Stop being paranoid.
             output = output[:-1]
         elif component == '.':
             pass
@@ -264,8 +267,9 @@ def normalize_url(url):
     # variables with values.
     query = urllib.urlencode(sorted(cgi.parse_qsl(query)))
 
-    # Remove the fragment (or intra-document location).
-    fragment = ''
+    # I used to remove the fragment here, but that's a bad idea, because lots
+    # of AJAX-y apps abuse the fragment (or intra-document location) to serve
+    # up different content.  Just keep the fragment, I guess, and sigh.
 
     # Assemble the munged scheme, host, path, parameters, query, and fragment
     # back into a URL.

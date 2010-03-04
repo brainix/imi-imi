@@ -68,12 +68,12 @@ div.lowercase {
     text-transform: lowercase;
 }
 
-#left {
+div#left {
     float: left;
     width: 480px;
 }
 
-#right {
+div#right {
     float: right;
     width: 240px;
 }
@@ -92,7 +92,7 @@ form input, form textarea {
     width: 360px;
 }
 
-form .submit {
+form input.submit {
     background: #B62F2F;
     border: 0px;
     color: #FFFFFF;
@@ -100,12 +100,12 @@ form .submit {
     width: 386px;
 }
 
-form .submit:hover {
+form input.submit:hover {
     background: #405156;
     cursor: pointer !important;
 }
 
-#navigation ul li {
+div#navigation ul li {
     float: left;
     font-size: 35px;
     font-weight: light;
@@ -114,47 +114,48 @@ form .submit:hover {
     width: 25%;
 }
 
-#navigation ul li.sign_in {
+div#navigation ul li.sign_in {
     width: 50%;
 }
 
-#navigation ul li.search {
+div#navigation ul li.search {
     margin-top: -2px;
 }
 
-#navigation ul li a {
+div#navigation ul li a {
     color: #959EA1;
 }
 
-#navigation ul li a:hover {
+div#navigation ul li a:hover {
     color: #B62F2F;
 }
 
-#navigation ul li a.active_tab {
+div#navigation ul li a.active_tab {
     color: #405156;
 }
 
-#navigation ul li a.active_tab:hover {
+div#navigation ul li a.active_tab:hover {
     color: #B62F2F;
 }
 
-#navigation .form_element {
+div#navigation div.form_element {
     margin-bottom: 0;
     position: relative;
 }
 
-#navigation form input, form textarea {
+div#navigation form input,
+div#navigation form textarea {
     font-size: 16px;
     width: 175px !important;
 }
 
-.query_with_live_search_shown {
+div#navigation form input.query_with_live_search_shown {
     -moz-border-radius: 6px 6px 0px 0px;
     -webkit-border-bottom-right-radius: 0px;
     -webkit-border-bottom-left-radius: 0px;
 }
 
-#live_search {
+div#live_search {
     -moz-border-radius: 0px 0px 6px 6px;
     -webkit-border-radius: 0px;
     -webkit-border-bottom-right-radius: 6px;
@@ -170,23 +171,28 @@ form .submit:hover {
     width: 175px;
 }
 
-#live_search ul li {
+div#live_search ul li {
     float: none;
     font-size: 16px;
     letter-spacing: 0px;
     width: 100%;
 }
 
-#live_search ul li a, #live_search ul li a:hover {
+div#live_search ul li a,
+div#live_search ul li a:hover {
     color: #516064;
 }
 
-.live_search_result_selected {
+div#live_search ul li a.live_search_result_selected {
     color: #B62F2F !important;
     text-decoration: underline;
 }
 
-#heading h1 {
+div#heading {
+    margin-bottom: 40px;
+}
+
+div#heading h1 {
     color: #D1D9DC;
     font-size: 102px;
     letter-spacing: -7px;
@@ -194,7 +200,7 @@ form .submit:hover {
     margin-left: -3px;
 }
 
-#heading h2 {
+div#heading h2 {
     color:  #D1D9DC;
     font-size: 35px;
     font-weight: 300;
@@ -202,11 +208,7 @@ form .submit:hover {
     line-height: 100%;
 }
 
-#heading {
-    margin-bottom: 40px;
-}
-
-#content .portlet {
+div#content .portlet {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
     background: #EDF0F1;
@@ -217,7 +219,7 @@ form .submit:hover {
     width: 100%;
 }
 
-#content h3 {
+div#content h3 {
     clear: left;
     color: #959EA1;
     font-size: 35px;
@@ -226,42 +228,43 @@ form .submit:hover {
     margin-bottom: 10px;
 }
 
-#content .twtr-widget h3 {
+div#content .twtr-widget h3 {
     clear: none;
     font-weight: normal;
     letter-spacing: normal;
 }
 
-#content p {
+div#content p {
     float: left;
     font-size: 16px;
     margin-bottom: 28px;
 }
 
-#content p a {
+div#content p a {
     color: #B62F2F;
 }
 
-#content p a:hover {
+div#content p a:hover {
     text-decoration: underline;
 }
 
-#content .create_bookmark .form_element {
+div#content div.create_bookmark div.form_element {
     margin-bottom: 0;
 }
 
-#content .create_bookmark form input, form textarea {
+div#content div.create_bookmark form input,
+div#content div.create_bookmark form textarea {
     -moz-border-radius: 6px 6px 0 6px;
     -webkit-border-bottom-right-radius: 0;
     width: 455px !important;
 }
 
-.url_to_create_with_throbber_shown {
+div#content div.create_bookmark form input.url_to_create_with_throbber_shown {
     -moz-border-radius: 6px !important;
     -webkit-border-radius: 6px !important;
 }
 
-#content .create_bookmark form .submit {
+div#content div.create_bookmark form input.submit {
     -moz-border-radius: 0 0 6px 6px;
     -webkit-border-radius: 6px;
     -webkit-border-top-left-radius: 0;
@@ -275,33 +278,33 @@ form .submit:hover {
     width: auto !important;
 }
 
-#content .create_bookmark form .submit:hover {
+div#content div.create_bookmark form input.submit:hover {
     background: #B62F2F;
 }
 
-#create_bookmark_throbber {
+div#create_bookmark_throbber {
     display: none;
     float: right;
     height: 36px;
     margin-bottom: 2.5em;
 }
 
-#content .no_break {
+div#content .no_break {
     white-space: nowrap;
 }
 
-#bookmarks {
+div#bookmarks {
     clear: right;
 }
 
-#bookmarks h3 {
+div#bookmarks h3 {
     clear: left;
     font-size: 35px;
     font-weight: 300;
     letter-spacing: -2px;
 }
 
-#bookmarks li.bookmark {
+div#bookmarks li.bookmark {
     color:  #959EA1;
     margin-bottom: 1.5em;
 
@@ -319,7 +322,7 @@ form .submit:hover {
     width: 480px;
 }
 
-#bookmarks div.speech_balloon {
+div#bookmarks div.speech_balloon {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
     background: #EDF0F1;
@@ -328,7 +331,7 @@ form .submit:hover {
     word-wrap: break-word;
 }
 
-#bookmarks li.bookmark span.saved_by {
+div#bookmarks li.bookmark span.saved_by {
     float: left;
     font-size: 14px;
     font-weight: 600;
@@ -338,33 +341,40 @@ form .submit:hover {
     margin-top: 0.5em;
 }
 
-#bookmarks li.bookmark span.saved_by a {
+div#bookmarks li.bookmark span.saved_by a {
     color: #B62F2F;
 }
 
-#bookmarks li.bookmark span.saved_by a:hover {
+div#bookmarks li.bookmark span.saved_by a:hover {
     text-decoration: underline;
 }
 
-#bookmarks .update_bookmark, #bookmarks .delete_bookmark {
+div#bookmarks div.update_bookmark,
+div#bookmarks div.delete_bookmark {
     float: right;
     margin-left: 0.25em;
 }
 
-#bookmarks .update_bookmark .form_element, #bookmarks .delete_bookmark .form_element {
+div#bookmarks div.update_bookmark div.form_element,
+div#bookmarks div.delete_bookmark div.form_element {
     margin-bottom: 0;
     margin-top: -1px;
 }
 
-#bookmarks .update_bookmark form input, form textarea {
+div#bookmarks div.update_bookmark form input,
+div#bookmarks div.update_bookmark form textarea {
     background: #405156;
 }
 
-#bookmarks .delete_bookmark form input:hover, form textarea:hover {
+div#bookmarks div.delete_bookmark form input:hover,
+div#bookmarks div.delete_bookmark form textarea:hover {
     background: #B62F2F;
 }
 
-#bookmarks .update_bookmark form input, form textarea, #bookmarks .delete_bookmark form input, form textarea {
+div#bookmarks div.update_bookmark form input,
+div#bookmarks div.update_bookmark form textarea,
+div#bookmarks div.delete_bookmark form input,
+div#bookmarks div.delete_bookmark form textarea {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     font-size: 10px;
@@ -372,18 +382,18 @@ form .submit:hover {
     width: auto;
 }
 
-#bookmarks li.bookmark img.bookmark {
+div#bookmarks li.bookmark img.bookmark {
     opacity: 0.75;
     filter: alpha(opacity=75);
     width: 460px;
 }
 
-#bookmarks li.bookmark img.bookmark:hover {
+div#bookmarks li.bookmark img.bookmark:hover {
     opacity: 1.0;
     filter: alpha(opacity=100);
 }
 
-#bookmarks li.bookmark p {
+div#bookmarks li.bookmark p {
     background: #EDF0F1;
     clear: both;
     color: #516064;
@@ -394,16 +404,16 @@ form .submit:hover {
     width: 460px;
 }
 
-#bookmarks div.speech_balloon_tail {
+div#bookmarks div.speech_balloon_tail {
     margin-top: -8px;
     text-align: right;
 }
 
-#bookmarks div.gravatar {
+div#bookmarks div.gravatar {
     text-align: right;
 }
 
-#bookmarks .more_bookmarks form .submit {
+div#bookmarks li#more_bookmarks form input.submit {
     background: #405156;
     font-size: 12px;
     height: 29px;
@@ -411,31 +421,31 @@ form .submit:hover {
     width: 100%;
 }
 
-#bookmarks .more_bookmarks form .submit:hover {
+div#bookmarks li#more_bookmarks form input.submit:hover {
     background: #B62F2F;
 }
 
-#more_bookmarks_throbber {
+div#more_bookmarks_throbber {
     display: none;
     height: 31px;
     text-align: center;
 }
 
-#footer {
+div#footer {
     margin-bottom: 2em;
     padding-top: 2em;
 }
 
-#footer p {
+div#footer p {
     color: #959EA1;
     font-size: 16px;
 }
 
-#footer p a {
+div#footer p a {
     color: #516064;
 }
 
-#footer p a:hover {
+div#footer p a:hover {
     text-decoration: underline;
 }
 
@@ -444,35 +454,35 @@ form .submit:hover {
  |                                    Tags                                    |
 \*----------------------------------------------------------------------------*/
 
-#content ul.tag_cloud {
+div#content ul.tag_cloud {
     clear: left;
     line-height: 100% !important;
     text-align: justify;
 }
 
-#content ul.tag_cloud li.tag {
+div#content ul.tag_cloud li.tag {
     display: inline;
     letter-spacing: -1px;
 }
 
-#content ul.tag_cloud li.tag a:hover {
+div#content ul.tag_cloud li.tag a:hover {
     color: #B62F2F !important;
 }
 
-#content ul.tag_cloud li.tag .color0 {color: #B8B8B8 !important;}
-#content ul.tag_cloud li.tag .color1 {color: #909090 !important;}
-#content ul.tag_cloud li.tag .color2 {color: #787878 !important;}
-#content ul.tag_cloud li.tag .color3 {color: #606060 !important;}
-#content ul.tag_cloud li.tag .color4 {color: #484848 !important;}
-#content ul.tag_cloud li.tag .color5 {color: #303030 !important;}
-#content ul.tag_cloud li.tag .color6 {color: #181818 !important;}
-#content ul.tag_cloud li.tag .color7 {color: #000000 !important;}
+div#content ul.tag_cloud li.tag a.color0 {color: #B8B8B8 !important;}
+div#content ul.tag_cloud li.tag a.color1 {color: #909090 !important;}
+div#content ul.tag_cloud li.tag a.color2 {color: #787878 !important;}
+div#content ul.tag_cloud li.tag a.color3 {color: #606060 !important;}
+div#content ul.tag_cloud li.tag a.color4 {color: #484848 !important;}
+div#content ul.tag_cloud li.tag a.color5 {color: #303030 !important;}
+div#content ul.tag_cloud li.tag a.color6 {color: #181818 !important;}
+div#content ul.tag_cloud li.tag a.color7 {color: #000000 !important;}
 
-#content ul.tag_cloud li.tag .size0 {font-size: 12px;}
-#content ul.tag_cloud li.tag .size1 {font-size: 14px;}
-#content ul.tag_cloud li.tag .size2 {font-size: 16px;}
-#content ul.tag_cloud li.tag .size3 {font-size: 18px;}
-#content ul.tag_cloud li.tag .size4 {font-size: 20px;}
-#content ul.tag_cloud li.tag .size5 {font-size: 22px;}
-#content ul.tag_cloud li.tag .size6 {font-size: 24px;}
-#content ul.tag_cloud li.tag .size7 {font-size: 26px;}
+div#content ul.tag_cloud li.tag a.size0 {font-size: 12px;}
+div#content ul.tag_cloud li.tag a.size1 {font-size: 14px;}
+div#content ul.tag_cloud li.tag a.size2 {font-size: 16px;}
+div#content ul.tag_cloud li.tag a.size3 {font-size: 18px;}
+div#content ul.tag_cloud li.tag a.size4 {font-size: 20px;}
+div#content ul.tag_cloud li.tag a.size5 {font-size: 22px;}
+div#content ul.tag_cloud li.tag a.size6 {font-size: 24px;}
+div#content ul.tag_cloud li.tag a.size7 {font-size: 26px;}

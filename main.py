@@ -30,6 +30,8 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
+from config import PROFILING, PROFILING_OUTPUT, PROFILING_SORT_BY
+from config import PROFILING_NUM_STATS, PROFILING_CALLEES, PROFILING_CALLERS
 from config import MAINTENANCE, DEBUG
 import handlers
 
@@ -107,4 +109,9 @@ def profile(output='log', sort_by='time', num_stats=80,
 
 
 if __name__ == '__main__':
-    main()
+    if PROFILING:
+        profile(output=PROFILING_OUTPUT, sort_by=PROFILING_SORT_BY,
+                num_stats=PROFILING_NUM_STATS, callees=PROFILING_CALLEES,
+                callers=PROFILING_CALLERS)
+    else:
+        main()

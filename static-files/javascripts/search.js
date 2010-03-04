@@ -51,13 +51,13 @@ function initSearch() {
 
     // Go through the DOM and modify the behavior of every element that we want
     // to bless with AJAX.
-    $("#query").focus(focusSearch);
-    $("#query").blur(blurSearch);
-    $("#query").keyup(fetchLiveResults);
-    $("#query").keydown(scrollLiveResults);
+    $("input#query").focus(focusSearch);
+    $("input#query").blur(blurSearch);
+    $("input#query").keyup(fetchLiveResults);
+    $("input#query").keydown(scrollLiveResults);
 
     // Make sure that the search bar displays the default explanatory text.
-    $("#query").val(DEFAULT_QUERY_TEXT);
+    $("input#query").val(DEFAULT_QUERY_TEXT);
 }
 
 
@@ -71,8 +71,8 @@ function focusSearch() {
     // Otherwise, if the user previously entered a search query and we
     // successfully fetched some live search results, then show those results.
 
-    if ($("#query").val() == DEFAULT_QUERY_TEXT) {
-        $("#query").val("");
+    if ($("input#query").val() == DEFAULT_QUERY_TEXT) {
+        $("input#query").val("");
     }
     else {
         if (liveResultsFetched && !liveResultsShown) {
@@ -92,8 +92,8 @@ function blurSearch() {
     // Otherwise, if the user previously entered a search query and we
     // successfully fetched some live search results, then hide those results.
 
-    if ($("#query").val() == "") {
-        $("#query").val(DEFAULT_QUERY_TEXT);
+    if ($("input#query").val() == "") {
+        $("input#query").val(DEFAULT_QUERY_TEXT);
     }
     else {
         if (liveResultsShown) {
@@ -125,7 +125,7 @@ function fetchLiveResults(event) {
             currentLiveSearchRequest = null;
         }
 
-        var queryString = $("#query").val();
+        var queryString = $("input#query").val();
         if (queryString) {
             // OK, the search query string isn't empty.  Make an AJAX request
             // for live results for this particular search query string.
@@ -139,7 +139,7 @@ function fetchLiveResults(event) {
                         // live results.  Display them.
                         liveResultsFetched = true;
                         liveResultSelected = -1;
-                        $("#live_search").html(data);
+                        $("div#live_search").html(data);
                         showLiveResults();
                     }
                     else {
@@ -183,7 +183,7 @@ function fetchLiveResults(event) {
             currentLiveSearchRequest = null;
         }
         liveResultsFetched = false;
-        $("#query").val("");
+        $("input#query").val("");
         hideLiveResults();
     }
 
@@ -204,8 +204,8 @@ function showLiveResults() {
 
     if (!liveResultsShown) {
         liveResultsShown = true;
-        $("#query").addClass("query_with_live_search_shown");
-        $("#live_search").fadeIn("slow");
+        $("input#query").addClass("query_with_live_search_shown");
+        $("div#live_search").fadeIn("slow");
     }
 }
 
@@ -219,8 +219,8 @@ function hideLiveResults() {
 
     if (liveResultsShown) {
         liveResultsShown = false;
-        $("#query").removeClass("query_with_live_search_shown");
-        $("#live_search").fadeOut("slow");
+        $("input#query").removeClass("query_with_live_search_shown");
+        $("div#live_search").fadeOut("slow");
     }
 }
 
@@ -237,10 +237,10 @@ function scrollLiveResults(event) {
     var keyCode = event.keyCode || event.which || window.event.keyCode;
     if (keyCode == KEY_UP || keyCode == KEY_DOWN) {
         if (liveResultsShown) {
-            var liveResults = $("#live_search ul li a");
+            var liveResults = $("div#live_search ul li a");
             if (liveResults.length > 0) {
                 if (liveResultSelected != -1) {
-                    id = "#live_search_result_" + liveResultSelected;
+                    id = "a#live_search_result_" + liveResultSelected;
                     $(id).removeClass("live_search_result_selected");
                 }
                 liveResultSelected += keyCode == KEY_UP ? -1 : 1;
@@ -250,8 +250,8 @@ function scrollLiveResults(event) {
                 if (liveResultSelected > liveResults.length - 1) {
                     liveResultSelected = 0;
                 }
-                id = "#live_search_result_" + liveResultSelected;
-                $("#query").val($(id).html());
+                id = "a#live_search_result_" + liveResultSelected;
+                $("input#query").val($(id).html());
                 $(id).addClass("live_search_result_selected");
             }
 

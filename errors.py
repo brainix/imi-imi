@@ -53,18 +53,18 @@ class _Error(Exception):
         """Initialize a custom exception object.
 
         If the error_message keyword argument wasn't specified during the
-        IndexError exception object instantiation, add it in here and give it a
-        default value for consistency.
+        exception object instantiation, add it in here and give it a default
+        value for consistency.
 
         Example with keyword argument:
-            >>> e = IndexError(error_message='Hello, World!')
+            >>> e = IndexingError(error_message='Hello, World!')
             >>> e.error_message
             'Hello, World!'
 
         Example without keyword argument:
-            >>> e = IndexError()
+            >>> e = IndexingError()
             >>> e.error_message
-            'IndexError exception thrown'
+            'IndexingError exception thrown'
         """
         for key in self._default_values:
             if not key in kwds:
@@ -75,18 +75,18 @@ class _Error(Exception):
         """Return the string representation of a custom exception object.
 
         Example string representation:
-            >>> e = IndexError()
+            >>> e = IndexingError()
             >>> print e
-            IndexError exception thrown
+            IndexingError exception thrown
         """
         return self.error_message
 
 
-class IndexError(_Error):
+class IndexingError(_Error):
     """Exception class to encapsulate errors while indexing bookmarks."""
 
     _default_values = {
-        'error_message': 'IndexError exception thrown',
+        'error_message': 'IndexingError exception thrown',
     }
 
 
@@ -100,4 +100,4 @@ class SearchError(_Error):
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    doctest.testmod(verbose=True)

@@ -94,7 +94,7 @@ def parse_args(parser):
     host = opts.host if opts.host is not None else app_id + '.appspot.com'
     auth_domain, email, base_dir = opts.auth_domain, opts.email, opts.base_dir
     if not os.path.isdir(base_dir):
-        parser.error('%s not a directory containing Google App Engine SDK; ' %
+        parser.error('%s not a directory containing Google App Engine SDK' %
                      base_dir)
     return app_id, host, auth_domain, email, base_dir
 
@@ -120,7 +120,7 @@ def import_modules(parser, base_dir):
     try:
         from google.appengine.ext.remote_api import remote_api_stub
     except ImportError:
-        parser.error('%s not a directory containing Google App Engine SDK; ' %
+        parser.error('%s not a directory containing Google App Engine SDK' %
                      base_dir)
     return remote_api_stub
 
