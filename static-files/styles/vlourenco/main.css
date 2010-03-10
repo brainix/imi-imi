@@ -326,6 +326,7 @@ form input, form textarea {
     font-size: 35px;
     font-weight: 300;
     letter-spacing: -2px;
+    margin-left: -2px;
 }
 
 #bookmarks .bookmark {
@@ -355,6 +356,13 @@ form input, form textarea {
     word-wrap: break-word;
 }
 
+#bookmarks .bookmark .url {
+    color: #405156;
+    display: none;
+    font-size: 16px;
+    margin-top: -12px;
+}
+
 #bookmarks .bookmark .saved_by {
     float: left;
     font-size: 14px;
@@ -382,7 +390,7 @@ form input, form textarea {
 #bookmarks .update_bookmark .form_element,
 #bookmarks .delete_bookmark .form_element {
     margin-bottom: 0;
-    margin-top: -1px;
+    margin-top: -2px;
 }
 
 #bookmarks .update_bookmark form input,

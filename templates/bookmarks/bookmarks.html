@@ -2,9 +2,13 @@
     <li class="bookmark" {% if snippet %}style="display: none;"{% endif %}>
         <div class="speech_balloon">
             <h3>
-                <a href="{{ bookmark.url }}" target="_blank"
-                   rel="nofollow">{{ bookmark|beautify_title }}</a>
+                <a href="{{ bookmark.url }}" target="_blank" rel="nofollow"
+                   onmouseover="$('#host_{{ bookmark|hash_bookmark }}').slideDown('fast'); return false;"
+                   onmouseout="$('#host_{{ bookmark|hash_bookmark }}').slideUp('fast'); return false;">{{ bookmark|beautify_title }}</a>
             </h3>
+            <div id="host_{{ bookmark|hash_bookmark }}" class="url">
+                {{ bookmark.url|beautify_url }}
+            </div>
 
             <span class="saved_by">
                 Saved by

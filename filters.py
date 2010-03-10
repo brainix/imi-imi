@@ -72,6 +72,13 @@ def beautify_title(bookmark, max_words=TITLE_MAX_WORDS,
 
 
 @register.filter
+def beautify_url(url):
+    """ """
+    scheme, host, path, params, query, fragment = urlparse.urlparse(url)
+    return host
+
+
+@register.filter
 def user_to_gravatar(user, size=0):
     """Convert a user object into a Gravatar (globally recognized avatar) URL.
 
