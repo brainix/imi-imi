@@ -290,7 +290,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         """
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
-        url, status_code, mime_type, suggestions = fetch.fetch_content(url)
+        url, status_code, mime_type, suggestions = fetch.Factory().fetch(url)
         if suggestions is not None:
             suggestions = suggestions[1:]                           # '"raj",["rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
             suggestions = suggestions[suggestions.index('[')+2:]    # 'rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
