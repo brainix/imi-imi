@@ -28,9 +28,10 @@ from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 
+import auto_tag
 import decorators
+import fetch
 import models
-import utils
 
 
 _log = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class RequestHandler(webapp.RequestHandler):
         """Update the reference corresponding to the specified reference key."""
         email, url = users.get_current_user().email(), reference.bookmark.url
         _log.info('%s updating reference %s' % (email, url))
-        url, mime_type, title, words, html_hash = utils.tokenize_url(url)
+        url, mime_type, title, words, html_hash = auto_tag.tokenize_url(url)
         reference = self._common(url, mime_type, title, words, html_hash,
                                  reference)
         _log.info('%s updated reference %s' % (email, url))
@@ -78,13 +79,13 @@ class RequestHandler(webapp.RequestHandler):
 
     def _get_bookmark(self, url):
         """Get/create the bookmark/reference for the current user and URL."""
-        email, url = users.get_current_user().email(), utils.normalize_url(url)
+        email, url = users.get_current_user().email(), fetch.normalize_url(url)
         exists = {'bookmark': True, 'reference': True,}
         _log.debug('%s getting/creating bookmark/reference %s' % (email, url))
         bookmark_key = models.Bookmark.key_name(url)
         bookmark = models.Bookmark.get_by_key_name(bookmark_key)
         if bookmark is None:
-            args = utils.tokenize_url(url)
+            args = auto_tag.tokenize_url(url)
             bookmark_key = models.Bookmark.key_name(args[0])
             bookmark = models.Bookmark.get_by_key_name(bookmark_key)
             if bookmark is None:
@@ -110,8 +111,8 @@ class RequestHandler(webapp.RequestHandler):
             _log.debug('re-tagging and re-indexing bookmark %s '
                        '(HTML has changed since last)' % url)
             self._unindex_bookmark(reference.bookmark)
-            stop_words, stop_words_hash = utils.read_stop_words()
-            tags = utils.auto_tag(words, stop_words)
+            stop_words, stop_words_hash = auto_tag.read_stop_words()
+            tags = auto_tag.auto_tag(words, stop_words)
         else:
             _log.debug("not re-tagging and re-indexing bookmark %s "
                        "(HTML hasn't changed since last)" % url)

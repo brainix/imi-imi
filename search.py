@@ -28,10 +28,10 @@ from google.appengine.ext import db
 from google.appengine.ext import webapp
 
 from config import SEARCH_CACHE_SECS, SEARCH_PER_PAGE
+import auto_tag
 import decorators
 import errors
 import models
-import utils
 
 
 _log = logging.getLogger(__name__)
@@ -164,10 +164,10 @@ class RequestHandler(webapp.RequestHandler):
 
     def _query_words_to_stems(self, query_words):
         """Convert words into stems, throwing away dupes and common words."""
-        stop_words, stop_words_hash = utils.read_stop_words()
+        stop_words, stop_words_hash = auto_tag.read_stop_words()
         query_words = [w for w in query_words if not w in stop_words]
         query_words = list(set(query_words))
-        query_stems = [utils.stemmer.stem(w) for w in query_words]
+        query_stems = [auto_tag.stemmer.stem(w) for w in query_words]
         query_stems = list(set(query_stems))
         return query_stems
 

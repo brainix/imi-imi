@@ -40,12 +40,13 @@ import simplejson
 from config import DATETIME_FORMAT, DEBUG, HTTP_CODE_TO_TITLE, LIVE_SEARCH_URL
 from config import NUM_POPULAR_BOOKMARKS, NUM_POPULAR_TAGS, POPULAR_CACHE_SECS
 from config import RSS_NUM_ITEMS, SEARCH_CACHE_SECS, TEMPLATES
+import auto_tag
 import decorators
+import fetch
 import index
 import models
 import rss
 import search
-import utils
 
 
 _log = logging.getLogger(__name__)
@@ -289,7 +290,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         """
         path = os.path.join(TEMPLATES, 'common', 'live_search.html')
         url = LIVE_SEARCH_URL % query
-        url, status_code, mime_type, suggestions = utils.fetch_content(url)
+        url, status_code, mime_type, suggestions = fetch.fetch_content(url)
         if suggestions is not None:
             suggestions = suggestions[1:]                           # '"raj",["rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
             suggestions = suggestions[suggestions.index('[')+2:]    # 'rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
@@ -366,7 +367,7 @@ class Search(search.RequestHandler, _RequestHandler):
         query_words = self.request.get('query')
         query_words = query_words.replace('+', ' ')
         query_words = query_words.replace('%20', ' ')
-        query_words = utils.extract_words_from_string(query_words)
+        query_words = auto_tag.extract_words_from_string(query_words)
         page = self.request.get('page', default_value='0')
         # This next line might throw a ValueError exception, but the caller
         # catches it and serves a 404.
@@ -417,7 +418,7 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
         url = self.request.get('url')
         if not url:
             return self._serve_error(406, '"url" parameter not specified.')
-        return utils.normalize_url(url)
+        return fetch.normalize_url(url)
 
     def _auto_tag(self):
         """Auto-tag the specified URL or HTML / text snippet."""
@@ -430,11 +431,11 @@ class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
             error_message = 'Both "url" and "html" parameters specified.'
             return self._serve_error(406, error_message)
         if url:
-            url, mime_type, title, words, html_hash = utils.tokenize_url(url)
+            url, mime_type, title, words, html_hash = auto_tag.tokenize_url(url)
         elif html:
-            title, words, hash = utils.tokenize_html(html)
-        stop_words, stop_words_hash = utils.read_stop_words()
-        tags = utils.auto_tag(words, stop_words)
+            title, words, hash = auto_tag.tokenize_html(html)
+        stop_words, stop_words_hash = auto_tag.read_stop_words()
+        tags = auto_tag.auto_tag(words, stop_words)
         return tags
 
     def _serve_error(self, error_code, error_message):
