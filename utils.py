@@ -26,7 +26,8 @@
 # Originally, I'd used urllib2 and BeautifulSoup 3.1.0, but those packages were
 # too fragile on tenuous internet connections and malformed HTML.  So I switched
 # to urlfetch and BeautifulSoup 3.0.7a for more robust HTML fetching and
-# parsing.
+# parsing.  But if we can't import urlfetch, we're not running on Google App
+# Engine, so we fall back to urllib2.
 
 
 from __future__ import with_statement
@@ -38,10 +39,23 @@ import re
 import urllib
 import urlparse
 
-from google.appengine.api.urlfetch import fetch
-from google.appengine.api.urlfetch import InvalidURLError
-from google.appengine.api.urlfetch import DownloadError
-from google.appengine.api.urlfetch import ResponseTooLargeError
+try:
+    # Try to use Google App Engine's urlfetch API.
+    from google.appengine.api.urlfetch import fetch
+    from google.appengine.api.urlfetch import InvalidURLError
+    from google.appengine.api.urlfetch import DownloadError
+    from google.appengine.api.urlfetch import ResponseTooLargeError
+except ImportError:
+    # Oops.  We can't use Google App Engine's urlfetch API.  We mustn't be
+    # running on Google App Engine.  That's cool - fall back to Python's
+    # urllib2.
+    import urllib2
+    _on_google_app_engine = False
+    _exceptions = (urllib2.URLError,)
+else:
+    # Awesome.  We can use Google App Engine's urlfetch API.
+    _on_google_app_engine = True
+    _exceptions = (InvalidURLError, DownloadError, ResponseTooLargeError)
 
 import packages
 from beautifulsoup.BeautifulSoup import BeautifulSoup
@@ -83,8 +97,17 @@ def tokenize_url(url):
     return url, mime_type, title, words, hash
 
 
-def fetch_content(url, headers={}, status_codes=FETCH_GOOD_STATUSES):
+def fetch_content(url, status_codes=FETCH_GOOD_STATUSES):
     """Retrieve content from the web.  Make sure the status code is OK.
+
+    That's "make sure the status code is OK" as in "okay," *not* "0K" as in
+    "zero kilobytes."  Just in case there was any confusion.
+
+    Since the following is a doctest, we know that we must be running this
+    script in someone's development environment, I.E. not on Google App Engine.
+    Make sure that this script properly detected that:
+        >>> _on_google_app_engine
+        False
 
     Example usage:
         >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
@@ -100,9 +123,12 @@ def fetch_content(url, headers={}, status_codes=FETCH_GOOD_STATUSES):
     else:
         _log.debug('fetching %s' % url)
         try:
-            response = fetch(url, headers=headers, allow_truncated=True,
-                             follow_redirects=True)
-        except (InvalidURLError, DownloadError, ResponseTooLargeError), e:
+            if _on_google_app_engine:
+                response = fetch(url, allow_truncated=True,
+                                 follow_redirects=True)
+            else:
+                response = urllib2.urlopen(url)
+        except _exceptions, e:
             # Oops.  Either the URL was invalid, or there was a problem
             # retrieving the data.
             _log.warning("couldn't fetch %s (%s)" % (url, type(e)))
@@ -122,10 +148,16 @@ def fetch_content(url, headers={}, status_codes=FETCH_GOOD_STATUSES):
 
 def _grok_response(response, url):
     """From a response, extract the URL, status code, MIME type, and content."""
-    url = normalize_url(response.headers.get('location', url))
-    status_code = response.status_code
-    mime_type = response.headers.get('content-type')
-    content = response.content
+    if _on_google_app_engine:
+        url = normalize_url(response.headers.get('location', url))
+        status_code = response.status_code
+        mime_type = response.headers.get('content-type')
+        content = response.content
+    else:
+        url = normalize_url(response.geturl())
+        status_code = response.code
+        mime_type = response.headers.get('Content-Type')
+        content = response.read()
     return url, status_code, mime_type, content
 
 
