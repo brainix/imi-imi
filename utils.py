@@ -20,7 +20,7 @@
 #       You should have received a copy of the GNU General Public License      #
 #       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
 #------------------------------------------------------------------------------#
-"""Utility functions for auto-tagging HTML."""
+"""Utilities for auto-tagging HTML."""
 
 
 # Originally, I'd used urllib2 and BeautifulSoup 3.1.0, but those packages were
