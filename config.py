@@ -100,7 +100,7 @@ SEARCH_PER_PAGE = 5
 SEARCH_CACHE_SECS = 60 if DEBUG else 3600
 
 # Options related to bookmark index logic:
-FETCH_GOOD_STATUSES = (200,)
+FETCH_GOOD_STATUS_CODES = (200,)
 FETCH_DOCUMENT_INDEXES = ('/default.asp', '/index.htm', '/index.html',)
 FETCH_BAD_TAGS = ('script', 'noscript', 'style',)
 FETCH_GOOD_TAGS = (
