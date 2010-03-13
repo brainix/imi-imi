@@ -79,7 +79,8 @@ class RequestHandler(webapp.RequestHandler):
 
     def _get_bookmark(self, url):
         """Get/create the bookmark/reference for the current user and URL."""
-        email, url = users.get_current_user().email(), fetch.normalize_url(url)
+        email = users.get_current_user().email()
+        url = fetch.Factory().normalize(url)
         exists = {'bookmark': True, 'reference': True,}
         _log.debug('%s getting/creating bookmark/reference %s' % (email, url))
         bookmark_key = models.Bookmark.key_name(url)
