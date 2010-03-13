@@ -120,7 +120,7 @@ _log = logging.getLogger(__name__)
 
 class _BaseFetch(object):
 
-    def fetch(self, url, status_codes=FETCH_GOOD_STATUSES):
+    def fetch(self, url, headers={}, status_codes=FETCH_GOOD_STATUSES):
         """Retrieve content from the web.  Make sure the status code is OK.
 
         Example usage:
@@ -138,7 +138,7 @@ class _BaseFetch(object):
         else:
             _log.debug('fetching %s' % url)
             try:
-                response = self._fetch(url)
+                response = self._fetch(url, headers=headers)
             except _exceptions, e:
                 # Oops.  Either the URL was invalid, or there was a problem
                 # retrieving the data.
@@ -233,7 +233,7 @@ class _BaseFetch(object):
         _log.debug('normalized to %s' % url)
         return url
 
-    def _fetch(self, url, status_codes=FETCH_GOOD_STATUSES):
+    def _fetch(self, url, headers={}):
         raise NotImplementedError
 
     def _grok(self, response, url):
@@ -242,8 +242,9 @@ class _BaseFetch(object):
 
 class _AppEngineFetch(_BaseFetch):
 
-    def _fetch(self, url, status_codes=FETCH_GOOD_STATUSES):
-        return fetch(url, allow_truncated=True, follow_redirects=True)
+    def _fetch(self, url, headers={}):
+        return fetch(url, headers=headers, allow_truncated=True,
+                     follow_redirects=True)
 
     def _grok(self, response, url):
         url = self.normalize(response.headers.get('location', url))
@@ -255,8 +256,9 @@ class _AppEngineFetch(_BaseFetch):
 
 class _PythonFetch(_BaseFetch):
 
-    def _fetch(self, url, status_codes=FETCH_GOOD_STATUSES):
-        return urllib2.urlopen(url)
+    def _fetch(self, url, headers={}):
+        request = urllib2.Request(url, None, headers)
+        return urllib2.urlopen(request)
 
     def _grok(self, response, url):
         url = self.normalize(response.geturl())
