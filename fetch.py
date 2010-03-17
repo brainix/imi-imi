@@ -22,6 +22,9 @@
 #------------------------------------------------------------------------------#
 """Utilities for fetching content from the web.
 
+Warning:  Everything in this module is terribly, horribly thread unsafe and
+carcinogenic.
+
 Originally, I'd used urllib2, but this package was too fragile on tenuous
 internet connections.  So I switched to urlfetch for more robust HTML fetching.
 If we can't import urlfetch, then we're not running on Google App Engine, so we
@@ -45,6 +48,7 @@ different URLs are equivalent:
 import cgi
 import logging
 import re
+import socket
 import urllib
 import urllib2
 import urlparse
@@ -80,7 +84,7 @@ class _BaseFetch(object):
         self._exceptions = tuple()
         raise NotImplementedError
 
-    def fetch(self, url, headers={}, payload={},
+    def fetch(self, url, headers={}, payload={}, deadline=10,
               status_codes=FETCH_GOOD_STATUS_CODES):
         """Retrieve content from the web.  Make sure the status code is OK.
 
@@ -99,7 +103,8 @@ class _BaseFetch(object):
         else:
             _log.debug('fetching %s' % url)
             try:
-                response = self._fetch(url, payload=payload, headers=headers)
+                response = self._fetch(url, payload=payload, headers=headers,
+                                       deadline=deadline)
             except self._exceptions, e:
                 # Oops.  Either the URL was invalid, or there was a problem
                 # retrieving the data.
@@ -271,7 +276,7 @@ class _BaseFetch(object):
         url = re.sub(reg_exp, lambda m: m.group().upper(), url)
         return url
 
-    def _fetch(self, url, payload='', headers={}):
+    def _fetch(self, url, payload='', headers={}, deadline=10):
         """ """
         raise NotImplementedError
 
@@ -288,11 +293,13 @@ class _AppEngineFetch(_BaseFetch):
         self._exceptions = (InvalidURLError, DownloadError,
                             ResponseTooLargeError)
 
-    def _fetch(self, url, payload='', headers={}):
+    def _fetch(self, url, payload='', headers={}, deadline=10):
         """ """
         method = POST if payload else GET
-        return fetch(url, payload=payload, method=method, headers=headers,
-                     allow_truncated=True, follow_redirects=True)
+        response = fetch(url, payload=payload, method=method, headers=headers,
+                         allow_truncated=True, follow_redirects=True,
+                         deadline=deadline)
+        return response
 
     def _grok(self, response, url):
         """ """
@@ -310,10 +317,12 @@ class _PythonFetch(_BaseFetch):
         """ """
         self._exceptions = (urllib2.URLError,)
 
-    def _fetch(self, url, payload='', headers={}):
+    def _fetch(self, url, payload='', headers={}, deadline=10):
         """ """
+        socket.setdefaulttimeout(deadline)
         request = urllib2.Request(url, payload, headers)
-        return urllib2.urlopen(request)
+        response = urllib2.urlopen(request)
+        return response
 
     def _grok(self, response, url):
         """ """
