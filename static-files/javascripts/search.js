@@ -206,6 +206,7 @@ function showLiveResults() {
         liveResultsShown = true;
         $("#query").addClass("query_with_live_search_shown");
         $("#live_search").fadeIn("slow");
+        $("#right").fadeOut("slow");
     }
 }
 
@@ -221,6 +222,7 @@ function hideLiveResults() {
         liveResultsShown = false;
         $("#query").removeClass("query_with_live_search_shown");
         $("#live_search").fadeOut("slow");
+        $("#right").fadeIn("slow");
     }
 }
 

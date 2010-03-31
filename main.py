@@ -41,7 +41,7 @@ _log = logging.getLogger(__name__)
 
 def main():
     """It's time for the dog and pony show..."""
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.getLogger().setLevel(logging.DEBUG if DEBUG else logging.INFO)
     template.register_template_library('filters')
 
     if MAINTENANCE:

@@ -57,11 +57,6 @@ DEBUG = _SERVER_SOFTWARE.split('/', 1)[0] == 'Development'
 _log.debug('turning %s debug mode' % ('on' if DEBUG else 'off'))
 
 
-# TODO: Look up the syntax for the following line, and if it fails, then make
-# sure that it produces a nice error message.
-# assert PROFILING and DEBUG or not PROFILING
-
-
 _CURRENT_PATH = os.path.dirname(__file__)
 TEMPLATES = os.path.join(_CURRENT_PATH, 'templates')
 STOP_WORDS = os.path.join(_CURRENT_PATH, 'corpus', 'stop_words.txt')

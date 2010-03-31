@@ -72,7 +72,7 @@ class _RequestHandler(webapp.RequestHandler):
             error_code = 500
         path = os.path.join(TEMPLATES, 'home', 'error.html')
         title = HTTP_CODE_TO_TITLE[error_code].lower()
-        login_url, current_user, logout_url = self._get_user()
+        login_url, current_user, current_account, logout_url = self._get_user()
         error_url = self.request.url.split('//', 1)[-1]
         self.error(error_code)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
@@ -81,8 +81,19 @@ class _RequestHandler(webapp.RequestHandler):
         """Return a login URL, the current user, and a logout URL."""
         login_url = users.create_login_url('/')
         current_user = users.get_current_user()
+        current_account = self._user_to_account(current_user)
         logout_url = users.create_logout_url('/')
-        return login_url, current_user, logout_url
+        return login_url, current_user, current_account, logout_url
+
+    def _user_to_account(self, user):
+        """Given a user object, return its corresponding account object."""
+        try:
+            account_key = models.Account.key_name(user.email())
+        except AttributeError:
+            account = None
+        else:
+            account = models.Account.get_by_key_name(account_key)
+        return account
 
 
 class Maintenance(_RequestHandler):
@@ -92,7 +103,7 @@ class Maintenance(_RequestHandler):
         """The site is under maintenance.  Serve a polite "bugger off" page."""
         path = os.path.join(TEMPLATES, 'home', 'maintenance.html')
         title, in_maintenance = 'in surgery', True
-        login_url, current_user, logout_url = self._get_user()
+        login_url, current_user, current_account, logout_url = self._get_user()
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def post(self, nonsense=''):
@@ -110,6 +121,7 @@ class Home(rss.RequestHandler, _RequestHandler):
     """Request handler to serve the homepage."""
 
     @decorators.no_browser_cache
+    @decorators.create_account
     def get(self):
         """Serve a get request for / or /home.
         
@@ -123,7 +135,7 @@ class Home(rss.RequestHandler, _RequestHandler):
         path = os.path.join(TEMPLATES, 'home', 'index.html')
         title = 'social bookmarking'
         rss_url = self._get_rss_url()
-        login_url, current_user, logout_url = self._get_user()
+        login_url, current_user, current_account, logout_url = self._get_user()
         active_tab = 'imi-imi' if current_user is None else ''
         if self.request.path == '/' and current_user is not None:
             self.redirect('/users/' + current_user.email())
@@ -149,13 +161,14 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         file_name = 'index.html' if not snippet else 'references.html'
         path = os.path.join(TEMPLATES, 'bookmarks', file_name)
         rss_url = self._get_rss_url()
-        login_url, current_user, logout_url = self._get_user()
+        login_url, current_user, current_account, logout_url = self._get_user()
         if not target_email:
             return self._serve_error(404)
         target_email = target_email.replace('%40', '@')
         active_tab = current_user and current_user.email() == target_email
         active_tab = 'imi-imi' if active_tab else ''
         target_user = users.User(email=target_email)
+        target_account = self._user_to_account(target_user)
         title = 'bookmarks saved by %s' % target_user.nickname()
         if before == 'rss':
             saved_by = target_user.nickname()
@@ -179,10 +192,9 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
 
     @decorators.no_browser_cache
     @decorators.require_login
+    @decorators.create_account
     def post(self):
-        """Create, update, or delete a bookmark."""
-        snippet = True
-        current_user = target_user = users.get_current_user()
+        """Create, update, or delete a bookmark or following."""
         url_to_create = self.request.get('url_to_create')
         key = self.request.get('bookmark_key')
         bookmark = models.Bookmark.get_by_key_name(key) if key else None
@@ -190,7 +202,23 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         reference_to_update = models.Reference.get_by_key_name(key, parent=bookmark) if key else None
         key = self.request.get('reference_key_to_delete')
         reference_to_delete = models.Reference.get_by_key_name(key, parent=bookmark) if key else None
+        email_to_follow = self.request.get('email_to_follow')
+        email_to_unfollow = self.request.get('email_to_unfollow')
 
+        if url_to_create or reference_to_update or reference_to_delete:
+            return self._crud_bookmark(url_to_create, reference_to_update, reference_to_delete)
+        elif email_to_follow or email_to_unfollow:
+            return self._crud_following(email_to_follow, email_to_unfollow)
+        else:
+            _log.error('/users got POST request but no bookmark to create, '
+                       'update, or delete and no user to follow or unfollow')
+
+    def _crud_bookmark(self, url_to_create, reference_to_update,
+                       reference_to_delete):
+        """Create, update, or delete a bookmark."""
+        snippet = True
+        current_user = target_user = users.get_current_user()
+        current_account = self._user_to_account(current_user)
         if url_to_create or reference_to_update is not None:
             path = os.path.join(TEMPLATES, 'bookmarks', 'references.html')
             if url_to_create:
@@ -209,9 +237,45 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
                 self._delete_bookmark(reference_to_delete)
             else:
                 _log.error("couldn't delete reference (insufficient privileges")
-        else:
-            _log.error('/users got POST request but no bookmark to create, '
-                       'update, or delete')
+
+    def _crud_following(self, email_to_follow, email_to_unfollow):
+        """Create or delete a following."""
+        if email_to_follow:
+            # From the Google App Engine API documentation:
+            #
+            #   The email address is not checked for validity when the User
+            #   object is created. A User object with an email address that
+            #   doesn't correspond to a valid Google account can be stored in
+            #   the datastore, but will never match a real user.
+            #
+            # In other words, there's no meaningful error checking we can do on
+            # other_account.  For more information, see:
+            #
+            #   http://code.google.com/appengine/docs/python/users/userclass.html#User
+            other_account = users.User(email=email_to_follow)
+            if not other_account in current_account.following:
+                current_account.following.append(other_account)
+            else:
+                _log.error("%s already following %s" %
+                           (current_account, other_account))
+            if not current_account in other_account.followers:
+                other_account.followers.append(current_account)
+            else:
+                _log.error("%s already followed by %s" %
+                           (other_account, current_account))
+        elif email_to_unfollow:
+            other_account = users.User(email=email_to_unfollow)
+            try:
+                current_account.following.remove(other_account)
+            except ValueError:
+                _log.error("%s already not following %s" %
+                           (current_account, other_account))
+            try:
+                other_account.followers.remove(current_account)
+            except ValueError:
+                _log.error("%s already not followed by %s" %
+                           (other_account, current_account))
+        db.put([current_account, other_account])
 
 
 class SaveBookmark(Users):
@@ -219,6 +283,7 @@ class SaveBookmark(Users):
 
     @decorators.no_browser_cache
     @decorators.require_login
+    @decorators.create_account
     def get(self):
         """Make sure that the user is logged in, then bookmark the URL.
 
@@ -333,7 +398,7 @@ class Search(search.RequestHandler, _RequestHandler):
         snippet = page != 0
         file_name = 'index.html' if not snippet else 'bookmarks.html'
         path = os.path.join(TEMPLATES, 'bookmarks', file_name)
-        login_url, current_user, logout_url = self._get_user()
+        login_url, current_user, current_account, logout_url = self._get_user()
         if not target_words and not target_user:
             # This is an Easter egg, but an intentional and a useful one.  If
             # we got a blank search query, then show all of the bookmarks

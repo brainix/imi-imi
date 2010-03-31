@@ -29,6 +29,7 @@ from google.appengine.api import users
 from google.appengine.ext import db
 
 from config import DEFAULT_CACHE_SECS
+import models
 
 
 _log = logging.getLogger(__name__)
@@ -61,6 +62,25 @@ def require_login(method):
         else:
             # The user is logged in.  Fall through to the decorated method.
             return method(self, *args, **kwds)
+    return wrap
+
+
+def create_account(method):
+    """If the user is logged in but doesn't have an account, create an account.
+
+    This is a little confusing, because we use Google accounts for login, but
+    we also manage our own user accounts.
+    """
+    @functools.wraps(method)
+    def wrap(*args, **kwds):
+        current_user = users.get_current_user()
+        if current_user is not None:
+            email = current_user.email()
+            key_name = models.Account.key_name(email)
+            account = models.Account.get_or_insert(key_name=key_name)
+            account.put()
+            _log.debug('created or updated user account %s' % email)
+        return method(*args, **kwds)
     return wrap
 
 
@@ -136,32 +156,6 @@ def run_in_transaction(method):
         _log.debug('transactionally executing %s' % method_name)
         return_value = db.run_in_transaction(method, *args, **kwds)
         _log.debug('transactionally executed %s' % method_name)
-        return return_value
-    return wrap
-
-
-def batch_put_and_delete(method):
-    """Batch put / delete all of the entities modified in the specified method.
-
-    Rather than getting / putting / deleting a bunch of entities one at a time,
-    if possible, it's more efficient to perform these datastore operations on
-    the entities as a batch.  In order to accomplish this task, this decorator
-    requires the decorated method to return a tuple like so:
-
-        (entities_to_put, entities_to_delete, return_value)
-
-    where entities_to_put and entities_to_delete are lists of persisted
-    objects.  This decorator puts and deletes the aforementioned entities as
-    batches, then returns only the aforementioned return value, respectively.
-    """
-    @functools.wraps(method)
-    def wrap(*args, **kwds):
-        method_name = method.func_name
-        _log.debug('batch putting and deleting results of %s' % method_name)
-        to_put, to_delete, return_value = method(*args, **kwds)
-        db.put(to_put)
-        db.delete(to_delete)
-        _log.debug('batch put and deleted results of %s' % method_name)
         return return_value
     return wrap
 

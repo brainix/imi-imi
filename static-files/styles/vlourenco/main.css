@@ -83,7 +83,7 @@ img {
 
 #right {
     float: right;
-    width: 240px;
+    width: 200px;
 }
 
 .form_element {
@@ -357,9 +357,10 @@ form input, form textarea {
 }
 
 #bookmarks .bookmark .url {
-    color: #405156;
+    color: #B62F2F;
     display: none;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 600;
     margin-top: -12px;
 }
 

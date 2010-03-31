@@ -144,20 +144,19 @@ class RequestHandler(webapp.RequestHandler):
         return reference
 
     @decorators.run_in_transaction
-    @decorators.batch_put_and_delete
     def _save_bookmark(self, reference):
         """Update only a referenced bookmark's user list and popularity."""
         current_user, bookmark = users.get_current_user(), reference.bookmark
-        url, to_put, to_delete = bookmark.url, [bookmark, reference], []
+        url, to_put = bookmark.url, [bookmark, reference]
         _log.debug('%s saving bookmark %s' % (current_user.email(), url))
         if current_user not in bookmark.users:
             bookmark.users.append(current_user)
         bookmark.popularity = len(bookmark.users)
         _log.debug('%s saved bookmark %s' % (current_user.email(), url))
-        return to_put, to_delete, reference
+        db.put(to_put)
+        return reference
 
     @decorators.run_in_transaction
-    @decorators.batch_put_and_delete
     def _unsave_bookmark(self, reference):
         """Delete the reference for the current user and the specified URL."""
         current_user, bookmark = users.get_current_user(), reference.bookmark
@@ -167,9 +166,10 @@ class RequestHandler(webapp.RequestHandler):
                 bookmark.users.remove(current_user)
             bookmark.popularity = len(bookmark.users)
             (to_put if bookmark.popularity else to_delete).append(bookmark)
-        return to_put, to_delete, not bookmark.popularity
+        db.put(to_put)
+        db.delete(to_delete)
+        return not bookmark.popularity
 
-    @decorators.batch_put_and_delete
     def _index_bookmark(self, bookmark):
         """Index a bookmark so that it appears in search results.
 
@@ -179,7 +179,7 @@ class RequestHandler(webapp.RequestHandler):
         """
         email, url = users.get_current_user().email(), bookmark.url
         _log.debug('%s indexing bookmark %s' % (email, url))
-        bookmark_key, to_put, to_delete = bookmark.key(), [], []
+        bookmark_key, to_put = bookmark.key(), []
         for stem, word in zip(bookmark.stems, bookmark.words):
             keychain_key = models.Keychain.key_name(stem)
             keychain = models.Keychain.get_or_insert(keychain_key)
@@ -189,9 +189,8 @@ class RequestHandler(webapp.RequestHandler):
             keychain.popularity = len(keychain.keys)
             to_put.append(keychain)
         _log.debug('%s indexed bookmark %s' % (email, url))
-        return to_put, to_delete, None
+        db.put(to_put)
 
-    @decorators.batch_put_and_delete
     def _unindex_bookmark(self, bookmark):
         """Unindex a bookmark so that it no longer appears in search results.
 
@@ -216,4 +215,5 @@ class RequestHandler(webapp.RequestHandler):
                 keychain.popularity = len(keychain.keys)
                 (to_put if keychain.keys else to_delete).append(keychain)
         _log.debug('%s unindexed bookmark %s' % (email, url))
-        return to_put, to_delete, None
+        db.put(to_put)
+        db.delete(to_delete)

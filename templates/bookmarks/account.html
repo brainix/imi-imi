@@ -1,0 +1,15 @@
+{% if target_account %}
+    {% if current_user and target_user %}
+        {% ifequal current_user target_user %}
+            <a href="http://en.gravatar.com/site/login/">
+        {% endifequal %}
+    {% endif %}
+    <img src="{{ target_account.user|user_to_gravatar:200 }}"
+         alt="{{ target_account.user.nickname }}"
+         title="{{ target_account.user.nickname }}" />
+    {% if current_user and target_user %}
+        {% ifequal current_user target_user %}
+            </a>
+        {% endifequal %}
+    {% endif %}
+{% endif %}
