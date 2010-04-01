@@ -22,7 +22,9 @@
         </div>
 
         <div id="right" class="lowercase">
-            {% include "account.html" %}
+            {% if target_account %}
+                {% include "account.html" %}
+            {% endif %}
         </div>
     </div>
 

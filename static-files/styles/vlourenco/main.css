@@ -357,7 +357,6 @@ form input, form textarea {
 }
 
 #bookmarks .bookmark .url {
-    color: #B62F2F;
     display: none;
     font-size: 14px;
     font-weight: 600;
@@ -446,6 +445,13 @@ form input, form textarea {
     text-align: right;
 }
 
+#bookmarks .gravatar img,
+#bookmarks .gravatar img:hover,
+#account img.profile,
+#account img.profile:hover {
+    border: 1px solid #405156;
+}
+
 #more_bookmarks .submit {
     background: #405156;
     font-size: 12px;
@@ -462,6 +468,28 @@ form input, form textarea {
     display: none;
     height: 31px;
     text-align: center;
+}
+
+#follow .submit {
+    -moz-border-radius: 0 0 6px 6px;
+    -webkit-border-radius: 6px;
+    -webkit-border-top-left-radius: 0;
+    -webkit-border-top-right-radius: 0;
+    background: #405156;
+    float: right;
+    font-size: 9px;
+    margin-top: -8px;
+    margin-right: -1px;
+    padding: 3px 6px 4px 6px;
+    width: auto !important;
+}
+
+#follow .submit:hover {
+    background: #B62F2F;
+}
+
+#following li {
+    display: inline;
 }
 
 
