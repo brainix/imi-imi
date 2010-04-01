@@ -1,13 +1,13 @@
-<div id="account">
+<div id="profile">
     {% if current_user and target_user %}
         {% ifequal current_user target_user %}
             <a href="http://en.gravatar.com/site/login/">
         {% endifequal %}
     {% endif %}
 
-    <img src="{{ target_account.user|user_to_gravatar:199 }}" class="profile"
-         alt="{{ target_account.user.nickname }}"
-         title="{{ target_account.user.nickname }}" />
+    <img src="{{ target_account.user|user_to_gravatar:199 }}"
+         class="profile_pic" title="{{ target_account.user.nickname }}"
+         alt="{{ target_account.user.nickname }}" />
 
     {% if current_user and target_user %}
         {% ifequal current_user target_user %}
@@ -18,24 +18,28 @@
     {% if current_user and target_user %}
         {% ifnotequal current_user target_user %}
             <form id="follow" action="/users" method="post">
-                <input name="email_to_follow" type="hidden" value="{{ target_user.email }}" />
-                <input class="submit" type="submit" value="follow" />
+                <input name="email" type="hidden"
+                       value="{{ target_user.email }}" />
+                <input class="submit" type="submit"
+                       value="{% if current_user|following:target_user %}stop following{% else %}follow{% endif %}" />
             </form>
         {% endifnotequal %}
     {% endif %}
-
-    {% if target_account.following %}
-        Following
-        <ul id="following">
-            {% for user in target_account.following %}
-                <li>
-                    <a href="/users/{{ user.email }}">
-                        <img src="{{ user|user_to_gravatar:40 }}"
-                             alt="{{ user.nickname }}"
-                             title="{{ user.nickname }}" />
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
 </div>
+
+{% if target_account.following %}
+    <span class="no_break">
+        People who {{ target_user.nickname }} follows:
+    </span>
+    <ul id="following">
+        {% for user in target_account.following %}
+            <li>
+                <a href="/users/{{ user.email }}">
+                    <img src="{{ user|user_to_gravatar:28 }}" class="gravatar"
+                         title="{{ user.nickname }}"
+                         alt="{{ user.nickname }}" />
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

@@ -2,7 +2,7 @@
 
 {% block content %}
 
-    <div id="heading" class="main lowercase">
+    <div id="heading" class="main lowercase no_break">
         <h1>{{ title }}</h1>
     </div>
 
@@ -22,8 +22,7 @@
             {% ifequal error_code 500 %}
                 <h3>Oops &hellip;</h3>
                 <p>
-                    We&rsquo;re sorry, but the page <b>{{ error_url }}</b>
-                    caused imi-imi to vomit on itself.
+                    We&rsquo;re sorry, but imi-imi has vomited on itself.
                     <span class="no_break">:-(</span>
                     <a href="javascript:location.reload(true);">Try again?</a>
                 </p>

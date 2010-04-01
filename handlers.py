@@ -247,49 +247,44 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         """Create or delete a following."""
         current_user = users.get_current_user()
         current_account = self._user_to_account(current_user)
+
+        # From the Google App Engine API documentation:
+        #   The email address is not checked for validity when the User object
+        #   is created.  A User object with an email address that doesn't
+        #   correspond to a valid Google account can be stored in the
+        #   datastore, but will never match a real user.
+        #
+        # In other words, there's no meaningful error checking that we can do
+        # on other_user.  For more information, see:
+        #   http://code.google.com/appengine/docs/python/users/userclass.html#User
+        other_email = email_to_follow if email_to_follow else email_to_unfollow
+        other_user = users.User(email=other_email)
+        other_account = self._user_to_account(other_user)
+        if other_account is None:
+            _log.error('%s has no imi-imi account' % other_email)
+
         if email_to_follow:
-            # From the Google App Engine API documentation:
-            #
-            #   The email address is not checked for validity when the User
-            #   object is created.  A User object with an email address that
-            #   doesn't correspond to a valid Google account can be stored in
-            #   the datastore, but will never match a real user.
-            #
-            # In other words, there's no meaningful error checking that we can
-            # do on other_user.  For more information, see:
-            #
-            #   http://code.google.com/appengine/docs/python/users/userclass.html#User
-            other_user = users.User(email=email_to_follow)
-            other_account = self._user_to_account(other_user)
-            if other_account is None:
-                _log.error('%s has no imi-imi account' % email_to_follow)
+            if other_user in current_account.following:
+                _log.error('%s already following %s' %
+                           (current_user.email(), other_user.email()))
             else:
-                if other_user in current_account.following:
-                    _log.error('%s already following %s' %
-                               (current_user.email(), other_user.email()))
-                else:
-                    current_account.following.append(other_user)
-                if current_user in other_account.followers:
-                    _log.error('%s already followed by %s' %
-                               (other_user.email(), current_user.email()))
-                else:
-                    other_account.followers.append(current_user)
+                current_account.following.append(other_user)
+            if current_user in other_account.followers:
+                _log.error('%s already followed by %s' %
+                           (other_user.email(), current_user.email()))
+            else:
+                other_account.followers.append(current_user)
         elif email_to_unfollow:
-            other_user = users.User(email=email_to_unfollow)
-            other_account = self._user_to_account(other_user)
-            if other_account is None:
-                _log.error('%s has no imi-imi account' % email_to_unfollow)
-            else:
-                if not other_user in current_account.following:
-                    _log.error('%s already not following %s' %
-                               (current_user.email(), other_user.email()))
-                while other_user in current_account.following:
-                    current_account.following.remove(other_user)
-                if not current_user in other_account.followers:
-                    _log.error('%s already not followed by %s' %
-                               (other_user.email(), current_user.email()))
-                while current_user in other_account.followers:
-                    other_account.followers.remove(current_user)
+            if not other_user in current_account.following:
+                _log.error('%s already not following %s' %
+                           (current_user.email(), other_user.email()))
+            while other_user in current_account.following:
+                current_account.following.remove(other_user)
+            if not current_user in other_account.followers:
+                _log.error('%s already not followed by %s' %
+                           (other_user.email(), current_user.email()))
+            while current_user in other_account.followers:
+                other_account.followers.remove(current_user)
         db.put([current_account, other_account])
 
 

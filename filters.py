@@ -33,6 +33,7 @@ from google.appengine.ext.webapp.template import create_template_register
 from config import AUDIO_MIME_TYPES, IMAGE_MIME_TYPES, YOUTUBE_BASE_URLS
 from config import TITLE_MAX_WORDS, TITLE_SLICE_POINTS
 from config import GRAVATAR_SIZE, GRAVATAR_RATING, GRAVATAR_DEFAULT
+import models
 
 
 _log = logging.getLogger(__name__)
@@ -180,3 +181,16 @@ def make_youtube_url(bookmark):
         url = bookmark.url
         _log.error('trying to make a YouTube player URL out of: %s' % url)
     return url
+
+
+@register.filter
+def following(current_user, target_user):
+    """Return whether or not the current user is following the target user."""
+    current_email = current_user.email()
+    current_account_key = models.Account.key_name(current_email)
+    current_account = models.Account.get_by_key_name(current_account_key)
+    try:
+        return_value = target_user in current_account.following
+    except AttributeError:
+        return_value = False
+    return return_value
