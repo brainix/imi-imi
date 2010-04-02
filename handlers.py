@@ -52,7 +52,7 @@ import search
 _log = logging.getLogger(__name__)
 
 
-class _RequestHandler(webapp.RequestHandler):
+class _BaseRequestHandler(webapp.RequestHandler):
     """Base request handler, from which other request handlers inherit."""
 
     def handle_exception(self, exception, debug_mode):
@@ -96,7 +96,7 @@ class _RequestHandler(webapp.RequestHandler):
         return account
 
 
-class Maintenance(_RequestHandler):
+class Maintenance(_BaseRequestHandler):
     """Request handler to serve all requests when in maintenance mode."""
 
     def get(self, nonsense=''):
@@ -110,14 +110,14 @@ class Maintenance(_RequestHandler):
         pass
 
 
-class NotFound(_RequestHandler):
+class NotFound(_BaseRequestHandler):
     """Request handler to serve a 404: Not Found error page."""
 
     def get(self, nonsense=''):
         return self._serve_error(404)
 
 
-class Home(rss.RequestHandler, _RequestHandler):
+class Home(rss.RequestHandler, _BaseRequestHandler):
     """Request handler to serve the homepage."""
 
     @decorators.no_browser_cache
@@ -142,7 +142,7 @@ class Home(rss.RequestHandler, _RequestHandler):
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
-class RSS(search.RequestHandler, rss.RequestHandler, _RequestHandler):
+class RSS(search.RequestHandler, rss.RequestHandler, _BaseRequestHandler):
     """Request handler to serve the site-wide RSS feed."""
 
     @decorators.no_browser_cache
@@ -151,7 +151,7 @@ class RSS(search.RequestHandler, rss.RequestHandler, _RequestHandler):
 
 
 class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
-            _RequestHandler):
+            _BaseRequestHandler):
     """Request handler to serve users' pages and perform CRUD on bookmarks."""
 
     @decorators.no_browser_cache
@@ -165,24 +165,22 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         if not target_email:
             return self._serve_error(404)
         target_email = target_email.replace('%40', '@')
-        active_tab = current_user and current_user.email() == target_email
-        active_tab = 'imi-imi' if active_tab else ''
         target_user = users.User(email=target_email)
         target_account = self._user_to_account(target_user)
         if target_account is None:
             return self._serve_error(404)
-        title = 'bookmarks saved by %s' % target_user.nickname()
+        active_tab, saved_by, query_users = '', target_user.nickname(), [target_user]
+        if current_user == target_user:
+            active_tab, saved_by = 'imi-imi', saved_by + ' & friends'
+            query_users.extend(target_account.following)
+        title = 'bookmarks saved by ' + saved_by
         if before == 'rss':
-            saved_by = target_user.nickname()
-            return self._serve_rss(saved_by=saved_by, query_users=[target_user])
+            return self._serve_rss(saved_by=saved_by, query_users=query_users)
         try:
             before = datetime.datetime.strptime(before, DATETIME_FORMAT)
         except (TypeError, ValueError):
             if before is not None:
                 return self._serve_error(404)
-        query_users = [target_user]
-        if current_user == target_user:
-            query_users.extend(target_account.following)
         references, more = self._get_bookmarks(references=True,
                                                query_users=query_users,
                                                before=before)
@@ -337,7 +335,7 @@ class SaveBookmark(Users):
         self.redirect(url)
 
 
-class LiveSearch(search.RequestHandler, _RequestHandler):
+class LiveSearch(search.RequestHandler, _BaseRequestHandler):
     """Request handler to serve live search HTML snippets."""
 
     def get(self):
@@ -385,7 +383,7 @@ class LiveSearch(search.RequestHandler, _RequestHandler):
         return html
 
 
-class Search(search.RequestHandler, _RequestHandler):
+class Search(search.RequestHandler, _BaseRequestHandler):
     """Request handler to serve search results pages."""
 
     @decorators.no_browser_cache
@@ -470,7 +468,7 @@ class Search(search.RequestHandler, _RequestHandler):
         return more_url
 
 
-class API(index.RequestHandler, search.RequestHandler, _RequestHandler):
+class API(index.RequestHandler, search.RequestHandler, _BaseRequestHandler):
     """Request handler to expose imi-imi's functionality through an API.
     
     imi-imi exposes ReSTful API calls which return JSON data.  This is similar

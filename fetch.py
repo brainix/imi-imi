@@ -271,9 +271,11 @@ class _BaseFetch(object):
             'http://google.com/a%C2%B1%b.html'
             >>> Factory().normalize('google.com/a%c2%b1%b2.html')
             'http://google.com/a%C2%B1%B2.html'
+            >>> Factory().normalize('google.com/a%Cc%bB%b2.html')
+            'http://google.com/a%CC%BB%B2.html'
         """
-        reg_exp = r'%[0-9A-Fa-f][0-9A-Fa-f]'
-        url = re.sub(reg_exp, lambda m: m.group().upper(), url)
+        esc_seq_reg_exp = r'%[0-9A-Fa-f]{2,2}'
+        url = re.sub(esc_seq_reg_exp, lambda m: m.group().upper(), url)
         return url
 
     def _fetch(self, url, payload='', headers={}, deadline=10):

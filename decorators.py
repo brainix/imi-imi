@@ -39,7 +39,6 @@ def require_login(method):
     """Require that the user be logged in to access the request handler method.
     
     Google App Engine provides similar functionality:
-
         from google.appengine.ext.webapp.util import login_required
 
     But Google's decorator only seems to work for GET request handler methods.
@@ -73,9 +72,9 @@ def create_account(method):
     """
     @functools.wraps(method)
     def wrap(*args, **kwds):
-        current_user = users.get_current_user()
-        if current_user is not None:
-            email = current_user.email()
+        user = users.get_current_user()
+        if user is not None:
+            email = user.email()
             key_name = models.Account.key_name(email)
             account = models.Account.get_or_insert(key_name=key_name)
             account.put()
@@ -91,7 +90,7 @@ def memcache_results(cache_secs=DEFAULT_CACHE_SECS):
     function that returns a decorator.  We have to jump through these hoops
     because we want to pass an argument to the decorator - how long to cache
     the results.  But a decorator can only accept one argument - the method to
-    be decorated.
+    be decorated.  So instead, we use a closure.  (This is a closure, right?)
 
     memcache_results is convenient to use on an expensive method that doesn't
     always need to return live results.  Conceptually, we check the memcache
