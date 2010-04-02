@@ -3,7 +3,7 @@
 <h2>
     Saved by
     {% if target_user %}
-        <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>,
+        <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>{% ifequal current_user target_user %} &amp; friends{% endifequal %},
     {% else %}
         Everyone,
     {% endif %}

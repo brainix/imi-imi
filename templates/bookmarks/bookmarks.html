@@ -3,10 +3,10 @@
         <div class="speech_balloon">
             <h3>
                 <a href="{{ bookmark.url }}" target="_blank" rel="nofollow"
-                   onmouseover="$('#host_{{ bookmark|hash_bookmark }}').slideDown('fast'); return false;"
-                   onmouseout="$('#host_{{ bookmark|hash_bookmark }}').slideUp('fast'); return false;">{{ bookmark|beautify_title }}</a>
+                   onmouseover="$('#host_{{ bookmark.key }}').slideDown('fast'); return false;"
+                   onmouseout="$('#host_{{ bookmark.key }}').slideUp('fast'); return false;">{{ bookmark|beautify_title }}</a>
             </h3>
-            <div id="host_{{ bookmark|hash_bookmark }}" class="url">
+            <div id="host_{{ bookmark.key }}" class="url">
                 {{ bookmark.url|beautify_url }}
             </div>
 
@@ -15,24 +15,23 @@
                 {% if not bookmark.popularity|add:"-1" %}
                     <a href="/users/{{ bookmark.users.0.email }}">{{ bookmark.users.0.nickname }}</a>
                 {% else %}
-                    <span id="others_short_{{ bookmark|hash_bookmark }}">
+                    <span id="others_short_{{ bookmark.key }}">
                         <a href="/users/{{ bookmark.users.0.email }}">{{ bookmark.users.0.nickname }}</a>
                         and {{ bookmark.popularity|add:"-1" }}
                         other{{ bookmark.popularity|add:"-1"|pluralize }}
                         <a href="#"
-                           onclick="$('#others_short_{{ bookmark|hash_bookmark }}').hide();
-                                    $('#others_long_{{ bookmark|hash_bookmark }}').show();
+                           onclick="$('#others_short_{{ bookmark.key }}').hide();
+                                    $('#others_long_{{ bookmark.key }}').show();
                                     return false;">&rarr;</a>
                     </span>
-                    <span id="others_long_{{ bookmark|hash_bookmark }}"
-                          style="display: none">
+                    <span id="others_long_{{ bookmark.key }}" style="display: none">
                         {% for user in bookmark.users %}
                             {% if forloop.last %}and{% endif %}
                             <a href="/users/{{ user.email }}">{{ user.nickname }}</a>{% if not forloop.last %},{% endif %}
                         {% endfor %}
                         <a href="#"
-                           onclick="$('#others_long_{{ bookmark|hash_bookmark }}').hide();
-                                    $('#others_short_{{ bookmark|hash_bookmark }}').show();
+                           onclick="$('#others_long_{{ bookmark.key }}').hide();
+                                    $('#others_short_{{ bookmark.key }}').show();
                                     return false;">&larr;</a>
                     </span>
                     updated
@@ -42,8 +41,7 @@
 
             {% if not bookmark.words and bookmark|is_image %}
                 <a href="{{ bookmark.url }}" target="_blank">
-                    <img src="{{ bookmark.url }}" class="bookmark"
-                         alt="{{ bookmark|beautify_title }}" />
+                    <img src="{{ bookmark.url }}" class="bookmark" alt="{{ bookmark|beautify_title }}" />
                 </a>
             {% endif %}
 
@@ -59,8 +57,8 @@
                 <script type="text/javascript" src="swfobject.js"></script>
                 <div id="{{ bookmark.key.id }}">
                     <p>
-                        You need Flash player 8+ installed and JavaScript enabled
-                        to view this video.
+                        You need Flash player 8+ installed and JavaScript
+                        enabled to view this video.
                     </p>
                 </div>
                 <script type="text/javascript">
@@ -87,10 +85,10 @@
             {% if not bookmark.words and not bookmark|is_image and not bookmark|is_audio %}
                 <p>
                     We couldn&rsquo;t auto-tag
-                    <a href="{{ bookmark.url }}"
-                       target="_blank">{{ bookmark.url }}</a>.  The URL may be
-                    incorrect, the server may be down, or the URL may not point
-                    to text, HTML, an image, an MP3, or a YouTube video.
+                    <a href="{{ bookmark.url }}" target="_blank">{{ bookmark.url }}</a>.
+                    The URL may be incorrect, the server may be down, or the
+                    URL may not point to text, HTML, an image, an MP3, or a
+                    YouTube video.
                 </p>
             {% endif %}
         </div>

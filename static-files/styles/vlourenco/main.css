@@ -446,11 +446,7 @@ form input, form textarea {
 }
 
 #bookmarks .gravatar img,
-#bookmarks .gravatar img:hover,
-#profile .profile_pic,
-#profile .profile_pic:hover,
-#following .gravatar,
-#following .gravatar:hover {
+#bookmarks .gravatar img:hover {
     border: 1px solid #405156;
 }
 
@@ -472,10 +468,18 @@ form input, form textarea {
     text-align: center;
 }
 
-#profile,
-#following {
-    line-height: 120%;
-    margin-bottom: 1.5em;
+
+/*----------------------------------------------------------------------------*\
+ |                                Social Pane                                 |
+\*----------------------------------------------------------------------------*/
+
+#profile {
+    margin-bottom: 2.5em;
+}
+
+#profile .gravatar,
+#profile .gravatar:hover {
+    border: 1px solid #405156;
 }
 
 #follow .submit {
@@ -485,9 +489,10 @@ form input, form textarea {
     -webkit-border-top-right-radius: 0;
     background: #405156;
     float: right;
-    font-size: 9px;
-    margin-top: -4px;
+    font-size: 10px;
+    margin-top: -8px;
     margin-right: -1px;
+    margin-bottom: 1.5em;
     padding: 3px 6px 4px 6px;
     width: auto !important;
 }
@@ -496,8 +501,36 @@ form input, form textarea {
     background: #B62F2F;
 }
 
+#following {
+    line-height: 0%;
+}
+
+#following p {
+    color:  #959EA1;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -1px;
+    line-height: 175%;
+    margin-bottom: 0em;
+    white-space: nowrap !important;
+}
+
+#following ul {
+    clear: both;
+}
+
 #following li {
     display: inline;
+}
+
+#following .gravatar {
+    opacity: 0.9;
+    filter: alpha(opacity=90);
+}
+
+#following .gravatar:hover {
+    opacity: 1.0;
+    filter: alpha(opacity=100);
 }
 
 

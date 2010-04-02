@@ -96,12 +96,6 @@ def user_to_gravatar(user, size=0):
 
 
 @register.filter
-def hash_bookmark(bookmark):
-    """Convert a bookmark's URL into a hash suitable for use as a DOM ID."""
-    return hashlib.md5(bookmark.url).hexdigest()
-
-
-@register.filter
 def beautify_datetime(dt1):
     """Convert a Python datetime object into a pleasantly readable string."""
     dt = datetime.datetime

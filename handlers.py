@@ -180,8 +180,11 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         except (TypeError, ValueError):
             if before is not None:
                 return self._serve_error(404)
+        query_users = [target_user]
+        if current_user == target_user:
+            query_users.extend(target_account.following)
         references, more = self._get_bookmarks(references=True,
-                                               query_users=[target_user],
+                                               query_users=query_users,
                                                before=before)
         if more:
             earliest_so_far = references[-1].updated.strftime(DATETIME_FORMAT)

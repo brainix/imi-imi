@@ -206,7 +206,8 @@ function showLiveResults() {
         liveResultsShown = true;
         $("#query").addClass("query_with_live_search_shown");
         $("#live_search").fadeIn("slow");
-        $("#right").fadeOut("slow");
+        $("#heading h2").fadeTo("slow", 0);
+        $("#right").fadeTo("slow", 0);
     }
 }
 
@@ -222,7 +223,8 @@ function hideLiveResults() {
         liveResultsShown = false;
         $("#query").removeClass("query_with_live_search_shown");
         $("#live_search").fadeOut("slow");
-        $("#right").fadeIn("slow");
+        $("#heading h2").fadeTo("slow", 1);
+        $("#right").fadeTo("slow", 1);
     }
 }
 

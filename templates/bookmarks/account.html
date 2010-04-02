@@ -6,7 +6,7 @@
     {% endif %}
 
     <img src="{{ target_account.user|user_to_gravatar:199 }}"
-         class="profile_pic" title="{{ target_account.user.nickname }}"
+         class="gravatar" title="{{ target_account.user.nickname }}"
          alt="{{ target_account.user.nickname }}" />
 
     {% if current_user and target_user %}
@@ -28,18 +28,17 @@
 </div>
 
 {% if target_account.following %}
-    <span class="no_break">
-        People who {{ target_user.nickname }} follows:
-    </span>
-    <ul id="following">
-        {% for user in target_account.following %}
-            <li>
-                <a href="/users/{{ user.email }}">
-                    <img src="{{ user|user_to_gravatar:28 }}" class="gravatar"
-                         title="{{ user.nickname }}"
-                         alt="{{ user.nickname }}" />
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
+    <div id="following">
+        <p>
+            Who
+            <a href="/users/{{ target_user.email }}">
+                {{ target_user.nickname }}
+            </a>
+            follows:
+        </p>
+
+        <ul>
+            {% for user in target_account.following %}<li><a href="/users/{{ user.email }}"><img src="{{ user|user_to_gravatar:40 }}" class="gravatar" title="{{ user.nickname }}" alt="{{ user.nickname }}" /></a></li>{% endfor %}
+        </ul>
+    </div>
 {% endif %}
