@@ -297,6 +297,7 @@ function moreBookmarks() {
 function toggleFollowing() {
     // Modify the behavior of the "follow" and "stop following" buttons.
 
+    var nickname = $(this).find("[name='nickname']").val();
     var email = $(this).find("[name='email']").val();
     var buttonText = $("#follow .submit").val();
     var currentlyFollowing = buttonText == STOP_FOLLOWING_TEXT;
@@ -304,7 +305,7 @@ function toggleFollowing() {
     var data = new Object;
 
     if (currentlyFollowing) {
-        confirmToggleFollowing = confirm("Stop following " + email + "?");
+        confirmToggleFollowing = confirm("Stop following " + nickname + "?");
         data.email_to_unfollow = email;
     } else {
         data.email_to_follow = email;

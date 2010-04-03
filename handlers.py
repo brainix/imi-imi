@@ -275,6 +275,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
                            (other_user.email(), current_user.email()))
             else:
                 other_account.followers.append(current_user)
+
         elif email_to_unfollow:
             if not other_user in current_account.following:
                 _log.error('%s already not following %s' %
@@ -286,6 +287,8 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
                            (other_user.email(), current_user.email()))
             while current_user in other_account.followers:
                 other_account.followers.remove(current_user)
+
+        other_account.popularity = len(other_account.followers)
         db.put([current_account, other_account])
 
 

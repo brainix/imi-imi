@@ -5,9 +5,9 @@
         {% endifequal %}
     {% endif %}
 
-    <img src="{{ target_account.user|user_to_gravatar:199 }}"
-         class="gravatar" title="{{ target_account.user.nickname }}"
-         alt="{{ target_account.user.nickname }}" />
+    <img src="{{ target_user|user_to_gravatar:199 }}"
+         class="gravatar" title="{{ target_user.nickname }}"
+         alt="{{ target_user.nickname }}" />
 
     {% if current_user and target_user %}
         {% ifequal current_user target_user %}
@@ -18,6 +18,8 @@
     {% if current_user and target_user %}
         {% ifnotequal current_user target_user %}
             <form id="follow" action="/users" method="post">
+                <input name="nickname" type="hidden"
+                       value="{{ target_user.nickname }}" />
                 <input name="email" type="hidden"
                        value="{{ target_user.email }}" />
                 <input class="submit" type="submit"
@@ -34,7 +36,7 @@
             <a href="/users/{{ target_user.email }}">
                 {{ target_user.nickname }}
             </a>
-            follows:
+            follows
         </p>
 
         <ul>
