@@ -18,6 +18,8 @@
     {% if current_user and target_user %}
         {% ifnotequal current_user target_user %}
             <form id="follow" action="/users" method="post">
+                <input name="current_user_id" type="hidden"
+                       value="{{ current_user.user_id }}" />
                 <input name="nickname" type="hidden"
                        value="{{ target_user.nickname }}" />
                 <input name="email" type="hidden"
@@ -29,18 +31,29 @@
     {% endif %}
 </div>
 
-{% if target_account.following %}
-    <div id="following">
-        <p>
-            Who
-            <a href="/users/{{ target_user.email }}">
-                {{ target_user.nickname }}
-            </a>
-            follows
-        </p>
+<div class="user_patchwork_quilt">
+    <p>
+        Who
+        <a href="/users/{{ target_user.email }}">
+            {{ target_user.nickname }}
+        </a>
+        follows
+    </p>
 
-        <ul>
-            {% for user in target_account.following %}<li><a href="/users/{{ user.email }}"><img src="{{ user|user_to_gravatar:40 }}" class="gravatar" title="{{ user.nickname }}" alt="{{ user.nickname }}" /></a></li>{% endfor %}
-        </ul>
-    </div>
-{% endif %}
+    <ul id="following">
+        {% for user in target_account.following %}<li id="following_{{ user.user_id }}"><a href="/users/{{ user.email }}"><img src="{{ user|user_to_gravatar:40 }}" class="gravatar" title="{{ user.nickname }}" alt="{{ user.nickname }}" /></a></li>{% endfor %}
+    </ul>
+</div>
+
+<div class="user_patchwork_quilt">
+    <p>
+        Who follows
+        <a href="/users/{{ target_user.email }}">
+            {{ target_user.nickname }}
+        </a>
+    </p>
+
+    <ul id="followers">
+        {% for user in target_account.followers %}<li id="follower_{{ user.user_id }}"><a href="/users/{{ user.email }}"><img src="{{ user|user_to_gravatar:40 }}" class="gravatar" title="{{ user.nickname }}" alt="{{ user.nickname }}" /></a></li>{% endfor %}
+    </ul>
+</div>

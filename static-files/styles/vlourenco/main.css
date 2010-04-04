@@ -511,34 +511,35 @@ form input, form textarea {
     background: #B62F2F;
 }
 
-#following {
+.user_patchwork_quilt {
     line-height: 0%;
+    margin-bottom: 2em;
 }
 
-#following p {
+.user_patchwork_quilt p {
     color:  #959EA1;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: -1px;
     line-height: 175%;
-    margin-bottom: 0em;
+    margin-bottom: 0em !important;
     white-space: nowrap !important;
 }
 
-#following ul {
+.user_patchwork_quilt ul {
     clear: both;
 }
 
-#following li {
+.user_patchwork_quilt li {
     display: inline;
 }
 
-#following .gravatar {
+.user_patchwork_quilt .gravatar {
     opacity: 0.85;
     filter: alpha(opacity=85);
 }
 
-#following .gravatar:hover {
+.user_patchwork_quilt .gravatar:hover {
     opacity: 1.0;
     filter: alpha(opacity=100);
 }

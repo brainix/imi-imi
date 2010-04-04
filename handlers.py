@@ -169,7 +169,8 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
         target_account = self._user_to_account(target_user)
         if target_account is None:
             return self._serve_error(404)
-        active_tab, saved_by, query_users = '', target_user.nickname(), [target_user]
+        active_tab, saved_by = '', target_user.nickname()
+        query_users = [target_user]
         if current_user == target_user:
             active_tab, saved_by = 'imi-imi', saved_by + ' & friends'
             query_users.extend(target_account.following)
@@ -246,6 +247,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
 
     def _crud_following(self, email_to_follow, email_to_unfollow):
         """Create or delete a following."""
+        path = os.path.join(TEMPLATES, 'bookmarks', 'follower.html')
         current_user = users.get_current_user()
         current_account = self._user_to_account(current_user)
 
@@ -290,6 +292,7 @@ class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
 
         other_account.popularity = len(other_account.followers)
         db.put([current_account, other_account])
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
 class SaveBookmark(Users):

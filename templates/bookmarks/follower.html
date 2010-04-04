@@ -1,0 +1,1 @@
+<li id="follower_{{ current_user.user_id }}" style="display: none;"><a href="/users/{{ current_user.email }}"><img src="{{ current_user|user_to_gravatar:40 }}" class="gravatar" title="{{ current_user.nickname }}" alt="{{ current_user.nickname }}" /></a></li>

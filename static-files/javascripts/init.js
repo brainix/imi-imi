@@ -34,6 +34,7 @@ $(function() {
     // Hooray, a page has been loaded!
     initSearch();
     initBookmarks();
+    initAccount();
     preloadImages(IMAGES_TO_PRELOAD);
 });
 

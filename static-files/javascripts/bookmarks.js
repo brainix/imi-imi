@@ -21,8 +21,6 @@
 
 
 const DEFAULT_CREATE_BOOKMARK_TEXT = "enter a url to bookmark";
-const FOLLOW_TEXT = "follow";
-const STOP_FOLLOWING_TEXT = "stop following";
 
 var createBookmarkSubmitted = false;
 var moreBookmarksClicked = false;
@@ -43,7 +41,6 @@ function initBookmarks() {
     $(".update_bookmark").submit(updateBookmark);
     $(".delete_bookmark").submit(deleteBookmark);
     $("#more_bookmarks").submit(moreBookmarks);
-    $("#follow").submit(toggleFollowing);
 
     if ($("#url_to_create").length != 0 && $("#url_to_create").val() != DEFAULT_CREATE_BOOKMARK_TEXT) {
         createBookmark();
@@ -195,9 +192,9 @@ function updateBookmark() {
 function deleteBookmark() {
     // Modify the behavior of the "delete bookmark" buttons.
 
-    var confirmDelete = confirm("Delete bookmark?");
+    var confirmed = confirm("Delete bookmark?");
 
-    if (confirmDelete) {
+    if (confirmed) {
         // OK.  The user has clicked a "delete bookmark" button and confirmed
         // that that's what he/she meant to do.
         var bookmarkKey = $(this).find("[name='bookmark_key']").val();
@@ -233,8 +230,6 @@ function deleteBookmark() {
 function moreBookmarks() {
     // Modify the behavior of the "more bookmarks" button.
 
-    var moreUrl = $("#more_url").val();
-
     if (!moreBookmarksClicked) {
         // Don't allow the user to click the "more bookmarks" button again,
         // until we're done with this procedure.
@@ -243,6 +238,8 @@ function moreBookmarks() {
         // Transform the "more bookmarks" button into a spinner.
         $("#more_bookmarks_throbber").show();
         $("#more_bookmarks .submit").hide();
+
+        var moreUrl = $("#more_url").val();
 
         // Make the AJAX request to get more bookmarks.  If we succeed, then
         // get rid of the spinner, munge the additional bookmarks' HTML
@@ -287,43 +284,5 @@ function moreBookmarks() {
     }
 
     // Cancel out the default behavior of the more bookmarks form.
-    return false;
-}
-
-
-/*----------------------------------------------------------------------------*\
- |                             toggleFollowing()                              |
-\*----------------------------------------------------------------------------*/
-function toggleFollowing() {
-    // Modify the behavior of the "follow" and "stop following" buttons.
-
-    var nickname = $(this).find("[name='nickname']").val();
-    var email = $(this).find("[name='email']").val();
-    var buttonText = $("#follow .submit").val();
-    var currentlyFollowing = buttonText == STOP_FOLLOWING_TEXT;
-    var confirmToggleFollowing = true;
-    var data = new Object;
-
-    if (currentlyFollowing) {
-        confirmToggleFollowing = confirm("Stop following " + nickname + "?");
-        data.email_to_unfollow = email;
-    } else {
-        data.email_to_follow = email;
-    }
-
-    if (confirmToggleFollowing) {
-        $.ajax({
-            type: "POST",
-            url: "/users",
-            data: data,
-            success: function(data, textStatus) {
-                currentlyFollowing = !currentlyFollowing;
-                buttonText = currentlyFollowing ? STOP_FOLLOWING_TEXT : FOLLOW_TEXT;
-                $("#follow .submit").val(buttonText);
-            }
-        });
-    }
-
-    // Cancel out the default behavior of the follow/unfollow button.
     return false;
 }

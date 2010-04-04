@@ -50,7 +50,7 @@ _log.debug('turning %s maintenance mode' % ('on' if MAINTENANCE else 'off'))
 
 
 # Programmatically determine whether to turn on debug mode.  If we're running
-# on the SDK, then turn on debug mode.  Otherwise, we're running on the cloud,
+# on the SDK, then turn on debug mode.  Otherwise we're running on the cloud,
 # so turn off debug mode.
 _SERVER_SOFTWARE = os.getenv('SERVER_SOFTWARE', '')
 DEBUG = _SERVER_SOFTWARE.split('/', 1)[0] == 'Development'
