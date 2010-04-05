@@ -43,22 +43,24 @@ var liveResultSelected = -1;         // Which live result is selected.
 
 
 /*----------------------------------------------------------------------------*\
- |                                initSearch()                                |
+ |                               $.initSearch()                               |
 \*----------------------------------------------------------------------------*/
 
-function initSearch() {
-    // Hooray, a page has been loaded!
+(function($) {
+    $.initSearch = function() {
+        // Hooray, a page has been loaded!
 
-    // Go through the DOM and modify the behavior of every element that we want
-    // to bless with AJAX.
-    $("#query").focus(focusSearch);
-    $("#query").blur(blurSearch);
-    $("#query").keyup(fetchLiveResults);
-    $("#query").keydown(scrollLiveResults);
+        // Go through the DOM and modify the behavior of every element that we
+        // want to bless with AJAX.
+        $("#query").focus(focusSearch);
+        $("#query").blur(blurSearch);
+        $("#query").keyup(fetchLiveResults);
+        $("#query").keydown(scrollLiveResults);
 
-    // Make sure that the search bar displays the default explanatory text.
-    $("#query").val(DEFAULT_QUERY_TEXT);
-}
+        // Make sure that the search bar displays the default explanatory text.
+        $("#query").val(DEFAULT_QUERY_TEXT);
+    }
+})(jQuery)
 
 
 /*----------------------------------------------------------------------------*\

@@ -27,38 +27,41 @@ var moreBookmarksClicked = false;
 
 
 /*----------------------------------------------------------------------------*\
- |                              initBookmarks()                               |
+ |                             $.initBookmarks()                              |
 \*----------------------------------------------------------------------------*/
 
-function initBookmarks() {
-    // Hooray, a page has been loaded!
+(function($) {
+    $.initBookmarks = function() {
+        // Hooray, a page has been loaded!
 
-    // Go through the DOM and modify the behavior of every element that we want
-    // to bless with AJAX.
-    $("#url_to_create").focus(focusCreateBookmark);
-    $("#url_to_create").blur(blurCreateBookmark);
-    $("#create_bookmark").submit(createBookmark);
-    $(".update_bookmark").submit(updateBookmark);
-    $(".delete_bookmark").submit(deleteBookmark);
-    $("#more_bookmarks").submit(moreBookmarks);
+        // Go through the DOM and modify the behavior of every element that we
+        // want to bless with AJAX.
+        $("#url_to_create").focus(focusCreateBookmark);
+        $("#url_to_create").blur(blurCreateBookmark);
+        $("#create_bookmark").submit(createBookmark);
+        $(".update_bookmark").submit(updateBookmark);
+        $(".delete_bookmark").submit(deleteBookmark);
+        $("#more_bookmarks").submit(moreBookmarks);
 
-    if ($("#url_to_create").length != 0 && $("#url_to_create").val() != DEFAULT_CREATE_BOOKMARK_TEXT) {
-        createBookmark();
+        if ($("#url_to_create").length != 0 &&
+            $("#url_to_create").val() != DEFAULT_CREATE_BOOKMARK_TEXT) {
+            createBookmark();
+        }
+        else {
+            // Make sure that the "save bookmark" bar displays the default
+            // explanatory text.
+            $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
+        }
+
+        // For some reason, sometimes (particularly when we're clicking
+        // back/forward through the pages in the site) our button labels get
+        // confused.  Straighten them out.
+        $("#create_bookmark .submit").val("save bookmark");
+        $(".update_bookmark .submit").val("update");
+        $(".delete_bookmark .submit").val("delete");
+        $("#more_bookmarks .submit").val("more bookmarks");
     }
-    else {
-        // Make sure that the "save bookmark" bar displays the default
-        // explanatory text.
-        $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
-    }
-
-    // For some reason, sometimes (particularly when we're clicking
-    // back/forward through the pages in the site) our button labels get
-    // confused.  Straighten them out.
-    $("#create_bookmark .submit").val("save bookmark");
-    $(".update_bookmark .submit").val("update");
-    $(".delete_bookmark .submit").val("delete");
-    $("#more_bookmarks .submit").val("more bookmarks");
-}
+})(jQuery)
 
 
 /*----------------------------------------------------------------------------*\

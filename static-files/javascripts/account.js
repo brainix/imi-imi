@@ -27,16 +27,18 @@ var followClicked = false;
 
 
 /*----------------------------------------------------------------------------*\
- |                               initAccount()                                |
+ |                              $.initAccount()                               |
 \*----------------------------------------------------------------------------*/
 
-function initAccount() {
-    // Hooray, a page has been loaded!
+(function($) {
+    $.initAccount = function() {
+        // Hooray, a page has been loaded!
 
-    // Go through the DOM and modify the behavior of every element that we want
-    // to bless with AJAX.
-    $("#follow").submit(toggleFollowing);
-}
+        // Go through the DOM and modify the behavior of every element that we
+        // want to bless with AJAX.
+        $("#follow").submit(toggleFollowing);
+    }
+})(jQuery)
 
 
 /*----------------------------------------------------------------------------*\
@@ -52,20 +54,38 @@ function toggleFollowing() {
         // button again, until we're done with this procedure.
         followClicked = true;
 
-        var currentUserAcctId = $(this).find("[name='current_user_id']").val();
-        var currentUserElemId = "#follower_" + currentUserAcctId;
-        var currentlyFollowing = $("#follow .submit").val() == STOP_FOLLOWING_TEXT;
+        // If the user has clicked the "follow" button, then we require no
+        // additional confirmation.  On the other hand, if the user has clicked
+        // the "stop following" button, then seek additional confirmation.
         var confirmed = true;
-        var data = new Object;
-
         if (currentlyFollowing) {
-            confirmed = confirm("Stop following " + $(this).find("[name='nickname']").val() + "?");
-            data.email_to_unfollow = $(this).find("[name='email']").val();
-        } else {
-            data.email_to_follow = $(this).find("[name='email']").val();
+            var targetUserNickname = $(this).find("[name='nickname']").val();
+            confirmed = confirm("Stop following " + targetUserNickname + "?");
         }
 
-        if (confirmed) {
+        if (!confirmed) {
+            // The user has clicked the "stop following" button in error.  This
+            // aborts; we're done with this procedure.  Allow the user to click
+            // the "follow" or "stop following" button again.
+            followClicked = false;
+        } else {
+
+            // OK, the user has either clicked the "follow" button, or clicked
+            // the "stop following" button and provided additional confirmation
+            // of intentionality.  From various pre-populated hidden fields in
+            // the DOM, figure out who's following or un-following whom.
+            var currentUserAcctId = $(this).find("[name='current_user_id']").val();
+            var currentUserElemId = "#follower_" + currentUserAcctId;
+            var submitButton = $("#follow .submit");
+            var currentlyFollowing = submitButton.val() == STOP_FOLLOWING_TEXT;
+            var targetUserEmail = $(this).find("[name='email']").val();
+            var data = new Object;
+            if (currentlyFollowing) {
+                data.email_to_unfollow = targetUserEmail;
+            } else {
+                data.email_to_follow = targetUserEmail;
+            }
+
             $.ajax({
                 type: "POST",
                 url: "/users",
@@ -73,17 +93,24 @@ function toggleFollowing() {
                 success: function(data, textStatus) {
                     currentlyFollowing = !currentlyFollowing;
                     if (currentlyFollowing) {
-                        $("#followers").html($.trim($("#followers").html()));
-                        $("#followers").append(data);
+                        var followersList = $("#followers");
+                        followersList.html($.trim(followersList.html()));
+                        followersList.append(data);
+
+                        // Pre-load the current user's gravatar here so that it
+                        // can fade in smoothly.
+                        var gravatar = $(currentUserElemId + " img").attr("src");
+                        $.preloadImages(gravatar);
+
                         $(currentUserElemId).fadeIn("slow", function() {
-                            $("#follow .submit").val(STOP_FOLLOWING_TEXT);
+                            submitButton.val(STOP_FOLLOWING_TEXT);
                         });
                     }
                     else {
                         var currentUserElem = $(currentUserElemId);
                         currentUserElem.fadeOut("slow", function() {
                             currentUserElem.remove();
-                            $("#follow .submit").val(FOLLOW_TEXT);
+                            submitButton.val(FOLLOW_TEXT);
                         });
                     }
                 },

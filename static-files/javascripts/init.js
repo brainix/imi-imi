@@ -20,34 +20,34 @@
 \*----------------------------------------------------------------------------*/
 
 
-const IMAGES_TO_PRELOAD = new Array(
-    "/static-files/images/favicon.ico",
-    "/static-files/images/throbber.gif"
-);
-
-
 /*----------------------------------------------------------------------------*\
  |                                    $()                                     |
 \*----------------------------------------------------------------------------*/
 
 $(function() {
     // Hooray, a page has been loaded!
-    initSearch();
-    initBookmarks();
-    initAccount();
-    preloadImages(IMAGES_TO_PRELOAD);
+    $.initSearch();
+    $.initBookmarks();
+    $.initAccount();
+    $.preloadImages("/static-files/images/favicon.ico",
+                    "/static-files/images/speech_balloon_tail.png",
+                    "/static-files/images/throbber.gif");
 });
 
 
 /*----------------------------------------------------------------------------*\
- |                              preloadImages()                               |
+ |                             $.preloadImages()                              |
 \*----------------------------------------------------------------------------*/
 
-function preloadImages(images) {
-    if (document.images) {
-        for (index in images) {
-            image = new Image();
-            image.src = images[index];
+(function($) {
+    var imageCache = [];
+    $.preloadImages = function() {
+        if (document.images) {
+            for (var index = arguments.length; index--;) {
+                var cachedImage = document.createElement("img");
+                cachedImage.src = arguments[index];
+                imageCache.push(cachedImage);
+            }
         }
     }
-}
+})(jQuery)
