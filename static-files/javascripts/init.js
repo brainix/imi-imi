@@ -29,19 +29,20 @@ $(function() {
     $.initSearch();
     $.initBookmarks();
     $.initAccount();
-    $.preloadImages("/static-files/images/favicon.ico",
-                    "/static-files/images/speech_balloon_tail.png",
-                    "/static-files/images/throbber.gif");
+    $.preloadImagesArgs("/static-files/images/favicon.ico",
+                        "/static-files/images/speech_balloon_tail.png",
+                        "/static-files/images/throbber.gif");
 });
 
 
 /*----------------------------------------------------------------------------*\
- |                             $.preloadImages()                              |
+ |            $.preloadImagesArgs() and $.preloadImagesSelector()             |
 \*----------------------------------------------------------------------------*/
 
 (function($) {
     var imageCache = [];
-    $.preloadImages = function() {
+
+    $.preloadImagesArgs = function() {
         if (document.images) {
             for (var index = arguments.length; index--;) {
                 var cachedImage = document.createElement("img");
@@ -49,5 +50,11 @@ $(function() {
                 imageCache.push(cachedImage);
             }
         }
+    }
+
+    $.preloadImagesSelector = function(selector) {
+        $(selector + " img").each(function(index) {
+            $.preloadImagesArgs($(this).attr("src"));
+        });
     }
 })(jQuery)

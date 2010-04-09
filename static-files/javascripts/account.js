@@ -96,12 +96,7 @@ function toggleFollowing() {
                         var followersList = $("#followers");
                         followersList.html($.trim(followersList.html()));
                         followersList.append(data);
-
-                        // Pre-load the current user's gravatar here so that it
-                        // can fade in smoothly.
-                        var gravatar = $(currentUserElemId + " img").attr("src");
-                        $.preloadImages(gravatar);
-
+                        $.preloadImagesSelector(currentUserElemId);
                         $(currentUserElemId).fadeIn("slow", function() {
                             submitButton.val(STOP_FOLLOWING_TEXT);
                         });

@@ -130,6 +130,7 @@ function createBookmark() {
                 $("#bookmark_list").prepend(data);
                 $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                 $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
+                $.preloadImagesSelector(".bookmark:hidden");
                 $(".bookmark:hidden").slideDown("slow");
             },
             complete: function(xmlHttpRequest, textStatus) {
@@ -177,6 +178,7 @@ function updateBookmark() {
                     $("#bookmark_list").prepend(data);
                     $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                     $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
+                    $.preloadImagesSelector(".bookmark:hidden");
                     $(".bookmark:hidden").slideDown("slow");
                 });
             });
@@ -263,6 +265,7 @@ function moreBookmarks() {
                 $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                 $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                 $("#more_bookmarks").submit(moreBookmarks);
+                $.preloadImagesSelector(".bookmark:hidden");
 
                 // Finally, slide down the more bookmarks HTML snippet.
                 // Subtle: If there are yet more bookmarks, then this
