@@ -52,7 +52,8 @@ import search
 _log = logging.getLogger(__name__)
 
 
-class _CommonRequestHandler(webapp.RequestHandler):
+class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
+                            search.RequestHandler):
     """ """
 
     def handle_exception(self, exception, debug_mode):
@@ -95,6 +96,47 @@ class _CommonRequestHandler(webapp.RequestHandler):
             account = models.Account.get_by_key_name(account_key)
         return account
 
+    def _user_or_following(self, target_email=None, before=None,
+                           friends=False):
+        """Show the specified user's bookmarks."""
+        snippet = bool(before)
+        file_name = 'index.html' if not snippet else 'references.html'
+        path = os.path.join(TEMPLATES, 'bookmarks', file_name)
+        rss_url = self._get_rss_url()
+        login_url, current_user, current_account, logout_url = self._get_user()
+        if not target_email:
+            return self._serve_error(404)
+        target_email = target_email.replace('%40', '@')
+        target_user = users.User(email=target_email)
+        target_account = self._user_to_account(target_user)
+        if target_account is None:
+            return self._serve_error(404)
+        active_tab, saved_by = '', target_user.nickname()
+        query_users = [target_user]
+        if friends:
+            if current_user == target_user:
+                active_tab = 'imi-imi'
+            saved_by = saved_by + ' & friends'
+            query_users.extend(target_account.following)
+        title = 'bookmarks saved by ' + saved_by
+        if before == 'rss':
+            return self._serve_rss(saved_by=saved_by, query_users=query_users)
+        try:
+            before = datetime.datetime.strptime(before, DATETIME_FORMAT)
+        except (TypeError, ValueError):
+            if before is not None:
+                return self._serve_error(404)
+        references, more = self._get_bookmarks(references=True,
+                                               query_users=query_users,
+                                               before=before)
+        if more:
+            earliest_so_far = references[-1].updated.strftime(DATETIME_FORMAT)
+            more_url = '/users/' + target_email + '/' + earliest_so_far
+        else:
+            more_url = None
+        bookmark_to_save_on_laod = self.request.get('url')
+        self.response.out.write(template.render(path, locals(), debug=DEBUG))
+
 
 class _BaseRequestHandler(_CommonRequestHandler):
     """Abstract base class request handler."""
@@ -129,20 +171,20 @@ class NotFound(_BaseRequestHandler):
         return self._serve_error(404)
 
 
-class Home(_BaseRequestHandler, rss.RequestHandler):
+class Home(_BaseRequestHandler):
     """Request handler to serve the homepage."""
 
     @decorators.no_browser_cache
     @decorators.create_account
     def get(self):
-        """Serve a get request for / or /home.
+        """Serve a get request for / or /about.
         
         If an anonymous user requested /, then serve the homepage.  If a logged
         in user requested /, then redirect to that user's bookmarks page.  If
-        either an anonymous user or a logged in user requested /home, then
+        either an anonymous user or a logged in user requested /about, then
         serve the homepage.
         """
-        if self.request.path not in ('/', '/home',):
+        if self.request.path not in ('/', '/about',):
             return self._serve_error(404)
         path = os.path.join(TEMPLATES, 'home', 'index.html')
         title = 'social bookmarking'
@@ -150,11 +192,12 @@ class Home(_BaseRequestHandler, rss.RequestHandler):
         login_url, current_user, current_account, logout_url = self._get_user()
         active_tab = 'imi-imi' if current_user is None else ''
         if self.request.path == '/' and current_user is not None:
-            self.redirect('/users/' + current_user.email())
+            return self._user_or_following(target_email=current_user.email(),
+                                           friends=True)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
-class RSS(_BaseRequestHandler, rss.RequestHandler, search.RequestHandler):
+class RSS(_BaseRequestHandler):
     """Request handler to serve the site-wide RSS feed."""
 
     @decorators.no_browser_cache
@@ -162,48 +205,14 @@ class RSS(_BaseRequestHandler, rss.RequestHandler, search.RequestHandler):
         return self._serve_rss()
 
 
-class Users(_BaseRequestHandler, rss.RequestHandler, index.RequestHandler,
-            search.RequestHandler):
+class Users(_BaseRequestHandler):
     """Request handler to serve users' pages and perform CRUD on bookmarks."""
 
     @decorators.no_browser_cache
     def get(self, target_email=None, before=None):
         """Show the specified user's bookmarks."""
-        snippet = bool(before)
-        file_name = 'index.html' if not snippet else 'references.html'
-        path = os.path.join(TEMPLATES, 'bookmarks', file_name)
-        rss_url = self._get_rss_url()
-        login_url, current_user, current_account, logout_url = self._get_user()
-        if not target_email:
-            return self._serve_error(404)
-        target_email = target_email.replace('%40', '@')
-        target_user = users.User(email=target_email)
-        target_account = self._user_to_account(target_user)
-        if target_account is None:
-            return self._serve_error(404)
-        active_tab, saved_by = '', target_user.nickname()
-        query_users = [target_user]
-        if current_user == target_user:
-            active_tab, saved_by = 'imi-imi', saved_by + ' & friends'
-            query_users.extend(target_account.following)
-        title = 'bookmarks saved by ' + saved_by
-        if before == 'rss':
-            return self._serve_rss(saved_by=saved_by, query_users=query_users)
-        try:
-            before = datetime.datetime.strptime(before, DATETIME_FORMAT)
-        except (TypeError, ValueError):
-            if before is not None:
-                return self._serve_error(404)
-        references, more = self._get_bookmarks(references=True,
-                                               query_users=query_users,
-                                               before=before)
-        if more:
-            earliest_so_far = references[-1].updated.strftime(DATETIME_FORMAT)
-            more_url = '/users/' + target_email + '/' + earliest_so_far
-        else:
-            more_url = None
-        bookmark_to_save_on_laod = self.request.get('url')
-        self.response.out.write(template.render(path, locals(), debug=DEBUG))
+        return self._user_or_following(target_email=target_email, before=before,
+                                       friends=False)
 
     @decorators.no_browser_cache
     @decorators.require_login
@@ -307,7 +316,7 @@ class Users(_BaseRequestHandler, rss.RequestHandler, index.RequestHandler,
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
-class SaveBookmark(Users):
+class SaveBookmark(_BaseRequestHandler):
     """Request handler to expose save bookmark functionality to bookmarklet."""
 
     @decorators.no_browser_cache
@@ -353,7 +362,7 @@ class SaveBookmark(Users):
         self.redirect(url)
 
 
-class LiveSearch(_BaseRequestHandler, search.RequestHandler):
+class LiveSearch(_BaseRequestHandler):
     """Request handler to serve live search HTML snippets."""
 
     def get(self):
@@ -401,7 +410,7 @@ class LiveSearch(_BaseRequestHandler, search.RequestHandler):
         return html
 
 
-class Search(_BaseRequestHandler, search.RequestHandler):
+class Search(_BaseRequestHandler):
     """Request handler to serve search results pages."""
 
     @decorators.no_browser_cache
@@ -486,7 +495,7 @@ class Search(_BaseRequestHandler, search.RequestHandler):
         return more_url
 
 
-class API(_BaseRequestHandler, index.RequestHandler, search.RequestHandler):
+class API(_BaseRequestHandler):
     """Request handler to expose imi-imi's functionality through an API.
     
     imi-imi exposes ReSTful API calls which return JSON data.  This is similar
