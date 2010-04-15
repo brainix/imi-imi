@@ -36,6 +36,10 @@ that this script has properly detected that:
 
     >>> _on_app_engine
     False
+    >>> Factory is _AppEngineFetch, Factory is _PythonFetch
+    (False, True)
+    >>> isinstance(Factory(), _AppEngineFetch), isinstance(Factory(), _PythonFetch)
+    (False, True)
 
 We normalize URLs in order to determine whether or not two syntactically
 different URLs are equivalent:
@@ -76,13 +80,8 @@ from config import FETCH_GOOD_STATUS_CODES, FETCH_DOCUMENT_INDEXES
 _log = logging.getLogger(__name__)
 
 
-class _BaseFetch(object):
+class _CommonFetch(object):
     """ """
-
-    def __init__(self):
-        """ """
-        self._exceptions = tuple()
-        raise NotImplementedError
 
     def fetch(self, url, headers={}, payload={}, deadline=10,
               status_codes=FETCH_GOOD_STATUS_CODES):
@@ -278,6 +277,12 @@ class _BaseFetch(object):
         url = re.sub(esc_seq_reg_exp, lambda m: m.group().upper(), url)
         return url
 
+
+class _BaseFetch(_CommonFetch):
+    """Abstract base URL fetch class."""
+
+    _exceptions = tuple()
+
     def _fetch(self, url, payload='', headers={}, deadline=10):
         """ """
         raise NotImplementedError
@@ -288,12 +293,12 @@ class _BaseFetch(object):
 
 
 class _AppEngineFetch(_BaseFetch):
-    """ """
+    """Google App Engine concrete URL fetch class."""
 
-    def __init__(self):
-        """ """
-        self._exceptions = (InvalidURLError, DownloadError,
-                            ResponseTooLargeError)
+    try:
+        _exceptions = (InvalidURLError, DownloadError, ResponseTooLargeError)
+    except NameError:
+        _exceptions = tuple()
 
     def _fetch(self, url, payload='', headers={}, deadline=10):
         """ """
@@ -313,11 +318,9 @@ class _AppEngineFetch(_BaseFetch):
 
 
 class _PythonFetch(_BaseFetch):
-    """ """
+    """Python concrete URL fetch class."""
 
-    def __init__(self):
-        """ """
-        self._exceptions = (urllib2.URLError,)
+    _exceptions = (urllib2.URLError,)
 
     def _fetch(self, url, payload='', headers={}, deadline=10):
         """ """
@@ -335,16 +338,36 @@ class _PythonFetch(_BaseFetch):
         return url, status_code, mime_type, content
 
 
-class Factory(object):
-    """ """
+class _MetaClass(type):
+    """Meta-class which returns the correct concrete class for our environment.
 
-    def __new__(Class, *args, **kwds):
+    Since the following is a doctest, we know that we must be running this
+    script in someone's development environment, i.e. not on Google App Engine.
+    Make sure that this meta-class, when instantiated, returns the straight
+    Python concrete URL fetch class:
+
+        >>> class_dict = {'__module__': '__main__', '__metaclass__': _MetaClass, '__doc__': ' '}
+        >>> Class = _MetaClass('Factory', type.__bases__, class_dict)
+        >>> Class is _AppEngineFetch, Class is _PythonFetch
+        (False, True)
+        >>> instance = _MetaClass('Factory', type.__bases__, class_dict)()
+        >>> isinstance(instance, _AppEngineFetch), isinstance(instance, _PythonFetch)
+        (False, True)
+    """
+
+    def __new__(Class, name, bases, class_dict):
         """ """
         if _on_app_engine:
-            instance = _AppEngineFetch(*args, **kwds)
+            Class = _AppEngineFetch
         else:
-            instance = _PythonFetch(*args, **kwds)
-        return instance
+            Class = _PythonFetch
+        return Class
+
+
+class Factory(object):
+    """Factory class which instantiates the correct concr. class for our env."""
+
+    __metaclass__ = _MetaClass
 
 
 if __name__ == '__main__':

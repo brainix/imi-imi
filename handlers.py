@@ -52,8 +52,8 @@ import search
 _log = logging.getLogger(__name__)
 
 
-class _BaseRequestHandler(webapp.RequestHandler):
-    """Base request handler, from which other request handlers inherit."""
+class _CommonRequestHandler(webapp.RequestHandler):
+    """ """
 
     def handle_exception(self, exception, debug_mode):
         """Houston, we have a problem...  Handle an uncaught exception.
@@ -96,6 +96,18 @@ class _BaseRequestHandler(webapp.RequestHandler):
         return account
 
 
+class _BaseRequestHandler(_CommonRequestHandler):
+    """Abstract base class request handler."""
+
+    def get(self, nonsense=''):
+        """Abstract method to handle GET requests."""
+        raise NotImplementedError
+
+    def post(self, nonsense=''):
+        """Abstract method to handle POST requests."""
+        raise NotImplementedError
+
+
 class Maintenance(_BaseRequestHandler):
     """Request handler to serve all requests when in maintenance mode."""
 
@@ -117,7 +129,7 @@ class NotFound(_BaseRequestHandler):
         return self._serve_error(404)
 
 
-class Home(rss.RequestHandler, _BaseRequestHandler):
+class Home(_BaseRequestHandler, rss.RequestHandler):
     """Request handler to serve the homepage."""
 
     @decorators.no_browser_cache
@@ -142,7 +154,7 @@ class Home(rss.RequestHandler, _BaseRequestHandler):
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
-class RSS(search.RequestHandler, rss.RequestHandler, _BaseRequestHandler):
+class RSS(_BaseRequestHandler, rss.RequestHandler, search.RequestHandler):
     """Request handler to serve the site-wide RSS feed."""
 
     @decorators.no_browser_cache
@@ -150,8 +162,8 @@ class RSS(search.RequestHandler, rss.RequestHandler, _BaseRequestHandler):
         return self._serve_rss()
 
 
-class Users(index.RequestHandler, search.RequestHandler, rss.RequestHandler,
-            _BaseRequestHandler):
+class Users(_BaseRequestHandler, rss.RequestHandler, index.RequestHandler,
+            search.RequestHandler):
     """Request handler to serve users' pages and perform CRUD on bookmarks."""
 
     @decorators.no_browser_cache
@@ -341,7 +353,7 @@ class SaveBookmark(Users):
         self.redirect(url)
 
 
-class LiveSearch(search.RequestHandler, _BaseRequestHandler):
+class LiveSearch(_BaseRequestHandler, search.RequestHandler):
     """Request handler to serve live search HTML snippets."""
 
     def get(self):
@@ -389,7 +401,7 @@ class LiveSearch(search.RequestHandler, _BaseRequestHandler):
         return html
 
 
-class Search(search.RequestHandler, _BaseRequestHandler):
+class Search(_BaseRequestHandler, search.RequestHandler):
     """Request handler to serve search results pages."""
 
     @decorators.no_browser_cache
@@ -474,7 +486,7 @@ class Search(search.RequestHandler, _BaseRequestHandler):
         return more_url
 
 
-class API(index.RequestHandler, search.RequestHandler, _BaseRequestHandler):
+class API(_BaseRequestHandler, index.RequestHandler, search.RequestHandler):
     """Request handler to expose imi-imi's functionality through an API.
     
     imi-imi exposes ReSTful API calls which return JSON data.  This is similar
