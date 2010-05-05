@@ -90,7 +90,7 @@ function toggleFollowing() {
                 type: "POST",
                 url: "/users",
                 data: data,
-                success: function(data, textStatus) {
+                success: function(data, textStatus, xmlHttpRequest) {
                     currentlyFollowing = !currentlyFollowing;
                     if (currentlyFollowing) {
                         var followersList = $("#followers");

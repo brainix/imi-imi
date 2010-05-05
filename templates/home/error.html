@@ -33,6 +33,15 @@
                     details help us resolve the problem more quickly.
                 </p>
             {% endifequal %}
+
+            {% ifequal error_code 503 %}
+                <h3>Oops &hellip;</h3>
+                <p>
+                    We&rsquo;re sorry, but Google App Engine is in read-only
+                    mode.  Google should restore write access soon, so please
+                    try again in a bit.
+                </p>
+            {% endifequal %}
         </div>
 
         <div id="right" class="lowercase">

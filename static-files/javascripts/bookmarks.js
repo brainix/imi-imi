@@ -119,7 +119,7 @@ function createBookmark() {
             type: "POST",
             url: "/users",
             data: "url_to_create=" + $("#url_to_create").val(),
-            success: function(data, textStatus) {
+            success: function(data, textStatus, xmlHttpRequest) {
                 // Hooray, we succeed!  Clear out the URL that the user entered
                 // into the "save bookmark" bar and set the input focus on that
                 // bar.  This facilitates the rapid entry of multiple URLs.
@@ -171,7 +171,7 @@ function updateBookmark() {
             "bookmark_key": bookmarkKey,
             "reference_key_to_update": referenceKey,
         },
-        success: function(data, textStatus) {
+        success: function(data, textStatus, xmlHttpRequest) {
             staleBookmark.slideUp("slow", function() {
                 staleBookmark.remove();
                 $(elementToScroll).animate({scrollTop: offset}, "slow", "swing", function() {
@@ -254,7 +254,7 @@ function moreBookmarks() {
         $.ajax({
             type: "GET",
             url: moreUrl,
-            success: function(data, textStatus) {
+            success: function(data, textStatus, xmlHttpRequest) {
                 // Hooray, we succeeded!  Get rid of the spinner.
                 $("#more_bookmarks").remove();
 

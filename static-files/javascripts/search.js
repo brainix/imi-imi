@@ -135,7 +135,7 @@ function fetchLiveResults(event) {
                 type: "GET",
                 url: "/live_search",
                 data: "query=" + queryString,
-                success: function(data, textStatus) {
+                success: function(data, textStatus, xmlHttpRequest) {
                     if (data.length > 1) {
                         // Hooray!  The AJAX call succeeded and returned some
                         // live results.  Display them.

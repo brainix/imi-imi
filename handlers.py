@@ -33,6 +33,7 @@ from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
+from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
 
 import packages
 import simplejson
@@ -63,9 +64,21 @@ class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
         handle_exception method.  This method gets called whenever there's an
         uncaught exception anywhere in the imi-imi code.
         """
-        error_message = traceback.format_exc()  # Get the traceback.
-        _log.critical(error_message)            # Log the traceback.
-        self._serve_error(500)                  # Serve the 500 error page.
+        # Get and log the traceback.
+        error_message = traceback.format_exc()
+        _log.critical(error_message)
+
+        # Determine the error code.
+        if isinstance(exception, CapabilityDisabledError):
+            # The only time this exception is thrown is when the datastore is
+            # read-only for maintenance.  Gracefully degrade - throw a 503
+            # error.  For more info, see: http://code.google.com/appengine/docs/python/howto/maintenance.html
+            error_code = 503
+        else:
+            error_code = 500
+
+        # Serve the error page.
+        self._serve_error(error_code)                                                   # Serve the 500 error page.
 
     def _serve_error(self, error_code):
         """Houston, we have a problem...  Serve an error page."""
@@ -96,8 +109,7 @@ class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
             account = models.Account.get_by_key_name(account_key)
         return account
 
-    def _user_or_following(self, target_email=None, before=None,
-                           friends=False):
+    def _user_bookmarks(self, target_email=None, before=None, friends=False):
         """Show the specified user's bookmarks."""
         snippet = bool(before)
         file_name = 'index.html' if not snippet else 'references.html'
@@ -116,7 +128,7 @@ class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
         if friends:
             if current_user == target_user:
                 active_tab = 'imi-imi'
-            saved_by = saved_by + ' & friends'
+            saved_by += ' & friends'
             query_users.extend(target_account.following)
         title = 'bookmarks saved by ' + saved_by
         if before == 'rss':
@@ -192,8 +204,8 @@ class Home(_BaseRequestHandler):
         login_url, current_user, current_account, logout_url = self._get_user()
         active_tab = 'imi-imi' if current_user is None else ''
         if self.request.path == '/' and current_user is not None:
-            return self._user_or_following(target_email=current_user.email(),
-                                           friends=True)
+            return self._user_bookmarks(target_email=current_user.email(),
+                                        friends=True)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
@@ -211,8 +223,8 @@ class Users(_BaseRequestHandler):
     @decorators.no_browser_cache
     def get(self, target_email=None, before=None):
         """Show the specified user's bookmarks."""
-        return self._user_or_following(target_email=target_email, before=before,
-                                       friends=False)
+        return self._user_bookmarks(target_email=target_email, before=before,
+                                    friends=False)
 
     @decorators.no_browser_cache
     @decorators.require_login
@@ -228,18 +240,20 @@ class Users(_BaseRequestHandler):
         reference_to_delete = models.Reference.get_by_key_name(key, parent=bookmark) if key else None
         email_to_follow = self.request.get('email_to_follow')
         email_to_unfollow = self.request.get('email_to_unfollow')
+        method, args, return_value = None, None, None
 
         if url_to_create or reference_to_update or reference_to_delete:
-            return_value = self._crud_bookmark(url_to_create,
-                                               reference_to_update,
-                                               reference_to_delete)
+            method = self._crud_bookmark
+            args = [url_to_create, reference_to_update, reference_to_delete]
         elif email_to_follow or email_to_unfollow:
-            return_value = self._crud_following(email_to_follow,
-                                                email_to_unfollow)
+            method = self._crud_following
+            args = [email_to_follow, email_to_unfollow]
         else:
             _log.error('/users got POST request but no bookmark to create, '
                        'update, or delete and no user to follow or unfollow')
-            return_value = None
+
+        if method is not None:
+            return_value = method(*args)
         return return_value
 
     def _crud_bookmark(self, url_to_create, reference_to_update,
