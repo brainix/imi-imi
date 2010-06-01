@@ -401,7 +401,7 @@ class LiveSearch(_BaseRequestHandler):
         the query "raj", one would visit the URL:
             http://suggestqueries.google.com/complete/search?output=firefox&qu=raj
 
-        Google's suggestions would be returned in the form:
+        And Google's suggestions would be returned in the form:
             '["raj",["rajaan bennett","rajon rondo","rajiv shah","raj kundra","raj rajaratnam","rajshri","raja bell","rajah","raj kundra wikipedia","raj patel"]]'
 
         """

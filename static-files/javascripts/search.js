@@ -20,8 +20,6 @@
 \*----------------------------------------------------------------------------*/
 
 
-const DEFAULT_QUERY_TEXT = "search bookmarks";
-
 const KEY_BACKSPACE = 8;
 const KEY_ESCAPE = 27;
 const KEY_SPACE = 32;
@@ -36,6 +34,7 @@ const KEY_A = 65;
 const KEY_Z = 90;
 
 
+var queryString = "";                // The search query that the user has typed so far.
 var currentLiveSearchRequest = null; // The current live search's XMLHttpRequest object.
 var liveResultsFetched = false;      // Whether live results have been fetched.
 var liveResultsShown = false;        // Whether live results are shown.
@@ -58,7 +57,8 @@ var liveResultSelected = -1;         // Which live result is selected.
         $("#query").keydown(scrollLiveResults);
 
         // Make sure that the search bar displays the default explanatory text.
-        $("#query").val(DEFAULT_QUERY_TEXT);
+        var defaultQueryText = $("#query").attr("defaultValue");
+        $("#query").val(defaultQueryText);
     }
 })(jQuery)
 
@@ -73,7 +73,8 @@ function focusSearch() {
     // Otherwise, if the user previously entered a search query and we
     // successfully fetched some live search results, then show those results.
 
-    if ($("#query").val() == DEFAULT_QUERY_TEXT) {
+    var defaultQueryText = $("#query").attr("defaultValue");
+    if ($("#query").val() == defaultQueryText) {
         $("#query").val("");
     }
     else {
@@ -95,7 +96,8 @@ function blurSearch() {
     // successfully fetched some live search results, then hide those results.
 
     if ($("#query").val() == "") {
-        $("#query").val(DEFAULT_QUERY_TEXT);
+        var defaultQueryText = $("#query").attr("defaultValue");
+        $("#query").val(defaultQueryText);
     }
     else {
         if (liveResultsShown) {
@@ -127,7 +129,7 @@ function fetchLiveResults(event) {
             currentLiveSearchRequest = null;
         }
 
-        var queryString = $("#query").val();
+        queryString = $("#query").val();
         if (queryString) {
             // OK, the search query string isn't empty.  Make an AJAX request
             // for live results for this particular search query string.
@@ -245,20 +247,31 @@ function scrollLiveResults(event) {
         if (liveResultsShown) {
             var liveResults = $("#live_search ul li a");
             if (liveResults.length > 0) {
+
+                // If the user previously selected a live result, mark it
+                // unselected.
                 if (liveResultSelected != -1) {
-                    id = "#live_search_result_" + liveResultSelected;
+                    var id = "#live_search_result_" + liveResultSelected;
                     $(id).removeClass("live_search_result_selected");
                 }
+
+                // Compute the new live result that the user is selecting.
                 liveResultSelected += keyCode == KEY_UP ? -1 : 1;
-                if (liveResultSelected < 0) {
+
+                if (liveResultSelected < -1) {
                     liveResultSelected = liveResults.length - 1;
                 }
                 if (liveResultSelected > liveResults.length - 1) {
-                    liveResultSelected = 0;
+                    liveResultSelected = -1;
                 }
-                id = "#live_search_result_" + liveResultSelected;
-                $("#query").val($(id).html());
-                $(id).addClass("live_search_result_selected");
+                if (liveResultSelected == -1) {
+                    $("#query").val(queryString);
+                }
+                else {
+                    var id = "#live_search_result_" + liveResultSelected;
+                    $("#query").val($(id).html());
+                    $(id).addClass("live_search_result_selected");
+                }
             }
 
             // Here, the default behavior of the up/down arrow keys is to

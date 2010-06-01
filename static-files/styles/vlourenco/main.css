@@ -194,6 +194,7 @@ form input, form textarea {
 
 #live_search ul li a,
 #live_search ul li a:hover {
+    border-bottom: 1px solid #EDF0F1;
     color: #516064;
 }
 

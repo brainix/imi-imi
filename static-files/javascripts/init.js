@@ -43,6 +43,8 @@ $(function() {
     var imageCache = [];
 
     $.preloadImagesArgs = function() {
+        // Given arguments corresponding to URLs to images, preload those
+        // images.
         if (document.images) {
             for (var index = arguments.length; index--;) {
                 var cachedImage = document.createElement("img");
@@ -53,6 +55,8 @@ $(function() {
     }
 
     $.preloadImagesSelector = function(selector) {
+        // Given a jQuery selector, preload all of the images within that
+        // section of the DOM.
         $(selector + " img").each(function(index) {
             $.preloadImagesArgs($(this).attr("src"));
         });

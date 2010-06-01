@@ -1,14 +1,34 @@
+{% comment %} ----------------------------------------------------------------*\
+ |  bookmarks.html                                                            |
+ |                                                                            |
+ |  Copyright (c) 2009-2010, Code A La Mode, original authors.                |
+ |                                                                            |
+ |      This file is part of imi-imi.                                         |
+ |                                                                            |
+ |      imi-imi is free software; you can redistribute it and/or modify       |
+ |      it under the terms of the GNU General Public License as published by  |
+ |      the Free Software Foundation, either version 3 of the License, or     |
+ |      (at your option) any later version.                                   |
+ |                                                                            |
+ |      imi-imi is distributed in the hope that it will be useful,            |
+ |      but WITHOUT ANY WARRANTY; without even the implied warranty of        |
+ |      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         |
+ |      GNU General Public License for more details.                          |
+ |                                                                            |
+ |      You should have received a copy of the GNU General Public License     |
+ |      along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.      |
+\*------------------------------------------------------------- {% endcomment %}
+
+
 {% for bookmark in bookmarks %}
     <li class="bookmark" {% if snippet %}style="display: none;"{% endif %}>
         <div class="speech_balloon">
             <h3>
-                <a href="{{ bookmark.url }}" target="_blank" rel="nofollow"
-                   onmouseover="$('#host_{{ bookmark.key }}').slideDown('fast'); return false;"
-                   onmouseout="$('#host_{{ bookmark.key }}').slideUp('fast'); return false;">{{ bookmark|beautify_title }}</a>
+                <a href="{{ bookmark.url }}"
+                   title="{{ bookmark.url|beautify_url }}"
+                   target="_blank"
+                   rel="nofollow">{{ bookmark|beautify_title }}</a>
             </h3>
-            <div id="host_{{ bookmark.key }}" class="url">
-                {{ bookmark.url|beautify_url }}
-            </div>
 
             <span class="saved_by">
                 Saved by

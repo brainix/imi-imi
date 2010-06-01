@@ -1,3 +1,25 @@
+{% comment %} ----------------------------------------------------------------*\
+ |  base.html                                                                 |
+ |                                                                            |
+ |  Copyright (c) 2009-2010, Code A La Mode, original authors.                |
+ |                                                                            |
+ |      This file is part of imi-imi.                                         |
+ |                                                                            |
+ |      imi-imi is free software; you can redistribute it and/or modify       |
+ |      it under the terms of the GNU General Public License as published by  |
+ |      the Free Software Foundation, either version 3 of the License, or     |
+ |      (at your option) any later version.                                   |
+ |                                                                            |
+ |      imi-imi is distributed in the hope that it will be useful,            |
+ |      but WITHOUT ANY WARRANTY; without even the implied warranty of        |
+ |      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         |
+ |      GNU General Public License for more details.                          |
+ |                                                                            |
+ |      You should have received a copy of the GNU General Public License     |
+ |      along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.      |
+\*------------------------------------------------------------- {% endcomment %}
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
@@ -10,10 +32,10 @@
         {% endif %}
 
         {% comment %}
-          | For performance reasons,* it's a good idea to load JavaScript at the
-          | bottom of the HTML, just before closing the body tag.  That way, the
-          | browser can parse and render the CSS and HTML while downloading the
-          | JavaScript.
+          | For performance reasons,* it's a good idea to load JavaScript at
+          | the bottom of the HTML, just before closing the body tag.  That
+          | way, the browser can parse and render the CSS and HTML while
+          | downloading the JavaScript.
           |
           | However, SWFObject is special.  This JavaScript actually modifies
           | how the CSS and HTML is rendered (in the case of a YouTube video
@@ -33,8 +55,6 @@
         <meta name="keywords" content="imi-imi, social bookmarking, tagging, search" />
         <meta name="description" content="imi-imi is a social bookmarking service.  It allows you to save, share, and find other cool web page bookmarks all in one place.  It has nice features like auto-tagging and relevance search." />
         <meta name="author" content="Code A La Mode" />
-        <meta name="verify-v1" content="VhpQTTVJeFIQncwGYmER/OqzZaI57kWiXYGqUiH67U4=" />
-        <meta name="google-site-verification" content="1cVbzpRADlE84MS5tIjmVnOd89ni8hef1_57EFxXK48" />
         <meta http-equiv="Expires" content="-1" />
         <meta http-equiv="Pragma" content="no-cache" />
     </head>
@@ -65,8 +85,9 @@
             {% endif %}
 
             {% comment %}
-              | This iframe prevents many browsers' back/forward cache, which is
-              | what we need, because we dynamically update our pages with AJAX.
+              | This iframe prevents many browsers' back/forward cache, which
+              | is what we need, because we dynamically update our pages with
+              | AJAX.
               |
               | For more information, see:
               |     http://developer.apple.com/internet/safari/faq.html#anchor5

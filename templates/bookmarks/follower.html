@@ -1,1 +1,23 @@
+{% comment %} ----------------------------------------------------------------*\
+ |  follower.html                                                             |
+ |                                                                            |
+ |  Copyright (c) 2009-2010, Code A La Mode, original authors.                |
+ |                                                                            |
+ |      This file is part of imi-imi.                                         |
+ |                                                                            |
+ |      imi-imi is free software; you can redistribute it and/or modify       |
+ |      it under the terms of the GNU General Public License as published by  |
+ |      the Free Software Foundation, either version 3 of the License, or     |
+ |      (at your option) any later version.                                   |
+ |                                                                            |
+ |      imi-imi is distributed in the hope that it will be useful,            |
+ |      but WITHOUT ANY WARRANTY; without even the implied warranty of        |
+ |      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         |
+ |      GNU General Public License for more details.                          |
+ |                                                                            |
+ |      You should have received a copy of the GNU General Public License     |
+ |      along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.      |
+\*------------------------------------------------------------- {% endcomment %}
+
+
 <li id="follower_{{ current_user.user_id }}" style="display: none;"><a href="/users/{{ current_user.email }}"><img src="{{ current_user|user_to_gravatar:40 }}" class="gravatar" title="{{ current_user.nickname }}" alt="{{ current_user.nickname }}" /></a></li>
