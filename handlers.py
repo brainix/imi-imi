@@ -146,7 +146,6 @@ class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
             more_url = '/users/' + target_email + '/' + earliest_so_far
         else:
             more_url = None
-        bookmark_to_save_on_laod = self.request.get('url')
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
 
@@ -328,52 +327,6 @@ class Users(_BaseRequestHandler):
         other_account.popularity = len(other_account.followers)
         db.put([current_account, other_account])
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
-
-
-class SaveBookmark(_BaseRequestHandler):
-    """Request handler to expose save bookmark functionality to bookmarklet."""
-
-    @decorators.no_browser_cache
-    @decorators.require_login
-    @decorators.create_account
-    def get(self):
-        """Make sure that the user is logged in, then bookmark the URL.
-
-        OK, so this is complicated.  It's implemented in three languages
-        (Python, the page template language, and JavaScript), both server-side
-        and client-side.  Imagine that I'm brainix@gmail.com, that I'm
-        currently on the website http://4chan.org/, and that I click the
-        bookmarklet.  Take a deep breath, and let's examine the sequence of
-        events one step at a time:
-
-        1.  The bookmarklet opens up a pop-up window pointed to:
-                http://imi-imi.appspot.com/save_bookmark?url=http://4chan.org/
-
-        2.  If I'm already logged in, then this SaveBookmark request handler
-            redirects the pop-up to my bookmarks page at:
-                http://imi-imi.appspot.com/users/brainix@gmail.com?url=http://4chan.org/
-
-            Otherwise, this SaveBookmark request handler redirects the pop-up
-            to a login page.  When I successfully log in, the login page
-            redirects the pop-up to my bookmarks page.
-
-            Note that the redirects preserve the URL query parameter.
-
-        3.  The Users request handler sees the query parameter and passes it
-            along to the page template.
-
-        4.  The page template ensures that I'm logged in and looking at my own
-            bookmarks.  (This is a security check to prevent another user from
-            viewing my bookmarks, typing in a URL query parameter, and saving
-            something to my bookmarks.)  If I pass the security check, then the
-            page template pre-populates the "save bookmark" bar with the URL
-            http://4chan.org/.
-
-        5.  TODO:  Finish this explanation.  :-(
-        """
-        current_user = users.get_current_user()
-        url = '/users/' + current_user.email() + '?' + self.request.query_string
-        self.redirect(url)
 
 
 class LiveSearch(_BaseRequestHandler):

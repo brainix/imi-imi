@@ -20,8 +20,6 @@
 \*----------------------------------------------------------------------------*/
 
 
-const DEFAULT_CREATE_BOOKMARK_TEXT = "enter a url to bookmark";
-
 var createBookmarkSubmitted = false;
 var moreBookmarksClicked = false;
 
@@ -43,15 +41,10 @@ var moreBookmarksClicked = false;
         $(".delete_bookmark").submit(deleteBookmark);
         $("#more_bookmarks").submit(moreBookmarks);
 
-        if ($("#url_to_create").length != 0 &&
-            $("#url_to_create").val() != DEFAULT_CREATE_BOOKMARK_TEXT) {
-            createBookmark();
-        }
-        else {
-            // Make sure that the "save bookmark" bar displays the default
-            // explanatory text.
-            $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
-        }
+        // Make sure that the "save bookmark" bar displays the default
+        // explanatory text.
+        var defaultSaveBookmarkText = $("#url_to_create").attr("defaultValue");
+        $("#url_to_create").val(defaultSaveBookmarkText);
 
         // For some reason, sometimes (particularly when we're clicking
         // back/forward through the pages in the site) our button labels get
@@ -73,7 +66,8 @@ function focusCreateBookmark() {
     // contains the default explanatory text, then clear it out to contain no
     // text.
 
-    if ($("#url_to_create").val() == DEFAULT_CREATE_BOOKMARK_TEXT) {
+    var defaultSaveBookmarkText = $("#url_to_create").attr("defaultValue");
+    if ($("#url_to_create").val() == defaultSaveBookmarkText) {
         $("#url_to_create").val("");
     }
 }
@@ -89,7 +83,8 @@ function blurCreateBookmark() {
     // text.
 
     if ($("#url_to_create").val() == "") {
-        $("#url_to_create").val(DEFAULT_CREATE_BOOKMARK_TEXT);
+        var defaultSaveBookmarkText = $("#url_to_create").attr("defaultValue");
+        $("#url_to_create").val(defaultSaveBookmarkText);
     }
 }
 
