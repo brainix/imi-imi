@@ -32,6 +32,7 @@ import auto_tag
 import decorators
 import errors
 import models
+import utils
 
 
 _log = logging.getLogger(__name__)
@@ -75,6 +76,8 @@ class RequestHandler(webapp.RequestHandler):
         more = len(entities) == per_page + 1
         if more:
             entities = entities[:per_page]
+        if references:
+            utils.prefetch(entities, models.Reference.bookmark)
         _log.debug('computed %s for user(s): %s' % (entity_type,
                                                     str(query_users)))
         return entities, more
