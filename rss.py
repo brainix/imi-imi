@@ -69,9 +69,9 @@ class RequestHandler(webapp.RequestHandler):
         """Compute the XML for an RSS feed for the given users' bookmarks."""
         title = 'imi-imi - bookmarks saved by %s' % saved_by
         link, items = self.request.uri.rsplit('/rss', 1)[0], []
-        references, more = self._get_bookmarks(references=True,
-                                               query_users=query_users,
-                                               per_page=num_rss_items)
+        kwds = {'references': True, 'query_users': query_users,
+                'per_page': num_rss_items}
+        num_bookmarks, references, more = self._get_bookmarks(**kwds)
         for reference in references:
             bookmark, tags = reference.bookmark, []
             for word, count in zip(bookmark.words, bookmark.counts):

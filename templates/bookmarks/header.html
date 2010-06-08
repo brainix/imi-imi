@@ -23,19 +23,22 @@
 <h1>Bookmarks</h1>
 
 <h2>
-    Saved by
-    {% if target_user %}
-        <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>{% if friends %} &amp; friends{% endif %},
-    {% else %}
-        Everyone,
+    <span id="num_bookmarks">{{ num_bookmarks }}</span>
+
+    {% if target_user or not target_words %}
+        Saved by
+        {% if target_user %}
+            <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>
+            {% if friends %} &amp; friends{% endif %}{% if target_words %},{% endif %}
+        {% else %}
+            {% if not target_words %}everyone{% endif %}
+        {% endif %}
     {% endif %}
 
-    Related to
     {% if target_words %}
+        Related to
         {% for target_word in target_words %}
             <a href="/search?query={{ target_word }}">{{ target_word }}</a>
         {% endfor %}
-    {% else %}
-        Everything
     {% endif %}
 </h2>

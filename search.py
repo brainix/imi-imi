@@ -69,8 +69,10 @@ class RequestHandler(webapp.RequestHandler):
         entities = (models.Reference if references else models.Bookmark).all()
         if query_users:
             entities.filter('user IN', query_users)
-        if before is not None:
-            entities = entities.filter('updated <', before)
+        if before is None:
+            num_bookmarks = entities.count()
+        else:
+            num_bookmarks, entities = 0, entities.filter('updated <', before)
         entities.order('-updated')
         entities = entities.fetch(per_page+1, offset=page*per_page)
         more = len(entities) == per_page + 1
@@ -80,7 +82,7 @@ class RequestHandler(webapp.RequestHandler):
             utils.prefetch(entities, models.Reference.bookmark)
         _log.debug('computed %s for user(s): %s' % (entity_type,
                                                     str(query_users)))
-        return entities, more
+        return num_bookmarks, entities, more
 
     def _search_bookmarks(self, *args, **kwds):
         """Return a list of bookmarks that match some given criteria."""
@@ -92,12 +94,13 @@ class RequestHandler(webapp.RequestHandler):
         except (errors.SearchError,), e:
             if e.error_message in ('no query', 'generic query'):
                 del kwds['query_words']
-                bookmarks, more = self._get_bookmarks(**kwds)
+                num_bookmarks, bookmarks, more = self._get_bookmarks(**kwds)
             else:
                 raise e
         else:
+            num_bookmarks = len(bookmarks)
             bookmarks, more = self._search_bookmarks_specific(bookmarks, **kwds)
-        return bookmarks, more
+        return num_bookmarks, bookmarks, more
 
     @decorators.memcache_results(cache_secs=SEARCH_CACHE_SECS)
     def _search_bookmarks_generic(self, query_users=tuple(),

@@ -139,9 +139,9 @@ class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
         except (TypeError, ValueError):
             if before is not None:
                 return self._serve_error(404)
-        references, more = self._get_bookmarks(references=True,
-                                               query_users=query_users,
-                                               before=before)
+        kwds = {'references': True, 'query_users': query_users,
+                'before': before}
+        num_bookmarks, references, more = self._get_bookmarks(**kwds)
         if more:
             earliest_so_far = references[-1].updated.strftime(DATETIME_FORMAT)
             more_url = '/users/' + target_email + '/' + earliest_so_far
@@ -412,7 +412,7 @@ class Search(_BaseRequestHandler):
             # we got a blank search query, then show all of the bookmarks
             # sorted reverse chronologically.
             title = 'all bookmarks'
-            bookmarks, more = self._get_bookmarks(page=page)
+            num_bookmarks, bookmarks, more = self._get_bookmarks(page=page)
         else:
             title = 'bookmarks'
             if target_user:
@@ -421,9 +421,9 @@ class Search(_BaseRequestHandler):
                 if target_user:
                     title += ','
                 title += ' related to ' + ' '.join(target_words)
-            bookmarks, more = self._search_bookmarks(query_users=target_users,
-                                                     query_words=target_words,
-                                                     page=page)
+            kwds = {'query_users': target_users, 'query_words': target_words,
+                    'page': page}
+            num_bookmarks, bookmarks, more = self._search_bookmarks(**kwds)
         try:
             more_url = self._compute_more_url() if more else None
         except ValueError:

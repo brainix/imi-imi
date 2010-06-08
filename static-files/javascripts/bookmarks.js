@@ -126,7 +126,10 @@ function createBookmark() {
                 $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                 $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                 $.preloadImagesSelector(".bookmark:hidden");
-                $(".bookmark:hidden").slideDown("slow");
+                $(".bookmark:hidden").slideDown("slow", function() {
+                    // Increment the number of bookmarks.
+                    changeNumBookmarks(1);
+                });
             },
             complete: function(xmlHttpRequest, textStatus) {
                 // Transform the spinner back into the "save bookmark" button.
@@ -213,6 +216,8 @@ function deleteBookmark() {
             complete: function(xmlHttpRequest, textStatus) {
                 bookmark.slideUp("slow", function() {
                     bookmark.remove();
+                    // Decrement the number of bookmarks.
+                    changeNumBookmarks(-1);
                 });
             },
         });
@@ -220,6 +225,19 @@ function deleteBookmark() {
 
     // Cancel out the default behavior of the delete bookmark forms.
     return false;
+}
+
+
+/*----------------------------------------------------------------------------*\
+ |                            changeNumBookmarks()                            |
+\*----------------------------------------------------------------------------*/
+
+function changeNumBookmarks(addend) {
+    var numBookmarks = $("#num_bookmarks").html();
+    numBookmarks = parseInt(numBookmarks);
+    numBookmarks += addend;
+    numBookmarks = numBookmarks.toString();
+    $("#num_bookmarks").html(numBookmarks);
 }
 
 
