@@ -23,10 +23,16 @@
 <h1>Bookmarks</h1>
 
 <h2>
-    <span id="num_bookmarks">{{ num_bookmarks }}</span>
+    <span id="num_bookmarks">
+        {% ifequal num_bookmarks 1000 %}
+            thousands
+        {% else %}
+            {{ num_bookmarks }}
+        {% endifequal %}
+    </span>
 
     {% if target_user or not target_words %}
-        Saved by
+        saved by
         {% if target_user %}
             <a href="/users/{{ target_user.email }}">{{ target_user.nickname }}</a>
             {% if friends %} &amp; friends{% endif %}{% if target_words %},{% endif %}
@@ -36,7 +42,7 @@
     {% endif %}
 
     {% if target_words %}
-        Related to
+        related to
         {% for target_word in target_words %}
             <a href="/search?query={{ target_word }}">{{ target_word }}</a>
         {% endfor %}

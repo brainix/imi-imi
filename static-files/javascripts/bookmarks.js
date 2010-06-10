@@ -235,9 +235,11 @@ function deleteBookmark() {
 function changeNumBookmarks(addend) {
     var numBookmarks = $("#num_bookmarks").html();
     numBookmarks = parseInt(numBookmarks);
-    numBookmarks += addend;
-    numBookmarks = numBookmarks.toString();
-    $("#num_bookmarks").html(numBookmarks);
+    if (!isNaN(numBookmarks)) {
+        numBookmarks += addend;
+        numBookmarks = numBookmarks.toString();
+        $("#num_bookmarks").html(numBookmarks);
+    }
 }
 
 
