@@ -58,7 +58,7 @@ def tokenize_url(url):
         u"\\r\\n    Alice's Adventures in Wonderland,\\r\\n    by Lewis Carroll\\r\\n"
     """
     _log.debug('tokenizing %s' % url)
-    url, status_code, mime_type, content = fetch.Factory().fetch(url)
+    url, status_code, mime_type, content = fetch.Factory()(url)
     if content is None:
         _log.warning("couldn't tokenize %s (couldn't fetch content)" % url)
         title, words, hash = url, [], None
@@ -79,7 +79,7 @@ def tokenize_html(html):
 
     Example usage:
         >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
-        >>> url, status_code, mime_type, content = fetch.Factory().fetch(url)
+        >>> url, status_code, mime_type, content = fetch.Factory()(url)
         >>> title, words, hash = tokenize_html(content)
         >>> title
         u"\\r\\n    Alice's Adventures in Wonderland,\\r\\n    by Lewis Carroll\\r\\n"

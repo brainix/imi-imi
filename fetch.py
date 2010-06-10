@@ -83,6 +83,19 @@ _log = logging.getLogger(__name__)
 class _CommonFetch(object):
     """ """
 
+    def __call__(self, *args, **kwds):
+        """Retrieve content from the web.  Make sure the status code is OK.
+
+        Example usage:
+            >>> url = 'http://www.gutenberg.org/files/11/11-h/11-h.htm'
+            >>> url, status_code, mime_type, content = Factory()(url)
+            >>> url
+            'http://www.gutenberg.org/files/11/11-h/11-h.htm'
+            >>> status_code, mime_type, len(content)
+            (200, 'text/html', 179982)
+        """
+        return self.fetch(*args, **kwds)
+
     def fetch(self, url, headers={}, payload={}, deadline=10,
               status_codes=FETCH_GOOD_STATUS_CODES):
         """Retrieve content from the web.  Make sure the status code is OK.
@@ -279,16 +292,20 @@ class _CommonFetch(object):
 
 
 class _BaseFetch(_CommonFetch):
-    """Abstract base URL fetch class."""
+    """Abstract base URL fetch class.
+
+    This class provides the structure for and is inherited by the concrete URL
+    fetch implementation classes.
+    """
 
     _exceptions = tuple()
 
     def _fetch(self, url, payload='', headers={}, deadline=10):
-        """ """
+        """Pure virtual method to fetch a URL and return the response."""
         raise NotImplementedError
 
     def _grok(self, response, url):
-        """ """
+        """Pure virt method to parse a response status, MIME type, & content."""
         raise NotImplementedError
 
 
@@ -301,7 +318,7 @@ class _AppEngineFetch(_BaseFetch):
         _exceptions = tuple()
 
     def _fetch(self, url, payload='', headers={}, deadline=10):
-        """ """
+        """Fetch a URL and return the response."""
         method = POST if payload else GET
         response = fetch(url, payload=payload, method=method, headers=headers,
                          allow_truncated=True, follow_redirects=True,
@@ -309,7 +326,7 @@ class _AppEngineFetch(_BaseFetch):
         return response
 
     def _grok(self, response, url):
-        """ """
+        """Parse a response's URL, status code, MIME type, and content."""
         url = self.normalize(response.headers.get('location', url))
         status_code = response.status_code
         mime_type = response.headers.get('content-type')
@@ -323,14 +340,14 @@ class _PythonFetch(_BaseFetch):
     _exceptions = (urllib2.URLError,)
 
     def _fetch(self, url, payload='', headers={}, deadline=10):
-        """ """
+        """Fetch a URL and return the response."""
         socket.setdefaulttimeout(deadline)
         request = urllib2.Request(url, payload, headers)
         response = urllib2.urlopen(request)
         return response
 
     def _grok(self, response, url):
-        """ """
+        """Parse a response's URL, status code, MIME type, and content."""
         url = self.normalize(response.geturl())
         status_code = response.code
         mime_type = response.headers.get('Content-Type')
