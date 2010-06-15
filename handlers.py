@@ -48,7 +48,6 @@ import index
 import models
 import rss
 import search
-import utils
 
 
 _log = logging.getLogger(__name__)
@@ -173,6 +172,7 @@ class Maintenance(_BaseRequestHandler):
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def post(self, nonsense=''):
+        """ """
         pass
 
 
@@ -180,6 +180,7 @@ class NotFound(_BaseRequestHandler):
     """Request handler to serve a 404: Not Found error page."""
 
     def get(self, nonsense=''):
+        """ """
         return self._serve_error(404)
 
 
@@ -214,6 +215,7 @@ class RSS(_BaseRequestHandler):
 
     @decorators.no_browser_cache
     def get(self):
+        """ """
         return self._serve_rss()
 
 
@@ -236,10 +238,8 @@ class Users(_BaseRequestHandler):
         bookmark = models.Bookmark.get_by_key_name(key) if key else None
         key = self.request.get('reference_key_to_update')
         reference_to_update = models.Reference.get_by_key_name(key, parent=bookmark) if key else None
-        utils.prefetch([reference_to_update] if reference_to_update else [], models.Reference.bookmark)
         key = self.request.get('reference_key_to_delete')
         reference_to_delete = models.Reference.get_by_key_name(key, parent=bookmark) if key else None
-        utils.prefetch([reference_to_delete] if reference_to_delete else [], models.Reference.bookmark)
         email_to_follow = self.request.get('email_to_follow')
         email_to_unfollow = self.request.get('email_to_unfollow')
         method, args, return_value = None, None, None
