@@ -34,8 +34,9 @@ var moreBookmarksClicked = false;
 
         // Go through the DOM and modify the behavior of every element that we
         // want to bless with AJAX.
-        $("#url_to_create").focus(focusCreateBookmark);
-        $("#url_to_create").blur(blurCreateBookmark);
+        var urlToCreate = $("#url_to_create");
+        urlToCreate.focus(focusCreateBookmark);
+        urlToCreate.blur(blurCreateBookmark);
         $("#create_bookmark").submit(createBookmark);
         $(".update_bookmark").submit(updateBookmark);
         $(".delete_bookmark").submit(deleteBookmark);
@@ -43,8 +44,8 @@ var moreBookmarksClicked = false;
 
         // Make sure that the "save bookmark" bar displays the default
         // explanatory text.
-        var defaultSaveBookmarkText = $("#url_to_create").attr("defaultValue");
-        $("#url_to_create").val(defaultSaveBookmarkText);
+        var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
+        urlToCreate.val(defaultSaveBookmarkText);
 
         // For some reason, sometimes (particularly when we're clicking
         // back/forward through the pages in the site) our button labels get
@@ -66,9 +67,10 @@ function focusCreateBookmark() {
     // contains the default explanatory text, then clear it out to contain no
     // text.
 
-    var defaultSaveBookmarkText = $("#url_to_create").attr("defaultValue");
-    if ($("#url_to_create").val() == defaultSaveBookmarkText) {
-        $("#url_to_create").val("");
+    var urlToCreate = $("#url_to_create");
+    var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
+    if (urlToCreate.val() == defaultSaveBookmarkText) {
+        urlToCreate.val("");
     }
 }
 
@@ -82,9 +84,10 @@ function blurCreateBookmark() {
     // bar contains no text, then populate it with the default explanatory
     // text.
 
-    if ($("#url_to_create").val() == "") {
-        var defaultSaveBookmarkText = $("#url_to_create").attr("defaultValue");
-        $("#url_to_create").val(defaultSaveBookmarkText);
+    var urlToCreate = $("#url_to_create");
+    if (urlToCreate.val() == "") {
+        var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
+        urlToCreate.val(defaultSaveBookmarkText);
     }
 }
 
@@ -101,10 +104,14 @@ function createBookmark() {
         // until we're done with this procedure.
         createBookmarkSubmitted = true;
 
+        var urlToCreate = $("#url_to_create");
+        var createBookmarkThrobber = $("#create_bookmark_throbber");
+        var createBookmarkButton = $(".create_bookmark .submit");
+
         // Transform the "save bookmark" button into a spinner.
-        $("#url_to_create").addClass("url_to_create_with_throbber_shown");
-        $("#create_bookmark_throbber").show();
-        $(".create_bookmark .submit").hide();
+        urlToCreate.addClass("url_to_create_with_throbber_shown");
+        createBookmarkThrobber.show();
+        createBookmarkButton.hide();
 
         // Make the AJAX request to create the bookmark.  If we succeed, then
         // clear out the URL that the user entered into the "save bookmark" bar
@@ -113,13 +120,13 @@ function createBookmark() {
         $.ajax({
             type: "POST",
             url: "/users",
-            data: "url_to_create=" + $("#url_to_create").val(),
+            data: "url_to_create=" + urlToCreate.val(),
             success: function(data, textStatus, xmlHttpRequest) {
                 // Hooray, we succeed!  Clear out the URL that the user entered
                 // into the "save bookmark" bar and set the input focus on that
                 // bar.  This facilitates the rapid entry of multiple URLs.
-                $("#url_to_create").val("");
-                $("#url_to_create").focus();
+                urlToCreate.val("");
+                urlToCreate.focus();
 
                 // Slide down the new bookmark's HTML snippet.
                 $("#bookmark_list").prepend(data);
@@ -133,9 +140,9 @@ function createBookmark() {
             },
             complete: function(xmlHttpRequest, textStatus) {
                 // Transform the spinner back into the "save bookmark" button.
-                $(".create_bookmark .submit").show();
-                $("#create_bookmark_throbber").hide();
-                $("#url_to_create").removeClass("url_to_create_with_throbber_shown");
+                createBookmarkButton.show();
+                createBookmarkThrobber.hide();
+                urlToCreate.removeClass("url_to_create_with_throbber_shown");
 
                 // We're done with this procedure.  Allow the user to click the
                 // "save bookmark" button again.
@@ -233,12 +240,13 @@ function deleteBookmark() {
 \*----------------------------------------------------------------------------*/
 
 function changeNumBookmarks(addend) {
-    var numBookmarks = $("#num_bookmarks").html();
-    numBookmarks = parseInt(numBookmarks);
-    if (!isNaN(numBookmarks)) {
-        numBookmarks += addend;
-        numBookmarks = numBookmarks.toString();
-        $("#num_bookmarks").html(numBookmarks);
+    var numBookmarksElement = $("#num_bookmarks");
+    var numBookmarksStr = numBookmarksElement.html();
+    var numBookmarksInt = parseInt(numBookmarksStr);
+    if (!isNaN(numBookmarksInt)) {
+        numBookmarksInt += addend;
+        numBookmarksStr = numBookmarksInt.toString();
+        numBookmarksElement.html(numBookmarksStr);
     }
 }
 

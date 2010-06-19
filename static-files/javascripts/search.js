@@ -51,14 +51,15 @@ var liveResultSelected = -1;         // Which live result is selected.
 
         // Go through the DOM and modify the behavior of every element that we
         // want to bless with AJAX.
-        $("#query").focus(focusSearch);
-        $("#query").blur(blurSearch);
-        $("#query").keyup(fetchLiveResults);
-        $("#query").keydown(scrollLiveResults);
+        var query = $("#query");
+        query.focus(focusSearch);
+        query.blur(blurSearch);
+        query.keyup(fetchLiveResults);
+        query.keydown(scrollLiveResults);
 
         // Make sure that the search bar displays the default explanatory text.
-        var defaultQueryText = $("#query").attr("defaultValue");
-        $("#query").val(defaultQueryText);
+        var defaultQueryText = query.attr("defaultValue");
+        query.val(defaultQueryText);
     }
 })(jQuery)
 
@@ -73,9 +74,10 @@ function focusSearch() {
     // Otherwise, if the user previously entered a search query and we
     // successfully fetched some live search results, then show those results.
 
-    var defaultQueryText = $("#query").attr("defaultValue");
-    if ($("#query").val() == defaultQueryText) {
-        $("#query").val("");
+    var query = $("#query");
+    var defaultQueryText = query.attr("defaultValue");
+    if (query.val() == defaultQueryText) {
+        query.val("");
     }
     else {
         if (liveResultsFetched && !liveResultsShown) {
@@ -95,9 +97,10 @@ function blurSearch() {
     // Otherwise, if the user previously entered a search query and we
     // successfully fetched some live search results, then hide those results.
 
-    if ($("#query").val() == "") {
-        var defaultQueryText = $("#query").attr("defaultValue");
-        $("#query").val(defaultQueryText);
+    var query = $("#query");
+    if (query.val() == "") {
+        var defaultQueryText = query.attr("defaultValue");
+        query.val(defaultQueryText);
     }
     else {
         if (liveResultsShown) {
