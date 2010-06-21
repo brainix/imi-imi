@@ -1,0 +1,42 @@
+#------------------------------------------------------------------------------#
+#   appengine_config.py                                                        #
+#                                                                              #
+#   Copyright (c) 2009-2010, Code A La Mode, original authors.                 #
+#                                                                              #
+#       This file is part of imi-imi.                                          #
+#                                                                              #
+#       imi-imi is free software; you can redistribute it and/or modify        #
+#       it under the terms of the GNU General Public License as published by   #
+#       the Free Software Foundation, either version 3 of the License, or      #
+#       (at your option) any later version.                                    #
+#                                                                              #
+#       imi-imi is distributed in the hope that it will be useful,             #
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
+#       GNU General Public License for more details.                           #
+#                                                                              #
+#       You should have received a copy of the GNU General Public License      #
+#       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
+#------------------------------------------------------------------------------#
+"""Appstats configuration.
+
+For more information, see:
+    http://code.google.com/appengine/docs/python/tools/appstats.html
+"""
+
+
+import logging
+
+from google.appengine.ext.appstats import recording
+
+import packages
+
+
+_log = logging.getLogger(__name__)
+
+
+def webapp_add_wsgi_middleware(app):
+    """ """
+    _log.debug('enabling appstats')
+    app = recording.appstats_wsgi_middleware(app)
+    return app

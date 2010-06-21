@@ -38,7 +38,7 @@ _log = logging.getLogger(__name__)
 
 
 class RequestHandler(webapp.RequestHandler):
-    """Base request handler, from which other request handlers inherit."""
+    """Search request handler, from which other request handlers inherit."""
 
     @decorators.memcache_results(cache_secs=SEARCH_CACHE_SECS)
     def _num_relevant_results(self, query_string):

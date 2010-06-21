@@ -38,7 +38,7 @@ _log = logging.getLogger(__name__)
 
 
 class RequestHandler(webapp.RequestHandler):
-    """Base request handler, from which other request handlers inherit."""
+    """Index request handler, from which other request handlers inherit."""
 
     def _create_bookmark(self, url):
         """Create a reference for the current user and the specified URL."""

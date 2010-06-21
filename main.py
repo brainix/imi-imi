@@ -84,7 +84,7 @@ def profile(output='log', sort_by='time', num_stats=80,
     if not sort_by in ('time', 'cumulative',):
         message = "unintelligible profile sort order spec: %s " % sort_by
         message += "(must be 'time' or 'cumulative')"
-        _log.critical()
+        _log.critical(message)
         main()
     else:
         profile = cProfile.Profile()

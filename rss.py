@@ -39,7 +39,7 @@ _log = logging.getLogger(__name__)
 
 
 class RequestHandler(webapp.RequestHandler):
-    """Base request handler, from which other request handlers inherit."""
+    """RSS request handler, from which other request handlers inherit."""
 
     def _get_rss_url(self):
         """Compute the URL to the RSS feed corresponding to the current page."""
