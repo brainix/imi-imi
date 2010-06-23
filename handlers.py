@@ -29,6 +29,7 @@ import os
 import traceback
 import urllib
 
+from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -304,32 +305,59 @@ class Users(_BaseRequestHandler):
             _log.error('%s has no imi-imi account' % other_email)
 
         if email_to_follow:
-            if other_user in current_account.following:
-                _log.error('%s already following %s' %
-                           (current_user.email(), other_user.email()))
-            else:
-                current_account.following.append(other_user)
-            if current_user in other_account.followers:
-                _log.error('%s already followed by %s' %
-                           (other_user.email(), current_user.email()))
-            else:
-                other_account.followers.append(current_user)
-
+            self._follow(current_account, other_account)
         elif email_to_unfollow:
-            if not other_user in current_account.following:
-                _log.error('%s already not following %s' %
-                           (current_user.email(), other_user.email()))
-            while other_user in current_account.following:
-                current_account.following.remove(other_user)
-            if not current_user in other_account.followers:
-                _log.error('%s already not followed by %s' %
-                           (other_user.email(), current_user.email()))
-            while current_user in other_account.followers:
-                other_account.followers.remove(current_user)
+            self._unfollow(current_account, other_account)
 
         other_account.popularity = len(other_account.followers)
         db.put([current_account, other_account])
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
+
+    def _follow(self, current_account, other_account):
+        """ """
+        current_user, other_user = current_account.user, other_account.user
+        current_email, other_email = current_user.email(), other_user.email()
+        created_following = False
+        if other_user in current_account.following:
+            _log.error('%s already following %s' % (current_email, other_email))
+        else:
+            current_account.following.append(other_user)
+            created_following = True
+        if current_user in other_account.followers:
+            _log.error('%s already followed by %s' %
+                       (other_email, current_email))
+        else:
+            other_account.followers.append(current_user)
+            created_following = True
+        if created_following:
+            self._email_following(current_account, other_account)
+
+    def _unfollow(self, current_account, other_account):
+        """ """
+        current_user, other_user = current_account.user, other_account.user
+        current_email, other_email = current_user.email(), other_user.email()
+        if not other_user in current_account.following:
+            _log.error('%s already not following %s' %
+                       (current_email, other_email))
+        while other_user in current_account.following:
+            current_account.following.remove(other_user)
+        if not current_user in other_account.followers:
+            _log.error('%s already not followed by %s' %
+                       (other_email, current_email))
+        while current_user in other_account.followers:
+            other_account.followers.remove(current_user)
+
+    def _email_following(self, current_account, other_account):
+        """ """
+        current_user, other_user = current_account.user, other_account.user
+        current_email, other_email = current_user.email(), other_user.email()
+        current_nickname, other_nickname = current_user.nickname(), other_user.nickname()
+        mail.send_mail(
+            sender=current_email,
+            to=other_email,
+            subject='%s Following Your imi-imi Bookmarks' % current_nickname,
+            body='%s is now following your imi-imi bookmarks.' % current_nickname,
+        )
 
 
 class LiveSearch(_BaseRequestHandler):
