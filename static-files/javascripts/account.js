@@ -57,6 +57,8 @@ function toggleFollowing() {
         // If the user has clicked the "follow" button, then we require no
         // additional confirmation.  On the other hand, if the user has clicked
         // the "stop following" button, then seek additional confirmation.
+        var submitButton = $("#follow .submit");
+        var currentlyFollowing = submitButton.val() == STOP_FOLLOWING_TEXT;
         var confirmed = true;
         if (currentlyFollowing) {
             var targetUserNickname = $(this).find("[name='nickname']").val();
@@ -69,15 +71,12 @@ function toggleFollowing() {
             // the "follow" or "stop following" button again.
             followClicked = false;
         } else {
-
             // OK, the user has either clicked the "follow" button, or clicked
             // the "stop following" button and provided additional confirmation
             // of intentionality.  From various pre-populated hidden fields in
             // the DOM, figure out who's following or un-following whom.
             var currentUserAcctId = $(this).find("[name='current_user_id']").val();
             var currentUserElemId = "#follower_" + currentUserAcctId;
-            var submitButton = $("#follow .submit");
-            var currentlyFollowing = submitButton.val() == STOP_FOLLOWING_TEXT;
             var targetUserEmail = $(this).find("[name='email']").val();
             var data = new Object;
             if (currentlyFollowing) {
