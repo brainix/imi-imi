@@ -20,18 +20,18 @@
 \*----------------------------------------------------------------------------*/
 
 
-const KEY_BACKSPACE = 8;
-const KEY_ESCAPE = 27;
-const KEY_SPACE = 32;
-const KEY_LEFT = 37;
-const KEY_UP = 38;
-const KEY_RIGHT = 39;
-const KEY_DOWN = 40;
-const KEY_DELETE = 46;
-const KEY_0 = 48;
-const KEY_9 = 57;
-const KEY_A = 65;
-const KEY_Z = 90;
+var KEY_BACKSPACE = 8;
+var KEY_ESCAPE = 27;
+var KEY_SPACE = 32;
+var KEY_LEFT = 37;
+var KEY_UP = 38;
+var KEY_RIGHT = 39;
+var KEY_DOWN = 40;
+var KEY_DELETE = 46;
+var KEY_0 = 48;
+var KEY_9 = 57;
+var KEY_A = 65;
+var KEY_Z = 90;
 
 
 var queryString = "";                // The search query that the user has typed so far.
@@ -169,7 +169,7 @@ function fetchLiveResults(event) {
                     // so set the the current live search's XMLHttpRequest
                     // object to null.
                     currentLiveSearchRequest = null;
-                },
+                }
             });
         }
 

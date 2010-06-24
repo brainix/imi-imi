@@ -147,7 +147,7 @@ function createBookmark() {
                 // We're done with this procedure.  Allow the user to click the
                 // "save bookmark" button again.
                 createBookmarkSubmitted = false;
-            },
+            }
         });
     }
 
@@ -187,7 +187,7 @@ function updateBookmark() {
                     $(".bookmark:hidden").slideDown("slow");
                 });
             });
-        },
+        }
     });
 
     // Cancel out the default behavior of the update bookmark forms.
@@ -226,7 +226,7 @@ function deleteBookmark() {
                     // Decrement the number of bookmarks.
                     changeNumBookmarks(-1);
                 });
-            },
+            }
         });
     }
 
@@ -308,7 +308,7 @@ function moreBookmarks() {
                 // We're done with this procedure.  Allow the user to click the
                 // "more bookmark" button again.
                 moreBookmarksClicked = false;
-            },
+            }
         });
     }
 

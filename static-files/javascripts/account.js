@@ -20,8 +20,8 @@
 \*----------------------------------------------------------------------------*/
 
 
-const FOLLOW_TEXT = "follow";
-const STOP_FOLLOWING_TEXT = "stop following";
+var FOLLOW_TEXT = "follow";
+var STOP_FOLLOWING_TEXT = "stop following";
 
 var followClicked = false;
 
@@ -113,7 +113,7 @@ function toggleFollowing() {
                     // We're done with this procedure.  Allow the user to click
                     // the "follow" or "stop following" button again.
                     followClicked = false;
-                },
+                }
             });
         }
     }

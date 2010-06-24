@@ -349,14 +349,22 @@ class Users(_BaseRequestHandler):
 
     def _email_following(self, current_account, other_account):
         """ """
-        current_user, other_user = current_account.user, other_account.user
-        current_email, other_email = current_user.email(), other_user.email()
-        current_nickname, other_nickname = current_user.nickname(), other_user.nickname()
+        current_user = current_account.user
+        other_user = other_account.user
+        current_email = current_user.email()
+        other_email = other_user.email()
+        current_nickname = current_user.nickname()
+        other_nickname = other_user.nickname()
+        text_path = os.path.join(TEMPLATES, 'email', 'following.txt')
+        html_path = os.path.join(TEMPLATES, 'email', 'following.html')
+        body = template.render(text_path, locals(), debug=DEBUG)
+        html = template.render(html_path, locals(), debug=DEBUG)
         mail.send_mail(
             sender=current_email,
             to=other_email,
             subject='%s Following Your imi-imi Bookmarks' % current_nickname,
-            body='%s is now following your imi-imi bookmarks.' % current_nickname,
+            body=body,
+            html=html,
         )
 
 
