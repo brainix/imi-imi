@@ -242,7 +242,7 @@ function deleteBookmark() {
 function changeNumBookmarks(addend) {
     var numBookmarksElement = $("#num_bookmarks");
     var numBookmarksStr = numBookmarksElement.html();
-    var numBookmarksInt = parseInt(numBookmarksStr);
+    var numBookmarksInt = parseInt(numBookmarksStr, 10);
     if (!isNaN(numBookmarksInt)) {
         numBookmarksInt += addend;
         numBookmarksStr = numBookmarksInt.toString();
