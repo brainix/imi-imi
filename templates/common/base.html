@@ -26,7 +26,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <title>imi-imi{% if title %} - {{ title }}{% endif %}</title>
-        <link type="text/css" rel="stylesheet" href="/static-files/styles/vlourenco/main.css" />
+
+        {% if debug %}
+            <link type="text/css" rel="stylesheet" href="/static-files/styles/vlourenco/main.css" />
+        {% else %}
+            <link type="text/css" rel="stylesheet" href="/static-files/styles/vlourenco/r121.css" />
+        {% endif %}
+
         {% if rss_url %}
             <link type="application/rss+xml" rel="alternate" href="{{ rss_url }}" />
         {% endif %}
