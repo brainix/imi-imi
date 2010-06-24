@@ -29,7 +29,6 @@ import os
 import traceback
 import urllib
 
-from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -44,6 +43,7 @@ from config import NUM_POPULAR_BOOKMARKS, NUM_POPULAR_TAGS, POPULAR_CACHE_SECS
 from config import RSS_NUM_ITEMS, SEARCH_CACHE_SECS, TEMPLATES
 import auto_tag
 import decorators
+import emails
 import fetch
 import index
 import models
@@ -54,8 +54,8 @@ import search
 _log = logging.getLogger(__name__)
 
 
-class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
-                            search.RequestHandler):
+class _CommonRequestHandler(emails.RequestHandler, rss.RequestHandler,
+                            index.RequestHandler, search.RequestHandler):
     """ """
 
     def handle_exception(self, exception, debug_mode):
@@ -346,26 +346,6 @@ class Users(_BaseRequestHandler):
                        (other_email, current_email))
         while current_user in other_account.followers:
             other_account.followers.remove(current_user)
-
-    def _email_following(self, current_account, other_account):
-        """ """
-        current_user = current_account.user
-        other_user = other_account.user
-        current_email = current_user.email()
-        other_email = other_user.email()
-        current_nickname = current_user.nickname()
-        other_nickname = other_user.nickname()
-        text_path = os.path.join(TEMPLATES, 'email', 'following.txt')
-        html_path = os.path.join(TEMPLATES, 'email', 'following.html')
-        body = template.render(text_path, locals(), debug=DEBUG)
-        html = template.render(html_path, locals(), debug=DEBUG)
-        mail.send_mail(
-            sender=current_email,
-            to=other_email,
-            subject='%s Following Your imi-imi Bookmarks' % current_nickname,
-            body=body,
-            html=html,
-        )
 
 
 class LiveSearch(_BaseRequestHandler):
