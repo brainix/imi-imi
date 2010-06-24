@@ -174,7 +174,7 @@ function updateBookmark() {
         url: "/users",
         data: {
             "bookmark_key": bookmarkKey,
-            "reference_key_to_update": referenceKey,
+            "reference_key_to_update": referenceKey
         },
         success: function(data, textStatus, xmlHttpRequest) {
             staleBookmark.slideUp("slow", function() {
@@ -218,7 +218,7 @@ function deleteBookmark() {
             url: "/users",
             data: {
                 "bookmark_key": bookmarkKey,
-                "reference_key_to_delete": referenceKey,
+                "reference_key_to_delete": referenceKey
             },
             complete: function(xmlHttpRequest, textStatus) {
                 bookmark.slideUp("slow", function() {
