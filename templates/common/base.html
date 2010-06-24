@@ -67,11 +67,14 @@
             <script type="text/javascript">
                 google.load("jquery", "1.4.2");
             </script>
-            <script type="text/javascript" src="/static-files/javascripts/search.js"></script>
-            <script type="text/javascript" src="/static-files/javascripts/bookmarks.js"></script>
-            <script type="text/javascript" src="/static-files/javascripts/account.js"></script>
-            <script type="text/javascript" src="/static-files/javascripts/init.js"></script>
-            {% if not debug %}
+
+            {% if debug %}
+                <script type="text/javascript" src="/static-files/javascripts/search.js"></script>
+                <script type="text/javascript" src="/static-files/javascripts/bookmarks.js"></script>
+                <script type="text/javascript" src="/static-files/javascripts/account.js"></script>
+                <script type="text/javascript" src="/static-files/javascripts/init.js"></script>
+            {% else %}
+                <script type="text/javascript" src="/static-files/javascripts/r121.js"></script>
                 <script type="text/javascript">
                     var google_analytics_javascript_host = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
                     document.write(unescape("%3Cscript src='" + google_analytics_javascript_host + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));

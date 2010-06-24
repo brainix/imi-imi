@@ -85,7 +85,7 @@ class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
         """Houston, we have a problem...  Serve an error page."""
         if not error_code in HTTP_CODE_TO_TITLE:
             error_code = 500
-        path = os.path.join(TEMPLATES, 'home', 'error.html')
+        path, debug = os.path.join(TEMPLATES, 'home', 'error.html'), DEBUG
         title = HTTP_CODE_TO_TITLE[error_code].lower()
         login_url, current_user, current_account, logout_url = self._get_user()
         error_url = self.request.url.split('//', 1)[-1]
@@ -114,7 +114,7 @@ class _CommonRequestHandler(rss.RequestHandler, index.RequestHandler,
         """Show the specified user's bookmarks."""
         snippet = bool(before)
         file_name = 'index.html' if not snippet else 'references.html'
-        path = os.path.join(TEMPLATES, 'bookmarks', file_name)
+        path, debug = os.path.join(TEMPLATES, 'bookmarks', file_name), DEBUG
         rss_url = self._get_rss_url()
         login_url, current_user, current_account, logout_url = self._get_user()
         if not target_email:
@@ -167,7 +167,7 @@ class Maintenance(_BaseRequestHandler):
 
     def get(self, nonsense=''):
         """The site is under maintenance.  Serve a polite "bugger off" page."""
-        path = os.path.join(TEMPLATES, 'home', 'maintenance.html')
+        path, debug = os.path.join(TEMPLATES, 'home', 'maintenance.html'), DEBUG
         title, in_maintenance = 'in surgery', True
         login_url, current_user, current_account, logout_url = self._get_user()
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
@@ -200,7 +200,7 @@ class Home(_BaseRequestHandler):
         """
         if self.request.path not in ('/', '/about',):
             return self._serve_error(404)
-        path = os.path.join(TEMPLATES, 'home', 'index.html')
+        path, debug = os.path.join(TEMPLATES, 'home', 'index.html'), DEBUG
         title = 'social bookmarking'
         rss_url = self._get_rss_url()
         login_url, current_user, current_account, logout_url = self._get_user()
@@ -441,7 +441,7 @@ class Search(_BaseRequestHandler):
             return self._serve_error(404)
         snippet = page != 0
         file_name = 'index.html' if not snippet else 'bookmarks.html'
-        path = os.path.join(TEMPLATES, 'bookmarks', file_name)
+        path, debug = os.path.join(TEMPLATES, 'bookmarks', file_name), DEBUG
         login_url, current_user, current_account, logout_url = self._get_user()
         if not target_words and not target_user:
             # This is an Easter egg, but an intentional and a useful one.  If
