@@ -1,5 +1,5 @@
 {% comment %} ----------------------------------------------------------------*\
- |  twitter.html                                                              |
+ |  header.html                                                               |
  |                                                                            |
  |  Copyright (c) 2009-2010, Code A La Mode, original authors.                |
  |                                                                            |
@@ -19,36 +19,3 @@
  |      along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.      |
 \*------------------------------------------------------------- {% endcomment %}
 
-
-<script src="http://widgets.twimg.com/j/2/widget.js"></script>
-
-<script>
-    new TWTR.Widget({
-        version: 2,
-        type: 'profile',
-        rpp: 10,
-        interval: 6000,
-        width: 360,
-        height: 480,
-        theme: {
-            shell: {
-                background: '#D1D9DC',
-                color: '#516064'
-            },
-            tweets: {
-                background: '#FFFFFF',
-                color: '#516064',
-                links: '#B62F2F'
-            }
-        },
-        features: {
-            scrollbar: true,
-            loop: false,
-            live: true,
-            hashtags: true,
-            timestamp: true,
-            avatars: false,
-            behavior: 'all'
-        }
-    }).render().setUser('code_a_la_mode').start();
-</script>
