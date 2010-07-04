@@ -56,3 +56,7 @@ class RequestHandler(webapp.RequestHandler):
             body=body,
             html=html,
         )
+
+    def _email_rebookmark(self):
+        """ """
+        pass

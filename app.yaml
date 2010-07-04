@@ -1,7 +1,45 @@
+#------------------------------------------------------------------------------#
+#   app.yaml                                                                   #
+#                                                                              #
+#   Copyright (c) 2009-2010, Code A La Mode, original authors.                 #
+#                                                                              #
+#       This file is part of imi-imi.                                          #
+#                                                                              #
+#       imi-imi is free software; you can redistribute it and/or modify        #
+#       it under the terms of the GNU General Public License as published by   #
+#       the Free Software Foundation, either version 3 of the License, or      #
+#       (at your option) any later version.                                    #
+#                                                                              #
+#       imi-imi is distributed in the hope that it will be useful,             #
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of         #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          #
+#       GNU General Public License for more details.                           #
+#                                                                              #
+#       You should have received a copy of the GNU General Public License      #
+#       along with imi-imi.  If not, see <http://www.gnu.org/licenses/>.       #
+#------------------------------------------------------------------------------#
+
+
 application: imi-imi
 version: 1
 runtime: python
 api_version: 1
+
+
+# Enable precompilation.  From the Google App Engine documentation:
+#
+#     App Engine uses a "precompilation" process with the Python source code of
+#     an app to enhance the performance of the app in the Python runtime
+#     environment.  Precompilation reduces the time it takes to import a Python
+#     module or file, and can substantially increase the speed of the first
+#     request handled by an app instance.  Precompiled code functions
+#     identically to the original source code.
+#
+# For more information, see:
+#     http://code.google.com/appengine/docs/python/config/appconfig.html#Precompilation
+
+derived_file_type:
+- python_precompiled
 
 
 handlers:
