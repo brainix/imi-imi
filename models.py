@@ -21,9 +21,6 @@
 """Google App Engine datastore models."""
 
 
-import functools
-import hashlib
-
 from google.appengine.api.users import User
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel

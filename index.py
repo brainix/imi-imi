@@ -21,7 +21,6 @@
 """Bookmark saving and indexing logic."""
 
 
-import datetime
 import logging
 
 from google.appengine.api import users

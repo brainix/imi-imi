@@ -24,7 +24,6 @@
 import cgi
 import datetime
 import logging
-import operator
 import os
 import traceback
 import urllib
