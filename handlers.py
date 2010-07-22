@@ -328,8 +328,13 @@ class Users(_BaseRequestHandler):
         else:
             other_account.followers.append(current_user)
             created_following = True
+
+        # For some reason, _email_following works on the SDK, but not on the
+        # cloud.  :-(  Please fix this, at some point.
+        """
         if created_following:
             self._email_following(current_account, other_account)
+        """
 
     def _unfollow(self, current_account, other_account):
         """ """
