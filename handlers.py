@@ -286,7 +286,14 @@ class Users(_BaseRequestHandler):
         """Create or delete a following."""
         path = os.path.join(TEMPLATES, 'bookmarks', 'follower.html')
         current_user = users.get_current_user()
+        if current_user is None:
+            _log.error("current user can't follow - not logged in?")
+            return
+        current_email = current_user.email()
         current_account = self._user_to_account(current_user)
+        if current_account is None:
+            _log.error("%s can't follow - has no imi-imi account" % current_email)
+            return
 
         # From the Google App Engine API documentation:
         #   The email address is not checked for validity when the User object
@@ -299,23 +306,28 @@ class Users(_BaseRequestHandler):
         #   http://code.google.com/appengine/docs/python/users/userclass.html#User
         other_email = email_to_follow if email_to_follow else email_to_unfollow
         other_user = users.User(email=other_email)
+        if other_user is None:
+            _log.error("can't follow %s - has no Google account" % other_email)
+            return
         other_account = self._user_to_account(other_user)
         if other_account is None:
-            _log.error('%s has no imi-imi account' % other_email)
+            _log.error("can't follow %s - has no imi-imi account" % other_email)
+            return
 
         if email_to_follow:
-            self._follow(current_account, other_account)
+            self._follow(current_email, current_user, current_account,
+                         other_email, other_user, other_account)
         elif email_to_unfollow:
-            self._unfollow(current_account, other_account)
+            self._unfollow(current_email, current_user, current_account,
+                           other_email, other_user, other_account)
 
         other_account.popularity = len(other_account.followers)
         db.put([current_account, other_account])
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
-    def _follow(self, current_account, other_account):
+    def _follow(self, current_email, current_user, current_account,
+                other_email, other_user, other_account):
         """ """
-        current_user, other_user = current_account.user, other_account.user
-        current_email, other_email = current_user.email(), other_user.email()
         created_following = False
         if other_user in current_account.following:
             _log.error('%s already following %s' % (current_email, other_email))
@@ -329,17 +341,12 @@ class Users(_BaseRequestHandler):
             other_account.followers.append(current_user)
             created_following = True
 
-        # For some reason, _email_following works on the SDK, but not on the
-        # cloud.  :-(  Please fix this, at some point.
-        """
-        if created_following:
-            self._email_following(current_account, other_account)
-        """
+        # if created_following:
+        #     self._email_following(current_account, other_account)
 
-    def _unfollow(self, current_account, other_account):
+    def _unfollow(self, current_email, current_user, current_account,
+                  other_email, other_user, other_account):
         """ """
-        current_user, other_user = current_account.user, other_account.user
-        current_email, other_email = current_user.email(), other_user.email()
         if not other_user in current_account.following:
             _log.error('%s already not following %s' %
                        (current_email, other_email))
