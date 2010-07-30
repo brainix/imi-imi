@@ -99,8 +99,7 @@ function toggleFollowing() {
                         $(currentUserElemId).fadeIn("slow", function() {
                             submitButton.val(STOP_FOLLOWING_TEXT);
                         });
-                    }
-                    else {
+                    } else {
                         var currentUserElem = $(currentUserElemId);
                         currentUserElem.fadeOut("slow", function() {
                             currentUserElem.remove();
