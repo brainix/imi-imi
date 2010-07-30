@@ -78,8 +78,7 @@ function focusSearch() {
     var defaultQueryText = query.attr("defaultValue");
     if (query.val() == defaultQueryText) {
         query.val("");
-    }
-    else {
+    } else {
         if (liveResultsFetched && !liveResultsShown) {
             showLiveResults();
         }
@@ -101,8 +100,7 @@ function blurSearch() {
     if (query.val() == "") {
         var defaultQueryText = query.attr("defaultValue");
         query.val(defaultQueryText);
-    }
-    else {
+    } else {
         if (liveResultsShown) {
             hideLiveResults();
         }
@@ -148,8 +146,7 @@ function fetchLiveResults(event) {
                         liveResultSelected = -1;
                         $("#live_search").html(data);
                         showLiveResults();
-                    }
-                    else {
+                    } else {
                         // Oops.  The AJAX call succeeded but didn't return any
                         // live results.  Hide any previously fetched live
                         // results.
@@ -171,9 +168,7 @@ function fetchLiveResults(event) {
                     currentLiveSearchRequest = null;
                 }
             });
-        }
-
-        else {
+        } else {
             // Oops.  The search query string is empty - there's nothing to
             // fetch.  Hide any previously fetched live results.
             liveResultsFetched = false;
@@ -267,10 +262,10 @@ function scrollLiveResults(event) {
                 if (liveResultSelected > liveResults.length - 1) {
                     liveResultSelected = -1;
                 }
+
                 if (liveResultSelected == -1) {
                     $("#query").val(queryString);
-                }
-                else {
+                } else {
                     var id = "#live_search_result_" + liveResultSelected;
                     $("#query").val($(id).html());
                     $(id).addClass("live_search_result_selected");
