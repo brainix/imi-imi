@@ -43,8 +43,6 @@ $(function() {
 
 function initTooltips() {
     $(".change_my_gravatar").tooltip();
-    $("#following li img").tooltip();
-    $("#followers li img").tooltip();
 }
 
 
