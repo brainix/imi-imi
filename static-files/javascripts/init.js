@@ -42,6 +42,7 @@ $(function() {
 \*----------------------------------------------------------------------------*/
 
 function initTooltips() {
+    $("#profile .gravatar").tooltip();
     $("#following li img").tooltip();
     $("#followers li img").tooltip();
 }

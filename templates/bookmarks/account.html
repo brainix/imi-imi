@@ -28,8 +28,9 @@
     {% endif %}
 
     <img src="{{ target_user|user_to_gravatar:199 }}"
-         class="gravatar" title="{{ target_user.nickname }}"
-         alt="{{ target_user.nickname }}" />
+         class="gravatar"
+         title="Click here to change your Gravatar."
+         alt="Click here to change your Gravatar." />
 
     {% if current_user and target_user %}
         {% ifequal current_user target_user %}
@@ -52,8 +53,6 @@
         {% endifnotequal %}
     {% endif %}
 </div>
-
-<div class="tooltip"></div>
 
 <div class="user_patchwork_quilt">
     <p>
