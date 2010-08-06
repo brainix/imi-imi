@@ -25,37 +25,35 @@ var moreBookmarksClicked = false;
 
 
 /*----------------------------------------------------------------------------*\
- |                             $.initBookmarks()                              |
+ |                              initBookmarks()                               |
 \*----------------------------------------------------------------------------*/
 
-(function($) {
-    $.initBookmarks = function() {
-        // Hooray, a page has been loaded!
+function initBookmarks() {
+    // Hooray, a page has been loaded!
 
-        // Go through the DOM and modify the behavior of every element that we
-        // want to bless with AJAX.
-        var urlToCreate = $("#url_to_create");
-        urlToCreate.focus(focusCreateBookmark);
-        urlToCreate.blur(blurCreateBookmark);
-        $("#create_bookmark").submit(createBookmark);
-        $(".update_bookmark").submit(updateBookmark);
-        $(".delete_bookmark").submit(deleteBookmark);
-        $("#more_bookmarks").submit(moreBookmarks);
+    // Go through the DOM and modify the behavior of every element that we
+    // want to bless with AJAX.
+    var urlToCreate = $("#url_to_create");
+    urlToCreate.focus(focusCreateBookmark);
+    urlToCreate.blur(blurCreateBookmark);
+    $("#create_bookmark").submit(createBookmark);
+    $(".update_bookmark").submit(updateBookmark);
+    $(".delete_bookmark").submit(deleteBookmark);
+    $("#more_bookmarks").submit(moreBookmarks);
 
-        // Make sure that the "save bookmark" bar displays the default
-        // explanatory text.
-        var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
-        urlToCreate.val(defaultSaveBookmarkText);
+    // Make sure that the "save bookmark" bar displays the default
+    // explanatory text.
+    var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
+    urlToCreate.val(defaultSaveBookmarkText);
 
-        // For some reason, sometimes (particularly when we're clicking
-        // back/forward through the pages in the site) our button labels get
-        // confused.  Straighten them out.
-        $("#create_bookmark .submit").val("save bookmark");
-        $(".update_bookmark .submit").val("update");
-        $(".delete_bookmark .submit").val("delete");
-        $("#more_bookmarks .submit").val("more bookmarks");
-    }
-})(jQuery)
+    // For some reason, sometimes (particularly when we're clicking
+    // back/forward through the pages in the site) our button labels get
+    // confused.  Straighten them out.
+    $("#create_bookmark .submit").val("save bookmark");
+    $(".update_bookmark .submit").val("update");
+    $(".delete_bookmark .submit").val("delete");
+    $("#more_bookmarks .submit").val("more bookmarks");
+}
 
 
 /*----------------------------------------------------------------------------*\
@@ -132,7 +130,7 @@ function createBookmark() {
                 $("#bookmark_list").prepend(data);
                 $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                 $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
-                $.preloadImagesSelector(".bookmark:hidden");
+                preloadImagesSelector(".bookmark:hidden");
                 $(".bookmark:hidden").slideDown("slow", function() {
                     // Increment the number of bookmarks.
                     changeNumBookmarks(1);
@@ -183,7 +181,7 @@ function updateBookmark() {
                     $("#bookmark_list").prepend(data);
                     $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                     $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
-                    $.preloadImagesSelector(".bookmark:hidden");
+                    preloadImagesSelector(".bookmark:hidden");
                     $(".bookmark:hidden").slideDown("slow");
                 });
             });
@@ -288,7 +286,7 @@ function moreBookmarks() {
                 $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                 $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                 $("#more_bookmarks").submit(moreBookmarks);
-                $.preloadImagesSelector(".bookmark:hidden");
+                preloadImagesSelector(".bookmark:hidden");
 
                 // Finally, slide down the more bookmarks HTML snippet.
                 // Subtle: If there are yet more bookmarks, then this

@@ -25,40 +25,47 @@
 \*----------------------------------------------------------------------------*/
 
 $(function() {
+    $("#following li img[title]").tooltip();
+    $("#followers li img[title]").tooltip();
+
     // Hooray, a page has been loaded!
-    $.initSearch();
-    $.initBookmarks();
-    $.initAccount();
-    $.preloadImagesArgs("/static-files/images/favicon.ico",
-                        "/static-files/images/speech_balloon_tail.png",
-                        "/static-files/images/throbber.gif");
+    initSearch();
+    initBookmarks();
+    initAccount();
+
+    preloadImagesArgs("/static-files/images/favicon.ico",
+                      "/static-files/images/speech_balloon_tail.png",
+                      "/static-files/images/throbber.gif");
 });
 
 
 /*----------------------------------------------------------------------------*\
- |            $.preloadImagesArgs() and $.preloadImagesSelector()             |
+ |                            preloadImagesArgs()                             |
 \*----------------------------------------------------------------------------*/
 
-(function($) {
-    var imageCache = [];
+var imageCache = [];
 
-    $.preloadImagesArgs = function() {
-        // Given arguments corresponding to URLs to images, preload those
-        // images.
-        if (document.images) {
-            for (var index = arguments.length; index--;) {
-                var cachedImage = document.createElement("img");
-                cachedImage.src = arguments[index];
-                imageCache.push(cachedImage);
-            }
+function preloadImagesArgs() {
+    // Given arguments corresponding to URLs to images, preload those
+    // images.
+    if (document.images) {
+        for (var index = arguments.length; index--;) {
+            var cachedImage = document.createElement("img");
+            cachedImage.src = arguments[index];
+            imageCache.push(cachedImage);
         }
     }
+}
 
-    $.preloadImagesSelector = function(selector) {
-        // Given a jQuery selector, preload all of the images within that
-        // section of the DOM.
-        $(selector + " img").each(function(index) {
-            $.preloadImagesArgs($(this).attr("src"));
-        });
-    }
-})(jQuery)
+
+/*----------------------------------------------------------------------------*\
+ |                          preloadImagesSelector()                           |
+\*----------------------------------------------------------------------------*/
+
+function preloadImagesSelector(selector) {
+    // Given a jQuery selector, preload all of the images within that
+    // section of the DOM.
+    $(selector + " img").each(function(index) {
+        preloadImagesArgs($(this).attr("src"));
+    });
+}

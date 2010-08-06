@@ -27,18 +27,16 @@ var followClicked = false;
 
 
 /*----------------------------------------------------------------------------*\
- |                              $.initAccount()                               |
+ |                               initAccount()                                |
 \*----------------------------------------------------------------------------*/
 
-(function($) {
-    $.initAccount = function() {
-        // Hooray, a page has been loaded!
+function initAccount() {
+    // Hooray, a page has been loaded!
 
-        // Go through the DOM and modify the behavior of every element that we
-        // want to bless with AJAX.
-        $("#follow").submit(toggleFollowing);
-    }
-})(jQuery)
+    // Go through the DOM and modify the behavior of every element that we
+    // want to bless with AJAX.
+    $("#follow").submit(toggleFollowing);
+}
 
 
 /*----------------------------------------------------------------------------*\
@@ -95,7 +93,7 @@ function toggleFollowing() {
                         var followersList = $("#followers");
                         followersList.html($.trim(followersList.html()));
                         followersList.append(data);
-                        $.preloadImagesSelector(currentUserElemId);
+                        preloadImagesSelector(currentUserElemId);
                         $(currentUserElemId).fadeIn("slow", function() {
                             submitButton.val(STOP_FOLLOWING_TEXT);
                         });

@@ -513,6 +513,16 @@ form input, form textarea {
     background: #B62F2F;
 }
 
+.tooltip {
+    display: none;
+    background: transparent url(http://flowplayer.org/tools/img/tooltip/black_arrow.png);
+    font-size: 12px;
+    height: 70px;
+    width: 160px;
+    padding: 25px;
+    color: #FFF;
+}
+
 .user_patchwork_quilt {
     line-height: 0%;
     margin-bottom: 2em;
