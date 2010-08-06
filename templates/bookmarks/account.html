@@ -28,9 +28,19 @@
     {% endif %}
 
     <img src="{{ target_user|user_to_gravatar:199 }}"
-         class="gravatar"
-         title="Click here to change your Gravatar."
-         alt="Click here to change your Gravatar." />
+         class="gravatar
+                {% if current_user and target_user %}
+                    {% ifequal current_user target_user %}
+                        change_my_gravatar
+                    {% endifequal %}
+                {% endif %}"
+        {% if current_user and target_user %}
+            {% ifequal current_user target_user %}
+                title="Click here to change your Gravatar."
+                alt="Click here to change your Gravatar."
+            {% endifequal %}
+        {% endif %}
+    />
 
     {% if current_user and target_user %}
         {% ifequal current_user target_user %}

@@ -42,7 +42,7 @@ $(function() {
 \*----------------------------------------------------------------------------*/
 
 function initTooltips() {
-    $("#profile .gravatar").tooltip();
+    $(".change_my_gravatar").tooltip();
     $("#following li img").tooltip();
     $("#followers li img").tooltip();
 }
