@@ -25,18 +25,26 @@
 \*----------------------------------------------------------------------------*/
 
 $(function() {
-    $("#following li img[title]").tooltip();
-    $("#followers li img[title]").tooltip();
-
     // Hooray, a page has been loaded!
     initSearch();
     initBookmarks();
     initAccount();
+    initTooltips();
 
     preloadImagesArgs("/static-files/images/favicon.ico",
                       "/static-files/images/speech_balloon_tail.png",
                       "/static-files/images/throbber.gif");
 });
+
+
+/*----------------------------------------------------------------------------*\
+ |                               initTooltips()                               |
+\*----------------------------------------------------------------------------*/
+
+function initTooltips() {
+    $("#following li img").tooltip();
+    $("#followers li img").tooltip();
+}
 
 
 /*----------------------------------------------------------------------------*\

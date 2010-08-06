@@ -26,13 +26,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
         <title>imi-imi{% if title %} - {{ title }}{% endif %}</title>
-
-        {% if debug %}
-            <link type="text/css" rel="stylesheet" href="/static-files/styles/vlourenco.css" />
-        {% else %}
-            <link type="text/css" rel="stylesheet" href="/static-files/styles/r121.css" />
-        {% endif %}
-
+        <link type="text/css" rel="stylesheet" href="/static-files/styles/vlourenco.css" />
         {% if rss_url %}
             <link type="application/rss+xml" rel="alternate" href="{{ rss_url }}" />
         {% endif %}
@@ -63,7 +57,6 @@
         <meta name="author" content="Code A La Mode" />
         <meta http-equiv="Expires" content="-1" />
         <meta http-equiv="Pragma" content="no-cache" />
-
         <meta name="google-site-verification" content="1cVbzpRADlE84MS5tIjmVnOd89ni8hef1_57EFxXK48" />
     </head>
     <body>
@@ -75,14 +68,12 @@
             <script type="text/javascript">
                 google.load("jquery", "1.4.2");
             </script>
-
-            {% if debug %}
-                <script type="text/javascript" src="/static-files/javascripts/search.js"></script>
-                <script type="text/javascript" src="/static-files/javascripts/bookmarks.js"></script>
-                <script type="text/javascript" src="/static-files/javascripts/account.js"></script>
-                <script type="text/javascript" src="/static-files/javascripts/init.js"></script>
-            {% else %}
-                <script type="text/javascript" src="/static-files/javascripts/r121.js"></script>
+            <script type="text/javascript" src="http://cdn.jquerytools.org/1.2.3/jquery.tools.min.js"></script>
+            <script type="text/javascript" src="/static-files/javascripts/search.js"></script>
+            <script type="text/javascript" src="/static-files/javascripts/bookmarks.js"></script>
+            <script type="text/javascript" src="/static-files/javascripts/account.js"></script>
+            <script type="text/javascript" src="/static-files/javascripts/init.js"></script>
+            {% if not debug %}
                 <script type="text/javascript">
                     var google_analytics_javascript_host = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
                     document.write(unescape("%3Cscript src='" + google_analytics_javascript_host + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
@@ -94,7 +85,6 @@
                     }
                 </script>
             {% endif %}
-            <script src="http://cdn.jquerytools.org/1.2.3/jquery.tools.min.js"></script>
 
             {% comment %}
               | This iframe prevents many browsers' back/forward cache, which
