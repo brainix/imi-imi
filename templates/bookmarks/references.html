@@ -92,16 +92,23 @@
 
             {% if not reference.bookmark.words and reference.bookmark|is_image %}
                 <a href="{{ reference.bookmark.url }}" target="_blank">
-                    <img src="{{ reference.bookmark.url }}" class="bookmark" alt="{{ reference.bookmark|beautify_title }}" />
+                    <img src="{{ reference.bookmark.url }}"
+                         class="bookmark"
+                         alt="{{ reference.bookmark|beautify_title }}"
+                         rel="#overlay_{{ reference.bookmark.key }}" />
                 </a>
+                <div id="overlay_{{ reference.bookmark.key }}" class="overlay">
+                    <img src="{{ reference.bookmark.url }}"
+                         alt="{{ reference.bookmark|beautify_title }}" />
+                </div>
             {% endif %}
 
             {% if reference.bookmark|is_audio %}
                 <embed type="application/x-shockwave-flash"
                        src="http://www.google.com/reader/ui/3247397568-audio-player.swf?audioUrl={{ reference.bookmark.url }}"
-                       height="27" width="460" allowscriptaccess="never"
-                       quality="best" bgcolor="#FFFFFF" wmode="window"
-                       flashvars="playerMode=embedded" />
+                       width="460" height="27"
+                       allowscriptaccess="never" quality="best" wmode="window" flashvars="playerMode=embedded"
+                       bgcolor="#FFFFFF" />
             {% endif %}
 
             {% if reference.bookmark|is_youtube_video %}

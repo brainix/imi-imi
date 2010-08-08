@@ -29,7 +29,7 @@ $(function() {
     initSearch();
     initBookmarks();
     initAccount();
-    initTooltips();
+    initJQueryTools();
 
     preloadImagesArgs("/static-files/images/favicon.ico",
                       "/static-files/images/speech_balloon_tail.png",
@@ -38,10 +38,11 @@ $(function() {
 
 
 /*----------------------------------------------------------------------------*\
- |                               initTooltips()                               |
+ |                             initJQueryTools()                              |
 \*----------------------------------------------------------------------------*/
 
-function initTooltips() {
+function initJQueryTools() {
+    $("img.bookmark[rel]").overlay();
     $(".change_my_gravatar").tooltip();
 }
 

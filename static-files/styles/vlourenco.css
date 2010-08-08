@@ -115,6 +115,40 @@ form input, form textarea {
 
 
 /*----------------------------------------------------------------------------*\
+ |                            jQuery Tools Styles                             |
+\*----------------------------------------------------------------------------*/
+
+.tooltip {
+    background: transparent url(http://flowplayer.org/tools/img/tooltip/black_arrow.png);
+    color: #FFF;
+    display: none;
+    font-size: 12px;
+    height: 70px;
+    width: 160px;
+    padding: 25px;
+}
+
+.overlay {
+    -moz-box-shadow: 0 0 90px 5px #000;
+    -webkit-box-shadow: 0 0 90px #000;
+    background-color: #333;
+    border: 1px solid #666;
+    display: none;
+    z-index: 2;
+}
+
+.overlay .close {
+    background-image: url(http://flowplayer.org/tools/img/overlay/close.png);
+    cursor: pointer;
+    position: absolute;
+    right: -15px;
+    top: -15px;
+    width: 35px;
+    height: 35px;
+}
+
+
+/*----------------------------------------------------------------------------*\
  |                           Navigation and Search                            |
 \*----------------------------------------------------------------------------*/
 
@@ -511,16 +545,6 @@ form input, form textarea {
 
 #follow .submit:hover {
     background: #B62F2F;
-}
-
-.tooltip {
-    display: none;
-    background: transparent url(http://flowplayer.org/tools/img/tooltip/black_arrow.png);
-    font-size: 12px;
-    height: 70px;
-    width: 160px;
-    padding: 25px;
-    color: #FFF;
 }
 
 .user_patchwork_quilt {

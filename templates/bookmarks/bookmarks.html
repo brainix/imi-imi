@@ -61,16 +61,23 @@
 
             {% if not bookmark.words and bookmark|is_image %}
                 <a href="{{ bookmark.url }}" target="_blank">
-                    <img src="{{ bookmark.url }}" class="bookmark" alt="{{ bookmark|beautify_title }}" />
+                    <img src="{{ bookmark.url }}"
+                         class="bookmark"
+                         alt="{{ bookmark|beautify_title }}"
+                         rel="#overlay_{{ bookmark.key }}" />
                 </a>
+                <div id="overlay_{{ bookmark.key }}" class="overlay">
+                    <img src="{{ bookmark.url }}"
+                         alt="{{ bookmark|beautify_title }}" />
+                </div>
             {% endif %}
 
             {% if bookmark|is_audio %}
                 <embed type="application/x-shockwave-flash"
                        src="http://www.google.com/reader/ui/3247397568-audio-player.swf?audioUrl={{ bookmark.url }}"
-                       height="27" width="460" allowscriptaccess="never"
-                       quality="best" bgcolor="#FFFFFF" wmode="window"
-                       flashvars="playerMode=embedded" />
+                       width="460" height="27"
+                       allowscriptaccess="never" quality="best" wmode="window" flashvars="playerMode=embedded"
+                       bgcolor="#FFFFFF" />
             {% endif %}
 
             {% if bookmark|is_youtube_video %}

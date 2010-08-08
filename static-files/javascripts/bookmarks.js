@@ -126,11 +126,19 @@ function createBookmark() {
                 urlToCreate.val("");
                 urlToCreate.focus();
 
-                // Slide down the new bookmark's HTML snippet.
+                // Sprinkle some JavaScript magic on the new bookmark's HTML
+                // snippet - modify the behavior of the update and delete
+                // buttons.
                 $("#bookmark_list").prepend(data);
                 $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                 $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
+
+                // If the new bookmark is an image, bless it with beautiful
+                // overlays.
                 preloadImagesSelector(".bookmark:hidden");
+                $(".bookmark:hidden img.bookmark[rel]").overlay();
+
+                // Slide down the new bookmark's HTML snippet.
                 $(".bookmark:hidden").slideDown("slow", function() {
                     // Increment the number of bookmarks.
                     changeNumBookmarks(1);
@@ -182,6 +190,7 @@ function updateBookmark() {
                     $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                     $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                     preloadImagesSelector(".bookmark:hidden");
+                    $(".bookmark:hidden img.bookmark[rel]").overlay();
                     $(".bookmark:hidden").slideDown("slow");
                 });
             });
@@ -286,7 +295,11 @@ function moreBookmarks() {
                 $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
                 $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                 $("#more_bookmarks").submit(moreBookmarks);
+
+                // If any of the more bookmarks are images, bless them with
+                // beautiful overlays.
                 preloadImagesSelector(".bookmark:hidden");
+                $(".bookmark:hidden img.bookmark[rel]").overlay();
 
                 // Finally, slide down the more bookmarks HTML snippet.
                 // Subtle: If there are yet more bookmarks, then this
@@ -304,7 +317,7 @@ function moreBookmarks() {
             },
             complete: function(xmlHttpRequest, textStatus) {
                 // We're done with this procedure.  Allow the user to click the
-                // "more bookmark" button again.
+                // "more bookmarks" button again.
                 moreBookmarksClicked = false;
             }
         });
