@@ -31,9 +31,13 @@ $(function() {
     initAccount();
     initJQueryTools();
 
-    preloadImagesArgs("/static-files/images/favicon.ico",
-                      "/static-files/images/speech_balloon_tail.png",
-                      "/static-files/images/throbber.gif");
+    preloadImagesArgs(
+        "/static-files/images/favicon.ico",
+        "/static-files/images/speech_balloon_tail.png",
+        "/static-files/images/throbber.gif",
+        "/static-files/images/tooltip.png",
+        "/static-files/images/close.png"
+    );
 });
 
 

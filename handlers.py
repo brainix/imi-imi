@@ -71,8 +71,9 @@ class _CommonRequestHandler(emails.RequestHandler, rss.RequestHandler,
         # Determine the error code.
         if isinstance(exception, CapabilityDisabledError):
             # The only time this exception is thrown is when the datastore is
-            # read-only for maintenance.  Gracefully degrade - throw a 503
-            # error.  For more info, see: http://code.google.com/appengine/docs/python/howto/maintenance.html
+            # in read-only mode for maintenance.  Gracefully degrade - throw a
+            # 503 error.  For more info, see:
+            # http://code.google.com/appengine/docs/python/howto/maintenance.html
             error_code = 503
         else:
             error_code = 500
