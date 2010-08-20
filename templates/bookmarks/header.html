@@ -23,13 +23,7 @@
 <h1>Bookmarks</h1>
 
 <h2>
-    <span id="num_bookmarks">
-        {% ifequal num_bookmarks -1 %}
-            thousands
-        {% else %}
-            {{ num_bookmarks }}
-        {% endifequal %}
-    </span>
+    <span id="num_bookmarks">{{ num_bookmarks }}</span>
 
     {% if target_user or not target_words %}
         saved by

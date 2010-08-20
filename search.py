@@ -69,8 +69,6 @@ class RequestHandler(webapp.RequestHandler):
             entities.filter('user IN', query_users)
         if before is None:
             num_bookmarks = entities.count()
-            if num_bookmarks == 1000:
-                num_bookmarks = -1
         else:
             num_bookmarks, entities = 0, entities.filter('updated <', before)
         entities.order('-updated')
