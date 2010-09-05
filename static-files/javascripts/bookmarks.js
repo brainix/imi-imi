@@ -37,9 +37,11 @@ function initBookmarks() {
     urlToCreate.focus(focusCreateBookmark);
     urlToCreate.blur(blurCreateBookmark);
     $("#create_bookmark").submit(createBookmark);
-    $(".update_bookmark").submit(updateBookmark);
-    $(".delete_bookmark").submit(deleteBookmark);
-    $("#more_bookmarks").submit(moreBookmarks);
+
+    //
+    $(".update_bookmark").live("submit", updateBookmark);
+    $(".delete_bookmark").live("submit", deleteBookmark);
+    $("#more_bookmarks").live("submit", moreBookmarks);
 
     // Make sure that the "save bookmark" bar displays the default
     // explanatory text.
@@ -97,12 +99,20 @@ function blurCreateBookmark() {
 function createBookmark() {
     // Modify the behavior of the create bookmark bar.
 
-    if (!createBookmarkSubmitted) {
+    var urlToCreate = $("#url_to_create");
+
+    if (createBookmarkSubmitted) {
+        var message = "You've already submitted a request to bookmark: ";
+        message += urlToCreate.val() + "  ";
+        message += "Please wait for this request to complete ";
+        message += "before issuing another request.";
+        alert(message);
+    }
+    else {
         // Don't allow the user to click the "save bookmark" button again,
         // until we're done with this procedure.
         createBookmarkSubmitted = true;
 
-        var urlToCreate = $("#url_to_create");
         var createBookmarkThrobber = $("#create_bookmark_throbber");
         var createBookmarkButton = $(".create_bookmark .submit");
 
@@ -126,12 +136,8 @@ function createBookmark() {
                 urlToCreate.val("");
                 urlToCreate.focus();
 
-                // Sprinkle some JavaScript magic on the new bookmark's HTML
-                // snippet - modify the behavior of the update and delete
-                // buttons.
+                // Add the new bookmark's HTML snippet to the DOM.
                 $("#bookmark_list").prepend(data);
-                $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
-                $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
 
                 // If the new bookmark is an image, bless it with beautiful
                 // overlays.
@@ -187,8 +193,6 @@ function updateBookmark() {
                 staleBookmark.remove();
                 $(elementToScroll).animate({scrollTop: offset}, "slow", "swing", function() {
                     $("#bookmark_list").prepend(data);
-                    $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
-                    $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
                     preloadImagesSelector(".bookmark:hidden");
                     $(".bookmark:hidden img.bookmark[rel]").overlay();
                     $(".bookmark:hidden").slideDown("slow");
@@ -288,13 +292,8 @@ function moreBookmarks() {
                 // Hooray, we succeeded!  Get rid of the spinner.
                 $("#more_bookmarks").remove();
 
-                // Sprinkle some JavaScript magic on the more bookmarks HTML
-                // snippet - modify the behavior of the update, delete, and
-                // more bookmarks buttons.
+                // Add the more bookmarks HTML snippet to the DOM.
                 $("#bookmark_list").append(data);
-                $(".bookmark:hidden .update_bookmark").submit(updateBookmark);
-                $(".bookmark:hidden .delete_bookmark").submit(deleteBookmark);
-                $("#more_bookmarks").submit(moreBookmarks);
 
                 // If any of the more bookmarks are images, bless them with
                 // beautiful overlays.
@@ -304,8 +303,9 @@ function moreBookmarks() {
                 // Finally, slide down the more bookmarks HTML snippet.
                 // Subtle: If there are yet more bookmarks, then this
                 // additional bookmarks' HTML snippet will include the code for
-                // the new "more bookmarks" button and the new spinner, so
-                // there's nothing more required of us there.
+                // the new "more bookmarks" button and the new (initially
+                // hidden) spinner, so there's nothing more required of us
+                // there.
                 $(".bookmark:hidden").slideDown("slow");
             },
             error: function(xmlHttpRequest, textStatus, errorThrown) {

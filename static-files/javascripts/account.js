@@ -47,7 +47,19 @@ function toggleFollowing() {
     // one of those buttons is shown at a time, and when it's clicked, it turns
     // into the other one.
 
-    if (!followClicked) {
+    var submitButton = $("#follow .submit");
+    var buttonText = submitButton.val();
+    var currentlyFollowing = buttonText == STOP_FOLLOWING_TEXT;
+    var targetUserNickname = $(this).find("[name='nickname']").val();
+
+    if (followClicked) {
+        var message = "You've already submitted a request to ";
+        message += buttonText + ": " + targetUserNickname + "  ";
+        message += "Please wait for this request to complete ";
+        message += "before issuing another request.";
+        alert(message);
+    }
+    else {
         // Don't allow the user to click the "follow" or "stop following"
         // button again, until we're done with this procedure.
         followClicked = true;
@@ -55,11 +67,8 @@ function toggleFollowing() {
         // If the user has clicked the "follow" button, then we require no
         // additional confirmation.  On the other hand, if the user has clicked
         // the "stop following" button, then seek additional confirmation.
-        var submitButton = $("#follow .submit");
-        var currentlyFollowing = submitButton.val() == STOP_FOLLOWING_TEXT;
         var confirmed = true;
         if (currentlyFollowing) {
-            var targetUserNickname = $(this).find("[name='nickname']").val();
             confirmed = confirm("Stop following " + targetUserNickname + "?");
         }
 
@@ -68,18 +77,20 @@ function toggleFollowing() {
             // aborts; we're done with this procedure.  Allow the user to click
             // the "follow" or "stop following" button again.
             followClicked = false;
-        } else {
+        }
+        else {
             // OK, the user has either clicked the "follow" button, or clicked
             // the "stop following" button and provided additional confirmation
-            // of intentionality.  From various pre-populated hidden fields in
-            // the DOM, figure out who's following or un-following whom.
+            // of intention.  From various pre-populated hidden fields in the
+            // DOM, figure out who's following or un-following whom.
             var currentUserAcctId = $(this).find("[name='current_user_id']").val();
             var currentUserElemId = "#follower_" + currentUserAcctId;
             var targetUserEmail = $(this).find("[name='email']").val();
             var data = new Object;
             if (currentlyFollowing) {
                 data.email_to_unfollow = targetUserEmail;
-            } else {
+            }
+            else {
                 data.email_to_follow = targetUserEmail;
             }
 
