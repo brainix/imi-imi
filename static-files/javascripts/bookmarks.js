@@ -37,8 +37,6 @@ function initBookmarks() {
     urlToCreate.focus(focusCreateBookmark);
     urlToCreate.blur(blurCreateBookmark);
     $("#create_bookmark").submit(createBookmark);
-
-    //
     $(".update_bookmark").live("submit", updateBookmark);
     $(".delete_bookmark").live("submit", deleteBookmark);
     $("#more_bookmarks").live("submit", moreBookmarks);
@@ -69,6 +67,7 @@ function focusCreateBookmark() {
 
     var urlToCreate = $("#url_to_create");
     var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
+
     if (urlToCreate.val() == defaultSaveBookmarkText) {
         urlToCreate.val("");
     }
@@ -85,8 +84,9 @@ function blurCreateBookmark() {
     // text.
 
     var urlToCreate = $("#url_to_create");
+    var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
+
     if (urlToCreate.val() == "") {
-        var defaultSaveBookmarkText = urlToCreate.attr("defaultValue");
         urlToCreate.val(defaultSaveBookmarkText);
     }
 }
@@ -132,23 +132,10 @@ function createBookmark() {
             success: function(data, textStatus, xmlHttpRequest) {
                 // Hooray, we succeed!  Clear out the URL that the user entered
                 // into the "save bookmark" bar and set the input focus on that
-                // bar.  This facilitates the rapid entry of multiple URLs.
+                // bar.  (This facilitates the rapid entry of multiple URLs.)
                 urlToCreate.val("");
                 urlToCreate.focus();
-
-                // Add the new bookmark's HTML snippet to the DOM.
-                $("#bookmark_list").prepend(data);
-
-                // If the new bookmark is an image, bless it with beautiful
-                // overlays.
-                preloadImagesSelector(".bookmark:hidden");
-                $(".bookmark:hidden img.bookmark[rel]").overlay();
-
-                // Slide down the new bookmark's HTML snippet.
-                $(".bookmark:hidden").slideDown("slow", function() {
-                    // Increment the number of bookmarks.
-                    changeNumBookmarks(1);
-                });
+                addBookmarks(data, PREPEND, INCREMENT);
             },
             complete: function(xmlHttpRequest, textStatus) {
                 // Transform the spinner back into the "save bookmark" button.
@@ -192,10 +179,7 @@ function updateBookmark() {
             staleBookmark.slideUp("slow", function() {
                 staleBookmark.remove();
                 $(elementToScroll).animate({scrollTop: offset}, "slow", "swing", function() {
-                    $("#bookmark_list").prepend(data);
-                    preloadImagesSelector(".bookmark:hidden");
-                    $(".bookmark:hidden img.bookmark[rel]").overlay();
-                    $(".bookmark:hidden").slideDown("slow");
+                    addBookmarks(data, PREPEND, DONT_INCREMENT);
                 });
             });
         }
@@ -247,22 +231,6 @@ function deleteBookmark() {
 
 
 /*----------------------------------------------------------------------------*\
- |                            changeNumBookmarks()                            |
-\*----------------------------------------------------------------------------*/
-
-function changeNumBookmarks(addend) {
-    var numBookmarksElement = $("#num_bookmarks");
-    var numBookmarksStr = numBookmarksElement.html();
-    var numBookmarksInt = parseInt(numBookmarksStr, 10);
-    if (!isNaN(numBookmarksInt)) {
-        numBookmarksInt += addend;
-        numBookmarksStr = numBookmarksInt.toString();
-        numBookmarksElement.html(numBookmarksStr);
-    }
-}
-
-
-/*----------------------------------------------------------------------------*\
  |                              moreBookmarks()                               |
 \*----------------------------------------------------------------------------*/
 
@@ -292,21 +260,12 @@ function moreBookmarks() {
                 // Hooray, we succeeded!  Get rid of the spinner.
                 $("#more_bookmarks").remove();
 
-                // Add the more bookmarks HTML snippet to the DOM.
-                $("#bookmark_list").append(data);
-
-                // If any of the more bookmarks are images, bless them with
-                // beautiful overlays.
-                preloadImagesSelector(".bookmark:hidden");
-                $(".bookmark:hidden img.bookmark[rel]").overlay();
-
-                // Finally, slide down the more bookmarks HTML snippet.
                 // Subtle: If there are yet more bookmarks, then this
                 // additional bookmarks' HTML snippet will include the code for
                 // the new "more bookmarks" button and the new (initially
                 // hidden) spinner, so there's nothing more required of us
                 // there.
-                $(".bookmark:hidden").slideDown("slow");
+                addBookmarks(data, APPEND, DONT_INCREMENT);
             },
             error: function(xmlHttpRequest, textStatus, errorThrown) {
                 // Oops, we failed.  :-(  Transform the spinner back into the
@@ -325,4 +284,56 @@ function moreBookmarks() {
 
     // Cancel out the default behavior of the more bookmarks form.
     return false;
+}
+
+
+/*----------------------------------------------------------------------------*\
+ |                               addBookmarks()                               |
+\*----------------------------------------------------------------------------*/
+
+var PREPEND = true;
+var APPEND = false;
+
+var INCREMENT = true;
+var DONT_INCREMENT = false;
+
+function addBookmarks(htmlSnippet, prepend, increment) {
+    // Add some bookmarks' HTML snippet into the DOM, then perform the various
+    // necessary operations.  This can happen in a few different situations:
+    //     1.  The user creates a bookmark.
+    //     2.  The user updates a bookmark.
+    //     3.  The user loads more bookmarks.
+
+    // Add the bookmarks' HTML snippet to the DOM.
+    $("#bookmark_list")[prepend ? "prepend" : "append"](htmlSnippet);
+
+    // If any of the bookmarks are images, preload the images and bless them
+    // with beautiful overlays.
+    preloadImagesSelector(".bookmark:hidden");
+    $(".bookmark:hidden img.bookmark[rel]").overlay();
+
+    // Slide down the bookmarks' HTML snippet.
+    $(".bookmark:hidden").slideDown("slow", function() {
+        // If specified, increment the number of bookmarks.
+        if (increment) {
+            changeNumBookmarks(1);
+        }
+    });
+}
+
+
+/*----------------------------------------------------------------------------*\
+ |                            changeNumBookmarks()                            |
+\*----------------------------------------------------------------------------*/
+
+function changeNumBookmarks(addend) {
+    var numBookmarksElement = $("#num_bookmarks");
+    var numBookmarksStr = numBookmarksElement.html();
+    var numBookmarksInt = parseInt(numBookmarksStr, 10);
+
+    if (!isNaN(numBookmarksInt)) {
+        numBookmarksInt += addend;
+        numBookmarksStr = numBookmarksInt.toString();
+        numBookmarksElement.html(numBookmarksStr);
+    }
 }
