@@ -79,7 +79,7 @@ class _CommonRequestHandler(emails.RequestHandler, rss.RequestHandler,
             error_code = 500
 
         # Serve the error page.
-        self._serve_error(error_code)                                                   # Serve the 500 error page.
+        self._serve_error(error_code)
 
     def _serve_error(self, error_code):
         """Houston, we have a problem...  Serve an error page."""
@@ -119,7 +119,7 @@ class _CommonRequestHandler(emails.RequestHandler, rss.RequestHandler,
         login_url, current_user, current_account, logout_url = self._get_user()
         if not target_email:
             return self._serve_error(404)
-        target_email = target_email.replace('%40', '@')
+        target_email = urllib.unquote(target_email)
         target_user = users.User(email=target_email)
         target_account = self._user_to_account(target_user)
         if target_account is None:
