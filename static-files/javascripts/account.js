@@ -103,7 +103,7 @@ function toggleFollowing() {
                     if (currentlyFollowing) {
                         var followersList = $("#followers");
                         followersList.html($.trim(followersList.html()));
-                        followersList.append(data);
+                        followersList.append($.trim(data));
                         preloadImagesSelector(currentUserElemId);
                         $(currentUserElemId).fadeIn("slow", function() {
                             submitButton.val(STOP_FOLLOWING_TEXT);
