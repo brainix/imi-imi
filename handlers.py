@@ -150,36 +150,43 @@ class _CommonRequestHandler(emails.RequestHandler, rss.RequestHandler,
 class _BaseRequestHandler(_CommonRequestHandler):
     """Abstract base class request handler."""
 
-    def get(self, nonsense=''):
-        """Abstract method to handle GET requests."""
+    def get(*args, **kwds):
+        """Abstract method to handle requests."""
         raise NotImplementedError
 
-    def post(self, nonsense=''):
-        """Abstract method to handle POST requests."""
-        raise NotImplementedError
+    trace = delete = options = head = put = post = get
 
 
 class Maintenance(_BaseRequestHandler):
     """Request handler to serve all requests when in maintenance mode."""
 
-    def get(self, nonsense=''):
+    def get(self, *args, **kwds):
         """The site is under maintenance.  Serve a polite "bugger off" page."""
         path, debug = os.path.join(TEMPLATES, 'home', 'maintenance.html'), DEBUG
         title, in_maintenance = 'in surgery', True
         login_url, current_user, current_account, logout_url = self._get_user()
+        self.error(503)
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
-    def post(self, nonsense=''):
+    def post(self, *args, **kwds):
         """ """
-        pass
+        self.error(503)
+
+    trace = delete = options = head = put = post
 
 
 class NotFound(_BaseRequestHandler):
     """Request handler to serve a 404: Not Found error page."""
 
-    def get(self, nonsense=''):
+    def get(self, *args, **kwds):
         """ """
         return self._serve_error(404)
+
+    def post(self, *args, **kwds):
+        """ """
+        self.error(404)
+
+    trace = delete = options = head = put = post
 
 
 class Home(_BaseRequestHandler):
