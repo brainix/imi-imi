@@ -28,14 +28,12 @@ import os
 import traceback
 import urllib
 
+from django.utils import simplejson
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.runtime.apiproxy_errors import CapabilityDisabledError
-
-import packages
-import simplejson
 
 from config import DATETIME_FORMAT, DEBUG, HTTP_CODE_TO_TITLE, LIVE_SEARCH_URL
 from config import NUM_POPULAR_BOOKMARKS, NUM_POPULAR_TAGS, POPULAR_CACHE_SECS

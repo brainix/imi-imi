@@ -30,9 +30,9 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
-from config import PROFILING, PROFILING_OUTPUT, PROFILING_SORT_BY
-from config import PROFILING_NUM_STATS, PROFILING_CALLEES, PROFILING_CALLERS
-from config import MAINTENANCE, DEBUG
+from config import DEBUG, MAINTENANCE, PROFILING
+from config import PROFILING_OUTPUT, PROFILING_SORT_BY, PROFILING_NUM_STATS
+from config import PROFILING_CALLEES, PROFILING_CALLERS
 import handlers
 
 
