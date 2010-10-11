@@ -57,7 +57,6 @@ def main():
         # match.  If the requested URL "falls through" to the final map, then
         # we serve up a 404: not found page.
         url_mapping = (
-            ('/api',                handlers.API),          # /api
             ('/search',             handlers.Search),       # /search
             ('/live_search',        handlers.LiveSearch),   # /live_search
             ('/users/(.*)/(.*)',    handlers.Users),        # /users/email@addr.com/before

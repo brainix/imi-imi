@@ -28,7 +28,6 @@ import os
 import traceback
 import urllib
 
-from django.utils import simplejson
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -489,58 +488,3 @@ class Search(_BaseRequestHandler):
         query = urllib.urlencode(query)
         more_url = path + '?' + query
         return more_url
-
-
-class API(_BaseRequestHandler):
-    """Request handler to expose imi-imi's functionality through an API.
-    
-    imi-imi exposes ReSTful API calls which return JSON data.  This is similar
-    to Twitter's API, and following Twitter's API design decisions is probably
-    a safe bet.  ;-)
-    """
-
-    @decorators.no_browser_cache
-    def get(self):
-        """Someone has made an API GET request.  Service it."""
-        method = self.request.get('method')
-        self.response.headers['Content-Type'] = 'application/json'
-        if method == 'normalize-url':
-            obj = self._normalize_url()
-        elif method == 'auto-tag':
-            obj = self._auto_tag()
-        else:
-            obj = self._serve_error(404, 'Unrecognized method "%s".' % method)
-        self.response.out.write(simplejson.dumps(obj))
-
-    def _normalize_url(self):
-        """Normalize the specified URL."""
-        url = self.request.get('url')
-        if not url:
-            return self._serve_error(406, '"url" parameter not specified.')
-        return fetch.normalize_url(url)
-
-    def _auto_tag(self):
-        """Auto-tag the specified URL or HTML / text snippet."""
-        url = self.request.get('url')
-        html = self.request.get('html')
-        if not url and not html:
-            error_message = 'Neither "url" nor "html" parameter specified.'
-            return self._serve_error(406, error_message)
-        if url and html:
-            error_message = 'Both "url" and "html" parameters specified.'
-            return self._serve_error(406, error_message)
-        if url:
-            url, mime_type, title, words, html_hash = auto_tag.tokenize_url(url)
-        elif html:
-            title, words, hash = auto_tag.tokenize_html(html)
-        stop_words, stop_words_hash = auto_tag.read_stop_words()
-        tags = auto_tag.auto_tag(words, stop_words)
-        return tags
-
-    def _serve_error(self, error_code, error_message):
-        """Houston, we have a problem...  Serve an error page."""
-        if not error_code in HTTP_CODE_TO_TITLE:
-            error_code = 500
-        error_message = HTTP_CODE_TO_TITLE[error_code] + ': ' + error_message
-        self.error(error_code)
-        return error_message
