@@ -54,8 +54,8 @@ def require_login(method):
                 # the decorated method).
                 self.redirect(users.create_login_url(self.request.url))
             else:
-                # The anonymous user issued a PUT request.  Log it and ignore
-                # the request.
+                # The anonymous user issued a POST, PUT, HEAD, OPTIONS, DELETE,
+                # or TRACE request.  Log it and ignore the request.
                 message = 'anonymous user issued %s request on URL %s; ignoring'
                 _log.info(message % (method_name.upper(), self.request.url))
         else:
