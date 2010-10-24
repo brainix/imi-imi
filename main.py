@@ -62,7 +62,7 @@ def main():
             ('/users/(.*)/(.*)',    handlers.Users),        # /users/email@addr.com/before
             ('/users/(.*)',         handlers.Users),        # /users/email@addr.com
             ('/users',              handlers.Users),        # /users
-            ('/rss',                handlers.RSS),          # /rss
+            ('/rss',                handlers.Home),         # /rss
             ('/about',              handlers.Home),         # /about
             ('/',                   handlers.Home),         # /
             ('(.*)',                handlers.NotFound),     # 404: Not Found.

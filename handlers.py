@@ -88,26 +88,21 @@ class Home(base.RequestHandler):
         either an anonymous user or a logged in user requested /about, then
         serve the homepage.
         """
-        if self.request.path not in ('/', '/about',):
+        if self.request.path not in ('/', '/about', '/rss'):
             return self._serve_error(404)
-        path, debug = os.path.join(TEMPLATES, 'home', 'index.html'), DEBUG
-        title = 'social bookmarking'
-        rss_url = self._get_rss_url()
+
         login_url, current_user, current_account, logout_url = self._get_user()
-        active_tab = 'imi-imi' if current_user is None else ''
         if self.request.path == '/' and current_user is not None:
             return self._user_bookmarks(target_email=current_user.email(),
                                         friends=True)
+        elif self.request.path == '/rss':
+            return self._serve_rss()
+
+        path, debug = os.path.join(TEMPLATES, 'home', 'index.html'), DEBUG
+        title = 'social bookmarking'
+        rss_url = self._get_rss_url()
+        active_tab = 'imi-imi' if current_user is None else ''
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
-
-
-class RSS(base.RequestHandler):
-    """Request handler to serve the site-wide RSS feed."""
-
-    @decorators.no_browser_cache
-    def get(self):
-        """ """
-        return self._serve_rss()
 
 
 class Users(base.RequestHandler):
