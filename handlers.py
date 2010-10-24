@@ -81,12 +81,14 @@ class Home(base.RequestHandler):
     @decorators.no_browser_cache
     @decorators.create_account
     def get(self):
-        """Serve a get request for / or /about.
+        """Serve a get request for /, /about, or /rss.
         
         If an anonymous user requested /, then serve the homepage.  If a logged
         in user requested /, then redirect to that user's bookmarks page.  If
         either an anonymous user or a logged in user requested /about, then
         serve the homepage.
+
+        If a user requested /rss, then serve the site-wide RSS feed.
         """
         if self.request.path not in ('/', '/about', '/rss'):
             return self._serve_error(404)
@@ -266,7 +268,7 @@ class LiveSearch(base.RequestHandler):
         letter in the search box.  Keep this method as efficient as possible
         and aggressively cache its results.
 
-        Google Suggest exposes a nice RESTful API.  To fetch suggestions for
+        Google Suggest exposes a nice ReSTful API.  To fetch suggestions for
         the query "raj", one would visit the URL:
             http://suggestqueries.google.com/complete/search?output=firefox&qu=raj
 
@@ -362,8 +364,8 @@ class Search(base.RequestHandler):
 
     def _compute_more_url(self):
         """Compute the URL for the next search results page."""
-        path, query = self.request.path, self.request.query
-        query, index, success = cgi.parse_qsl(query), 0, False
+        path, query = self.request.path, cgi.parse_qsl(self.request.query)
+        success = False
         for index in range(len(query)):
             if query[index][0] == 'page':
                 # This next line might throw a ValueError exception, but the
