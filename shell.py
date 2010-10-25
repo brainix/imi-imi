@@ -35,36 +35,27 @@ import os
 import sys
 
 
-# The default base (top-level) directory containing the Google App Engine SDK
-# on our current local platform:
-if sys.platform == 'win32':
-    DEFAULT_BASE_DIR = os.path.join('C:\\', 'Program Files', 'Google',
-                                    'google_appengine')
-else:
-    DEFAULT_BASE_DIR = os.path.join('/', 'usr', 'local', 'google_appengine')
-
-
 def main():
     """Launch a Python console able to interact with imi-imi's datastore."""
     # Parse the command-line arguments:
-    parser = config_parser()
-    app_id, host, auth_domain, email, base_dir = parse_args(parser)
+    parser = _config_parser()
+    app_id, host, auth_domain, email, base_dir = _parse_args(parser)
 
     # Set the environment variables required to authenticate in order to do
     # anything "interesting" with/to the datastore:
     os.environ['AUTH_DOMAIN'], os.environ['USER_EMAIL'] = auth_domain, email
 
     # Get the necessary local Google App Engine modules:
-    remote_api_stub = import_modules(parser, base_dir)
+    remote_api_stub = _import_modules(parser, base_dir)
 
     # Connect to the remote datastore:
-    remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', auth, host)
+    remote_api_stub.ConfigureRemoteDatastore(app_id, '/remote_api', _auth, host)
 
     # Finally, launch the interactive console:
     code.interact('%s shell' % app_id, None, locals())
 
 
-def config_parser():
+def _config_parser():
     """Configure the command-line argument parser."""
     usage = '%prog [--host=app-id.appspot.com] [--auth_domain=gmail.com] '
     usage += '[--email=brainix@gmail.com] '
@@ -76,12 +67,22 @@ def config_parser():
                       help='authentication domain')
     parser.add_option('--email', dest='email', default='brainix@gmail.com',
                       help='email address')
-    parser.add_option('--base_dir', dest='base_dir', default=DEFAULT_BASE_DIR,
+    parser.add_option('--base_dir', dest='base_dir', default=_base_dir(),
                       help='directory where Google App Engine SDK installed')
     return parser
 
 
-def parse_args(parser):
+def _base_dir():
+    """Return the default base (top-level) directory containing the GAE SDK."""
+    if sys.platform == 'win32':
+        base_dir = os.path.join('C:\\', 'Program Files', 'Google',
+                                'google_appengine')
+    else:
+        base_dir = os.path.join('/', 'usr', 'local', 'google_appengine')
+    return base_dir
+
+
+def _parse_args(parser):
     """Parse the command-line arguments.
 
     If the user provided incorrect or insufficient command-line arguments, then
@@ -99,7 +100,7 @@ def parse_args(parser):
     return app_id, host, auth_domain, email, base_dir
 
 
-def import_modules(parser, base_dir):
+def _import_modules(parser, base_dir):
     """Import and return the necessary local Google App Engine modules.
 
     This is a little bit tricky because the Google App Engine SDK directories
@@ -108,6 +109,7 @@ def import_modules(parser, base_dir):
     # Enumerate the directories containing the Google App Engine modules:
     google_app_engine_dirs = (
         base_dir,
+        os.path.join(base_dir, 'lib', 'fancy_urllib'),
         os.path.join(base_dir, 'lib', 'yaml', 'lib'),
     )
 
@@ -125,7 +127,7 @@ def import_modules(parser, base_dir):
     return remote_api_stub
 
 
-def auth():
+def _auth():
     """Get and return a username and password.
 
     This function gets called the first time the user attempts some datastore

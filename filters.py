@@ -108,24 +108,26 @@ def beautify_datetime(dt1):
     diff_calendar_days = (dt(after.year, after.month, after.day) -
                           dt(before.year, before.month, before.day)).days
 
+    beautified_datetime = 'a long time ago in a galaxy far, far away'
     if after == before:
-        return 'right now'
-    if diff.days == 0 and diff_hours == 0 and diff_minutes == 0:
-        return 'seconds ' + suffix
-    if diff.days == 0 and diff_hours == 0 and diff_minutes == 1:
-        return '1 minute ' + suffix
-    if diff.days == 0 and diff_hours == 0:
-        return str(diff_minutes) + ' minutes ' + suffix
-    if diff.days == 0 and diff_hours == 1:
-        return '1 hour ' + suffix
-    if diff.days == 0:
-        return str(diff_hours) + ' hours ' + suffix
-    if diff_calendar_days == 1:
-        return 'yesterday' if suffix == 'ago' else 'tomorrow'
-    if diff_calendar_days < 7:
-        return dt1.strftime('on %a')
-    return dt1.strftime('on %b %d, %y')
-    return 'a long time ago in a galaxy far, far away'
+        beautified_datetime = 'right now'
+    elif diff.days == 0 and diff_hours == 0 and diff_minutes == 0:
+        beautified_datetime = 'seconds ' + suffix
+    elif diff.days == 0 and diff_hours == 0 and diff_minutes == 1:
+        beautified_datetime = '1 minute ' + suffix
+    elif diff.days == 0 and diff_hours == 0:
+        beautified_datetime = str(diff_minutes) + ' minutes ' + suffix
+    elif diff.days == 0 and diff_hours == 1:
+        beautified_datetime = '1 hour ' + suffix
+    elif diff.days == 0:
+        beautified_datetime = str(diff_hours) + ' hours ' + suffix
+    elif diff_calendar_days == 1:
+        beautified_datetime = 'yesterday' if suffix == 'ago' else 'tomorrow'
+    elif diff_calendar_days < 7:
+        beautified_datetime = dt1.strftime('on %a')
+    else:
+        beautified_datetime = dt1.strftime('on %b %d, %y')
+    return beautified_datetime
 
 
 @register.filter

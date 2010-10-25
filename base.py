@@ -63,7 +63,7 @@ class _CommonRequestHandler(emails.RequestHandler, rss.RequestHandler,
             # The only time this exception is thrown is when the datastore is
             # in read-only mode for maintenance.  Gracefully degrade - throw a
             # 503 error.  For more info, see:
-            # http://code.google.com/appengine/docs/python/howto/maintenance.html
+            #   http://code.google.com/appengine/docs/python/howto/maintenance.html
             error_code = 503
         else:
             error_code = 500
@@ -83,7 +83,7 @@ class _CommonRequestHandler(emails.RequestHandler, rss.RequestHandler,
         self.response.out.write(template.render(path, locals(), debug=DEBUG))
 
     def _get_user(self):
-        """Return a login URL, the current user, and a logout URL."""
+        """Return a login URL, the current user & account, and a logout URL."""
         login_url = users.create_login_url('/')
         current_user = users.get_current_user()
         current_account = self._user_to_account(current_user)

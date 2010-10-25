@@ -45,7 +45,6 @@ import fetch
 
 
 _log = logging.getLogger(__name__)
-stemmer = PorterStemmer()
 
 
 def tokenize_url(url):
@@ -193,7 +192,7 @@ def auto_tag(words, stop_words, min_count=FETCH_MIN_COUNT):
 
     # First, go through the word list, convert the words to stems, and make the
     # stems into tags.
-    tags, max_count = {}, 0
+    stemmer, tags, max_count = PorterStemmer(), {}, 0
     for word in [word for word in set(words) if not word in stop_words]:
         tag = {'stem': stemmer.stem(word), 'word': word}
         tag['count'] = float(words.count(word))
