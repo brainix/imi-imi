@@ -256,7 +256,7 @@ class LiveSearch(base.RequestHandler):
         This method gets called every time anyone types a single letter in the
         search box.  Keep this method as efficient as possible.
         """
-        query = self.request.get('query').replace(' ', '%20').lower()
+        query = urllib.quote_plus(self.request.get('query')).lower()
         html = self._live_search(query)
         self.response.out.write(html)
 
@@ -352,14 +352,11 @@ class Search(base.RequestHandler):
         query_user = self.request.get('user')
         query_user = users.User(email=query_user) if query_user else query_user
         query_users = [query_user] if query_user else []
-        query_words = self.request.get('query')
-        query_words = query_words.replace('+', ' ')
-        query_words = query_words.replace('%20', ' ')
+        query_words = urllib.unquote_plus(self.request.get('query'))
         query_words = auto_tag.extract_words_from_string(query_words)
-        page = self.request.get('page', default_value='0')
         # This next line might throw a ValueError exception, but the caller
         # catches it and serves a 404.
-        page = int(page)
+        page = int(self.request.get('page', default_value='0'))
         return query_user, query_users, query_words, page
 
     def _compute_more_url(self):

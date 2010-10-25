@@ -43,16 +43,14 @@ class RequestHandler(webapp.RequestHandler):
 
     def _get_rss_url(self):
         """Compute the URL to the RSS feed corresponding to the current page."""
-        uri = self.request.uri
-        if uri.endswith('/'):
-            uri = uri.rsplit('/', 1)[0]
+        uri = self.request.uri.rstrip('/')
         if uri.endswith('/rss'):
             # Oops.  The current page *is* an RSS feed.  Just return the current
             # page's URL (to prevent recursive RSS feeds - an RSS feed's RSS
             # feed).
             rss_url = uri
-        elif uri.endswith('/home'):
-            rss_url = uri.rsplit('/home', 1)[0] + '/rss'
+        elif uri.endswith('/about'):
+            rss_url = uri.rsplit('/about', 1)[0] + '/rss'
         else:
             rss_url = uri + '/rss'
         return rss_url
